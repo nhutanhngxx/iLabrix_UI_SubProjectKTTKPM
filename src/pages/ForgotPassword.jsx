@@ -1,42 +1,35 @@
+import { useNavigate } from "react-router-dom";
 import backgroundImg from "../assets/Background.png";
 import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/Button";
-import PropTypes from "prop-types";
-
-const Title = ({ text }) => (
-  <div className="text-4xl font-bold text-[#CC9933] text-center">{text}</div>
-);
-
-const InputField = ({ label, type, placeholder }) => (
-  <div className="mt-4 mb-4">
-    <div className="text-xl font-bold">{label}</div>
-    <input
-      type={type}
-      className="border rounded-3xl p-3 pl-5 w-full"
-      placeholder={placeholder}
-    />
-  </div>
-);
+import InputField from "../components/InputField";
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
+  const handleRegisterNewPassword = () => {
+    navigate("/register-new-password");
+  };
   return (
     <div
       className="flex items-center justify-center h-screen flex-col w-screen bg-cover bg-center"
       style={{ backgroundImage: `url(${backgroundImg})` }}
     >
-      <div className="flex w-4/5 h-3/5 items-center justify-between">
+      <div className="flex w-2/3 h-2/3 items-center justify-center bg-white/30 backdrop-blur-md shadow-lg rounded-2xl">
         {/* Left side */}
         <div className="w-2/5 flex flex-col items-center justify-center">
-          <Title text="Welcome to" />
+          <div className="text-4xl font-bold">Welcome to</div>
           <img src={iLabrixLogo} className="w-2/3 mx-auto" alt="iLabrix Logo" />
         </div>
 
         {/* Right side */}
         <div className="w-3/5 flex flex-col items-center justify-center border rounded-2xl bg-white h-full">
-          <Title text="FORGOT PASSWORD" />
-          <div className="text-sm text-center">
-            Enter your email to reset your password
+          {/* Title */}
+          <div className="text-4xl font-bold text-[#CC9933] text-center">
+            FORGOT PASSWORD
           </div>
+          {/* <div className="text-sm text-center">
+            Enter your email to reset your password
+          </div> */}
 
           {/* Form */}
           <div className="w-3/5">
@@ -55,7 +48,11 @@ const ForgotPassword = () => {
             {/* OTP field */}
             <InputField label="OTP" type="text" placeholder="Enter OTP..." />
             <div className="flex justify-center">
-              <Button backgroundColor={"#CC9933"} textColor={"white"}>
+              <Button
+                backgroundColor={"#CC9933"}
+                textColor={"white"}
+                onClick={handleRegisterNewPassword}
+              >
                 Next
               </Button>
             </div>
@@ -64,16 +61,6 @@ const ForgotPassword = () => {
       </div>
     </div>
   );
-};
-
-Title.propTypes = {
-  text: PropTypes.string.isRequired,
-};
-
-InputField.propTypes = {
-  label: PropTypes.string.isRequired,
-  type: PropTypes.string.isRequired,
-  placeholder: PropTypes.string.isRequired,
 };
 
 export default ForgotPassword;

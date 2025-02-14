@@ -1,14 +1,17 @@
+import { useNavigate } from "react-router-dom";
+
 import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/Button";
 import backgroundImg from "../assets/Background.png";
 
 const IntroPage = () => {
+  const navigate = useNavigate();
   const handleSignIn = () => {
-    alert("Sign in clicked");
+    navigate("/login");
   };
 
   const handleRegister = () => {
-    alert("Register clicked");
+    navigate("/register")
   };
 
   return (
@@ -24,8 +27,8 @@ const IntroPage = () => {
       <div className="flex mt-12 justify-between items-center w-2/5">
         <Button onClick={handleSignIn}>Sign in</Button>
         <Button
-          backgroundColor={"white"}
-          textColor={"#4285F4"}
+          backgroundColor={"transparent"}
+          textColor={"#fff"}
           onClick={handleRegister}
         >
           Register

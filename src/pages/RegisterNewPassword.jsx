@@ -5,13 +5,12 @@ import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
 
-const Register = () => {
+const RegisterPassword = () => {
   const navigate = useNavigate();
-  const handleLogin = () => {
-    navigate("/home-page");
-  };
-  const handleForgotPassword = () => {
-    navigate("/forgot-password");
+  const handleRegisterPassword = () => {
+    navigate("/notification", {
+      state: { message: "Password reset successful!" },
+    });
   };
 
   return (
@@ -32,39 +31,33 @@ const Register = () => {
         <div className="w-3/5 flex flex-col items-center justify-center border rounded-2xl bg-white h-full">
           {/* Title */}
           <div className="text-4xl font-bold text-[#CC9933] text-center">
-            LOGIN
+            REGISTER NEW PASSWORD
           </div>
 
           {/* Form */}
           <div className="w-3/5">
-            <InputField
-              type="email"
-              label="Email"
-              placeholder="Enter your email..."
-            />
-
+            {/* Password field */}
             <InputField
               type="password"
               label="Password"
-              placeholder="Enter your password..."
+              placeholder="Enter your new password..."
             />
 
-            <div className="mt-2 mb-2 font-bold">
-              <button
-                className="text-gray-600 hover:text-black cursor-pointer bg-transparent border-none"
-                onClick={handleForgotPassword}
-              >
-                Forgot Password?
-              </button>
-            </div>
+            {/* Re-enter Password field */}
+            <InputField
+              type="password"
+              label="Re-enter Password"
+              placeholder="Enter your new password..."
+            />
 
+            {/* Enter button */}
             <div className="flex justify-center">
               <Button
                 backgroundColor={"#CC9933"}
                 textColor={"white"}
-                onClick={handleLogin}
+                onClick={handleRegisterPassword}
               >
-                Login
+                Enter
               </Button>
             </div>
           </div>
@@ -74,4 +67,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default RegisterPassword;

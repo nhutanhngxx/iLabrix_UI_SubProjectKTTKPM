@@ -10,7 +10,7 @@ const Button = ({onClick, children, backgroundColor, textColor }) => {
     cursor: "pointer",
     fontSize: "20px",
     fontWeight: "500",
-    width: "200px",
+    width: "150px",
   };
   return <button style={buttonStyle} onClick={onClick}>{children}</button>;
 };
