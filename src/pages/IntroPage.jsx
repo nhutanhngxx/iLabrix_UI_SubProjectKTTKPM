@@ -19,7 +19,7 @@ const IntroPage = () => {
       }}
     >
       <div>
-        <img src={iLabrixLogo} alt="iLabrix Logo" />
+        <img src={iLabrixLogo} alt="iLabrix Logo" style={{height: 300}} />
       </div>
       <div className="flex mt-12 justify-between items-center w-2/5">
         <Button onClick={handleSignIn}>Sign in</Button>
