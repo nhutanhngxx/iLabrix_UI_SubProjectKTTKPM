@@ -7,8 +7,10 @@ import InputField from "../components/InputField";
 
 const RegisterPassword = () => {
   const navigate = useNavigate();
-  const handleRegister = () => {
-    navigate("/forgot-password");
+  const handleRegisterPassword = () => {
+    navigate("/notification", {
+      state: { message: "Account registration successful!" },
+    });
   };
 
   return (
@@ -18,7 +20,7 @@ const RegisterPassword = () => {
         backgroundImage: `url(${backgroundImg})`,
       }}
     >
-      <div className="flex w-4/5 h-3/5 items-center justify-between bg-white rounded-2xl">
+      <div className="flex w-2/3 h-2/3 items-center justify-center bg-white/30 backdrop-blur-md shadow-lg rounded-2xl">
         {/* Left side */}
         <div className="w-2/5 flex flex-col items-center justify-center">
           <div className="text-4xl font-bold">Welcome to</div>
@@ -53,15 +55,10 @@ const RegisterPassword = () => {
               <Button
                 backgroundColor={"#CC9933"}
                 textColor={"white"}
-                onClick={handleRegister}
+                onClick={handleRegisterPassword}
               >
                 Enter
               </Button>
-              {/* <Link to="/forgot-password">
-                <Button backgroundColor={"#CC9933"} textColor={"white"}>
-                  Enter
-                </Button>
-              </Link> */}
             </div>
           </div>
         </div>
