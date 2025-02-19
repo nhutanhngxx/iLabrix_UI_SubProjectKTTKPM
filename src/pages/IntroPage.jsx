@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/Button";
@@ -11,17 +11,17 @@ const IntroPage = () => {
   };
 
   const handleRegister = () => {
-    navigate("/register")
+    navigate("/register");
   };
 
   return (
     <div
-      className="flex items-center justify-center h-screen flex-col w-screen bg-cover bg-center"
+      className="flex items-center h-screen flex-col w-screen bg-cover bg-center"
       style={{
         backgroundImage: `url(${backgroundImg})`,
       }}
     >
-      <div>
+      {/* <div>
         <img src={iLabrixLogo} alt="iLabrix Logo" style={{height: 300}} />
       </div>
       <div className="flex mt-12 justify-between items-center w-[400px]">
@@ -33,7 +33,28 @@ const IntroPage = () => {
         >
           Register
         </Button>
+      </div> */}
+
+      {/* Header */}
+      <div className="h-14 w-screen bg-transparent flex items-center">
+        <div className="flex items-center justify-between w-full px-5">
+          <div className="flex items-center text-white space-x-10">
+            <img src={iLabrixLogo} alt="iLabrix Logo" style={{ height: 50 }} />
+            <Link>Introduce</Link>
+            <Link>News - Events</Link>
+            <Link>Feature</Link>
+            <Link>Support</Link>
+          </div>
+          <div className="flex items-center space-x-4 ml-auto flex-shrink-0 text-white">
+            <Link>Sign Up</Link>
+            <Link>Log In</Link>
+          </div>
+        </div>
+        <div></div>
       </div>
+
+      {/* Container */}
+      <div></div>
     </div>
   );
 };
