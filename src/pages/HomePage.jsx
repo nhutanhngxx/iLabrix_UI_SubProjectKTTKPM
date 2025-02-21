@@ -11,11 +11,11 @@ import TabDashboard from "../components/tabs/TabDashboard";
 import TabSearch from "../components/tabs/TabSearch";
 import TabUsers from "../components/tabs/TabUsers";
 
-import checkInOutIcon from "../assets/icons/check-in-out.png";
-import bookIcon from "../assets/icons/book.png";
-import usersIcon from "../assets/icons/users.png";
-import dashboardIcon from "../assets/icons/dashboard.png";
-import searchIcon from "../assets/icons/search.png";
+import checkInOutIcon from "/icons/check-in-out.png";
+import bookIcon from "/icons/book.png";
+import usersIcon from "/icons/users.png";
+import dashboardIcon from "/icons/dashboard.png";
+import searchIcon from "/icons/search.png";
 
 // Danh sách các tab
 const tabs = [
@@ -101,7 +101,7 @@ const HomePage = () => {
 
   return (
     <div
-      className="flex flex-col h-screen w-screen bg-cover bg-center"
+      className="flex flex-col h-screen w-screen bg-cover bg-center bg-fixed"
       style={{ backgroundImage: `url(${backgroundImg})` }}
     >
       {/* Thanh Status (Header) */}
