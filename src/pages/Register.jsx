@@ -10,6 +10,9 @@ const Register = () => {
   const handleRegister = () => {
     navigate("/register-password");
   };
+  const handleLogin = () => {
+    navigate("/login");
+  };
 
   return (
     <div
@@ -50,7 +53,7 @@ const Register = () => {
               Already have an account?
               <button
                 className="text-orange-600 cursor-pointer bg-transparent border-none ml-1 mr-1 font-bold"
-                onClick={() => alert("Sign in!!")}
+                onClick={() => handleLogin()}
               >
                 Sign in
               </button>

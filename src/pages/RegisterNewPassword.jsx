@@ -5,7 +5,7 @@ import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
 
-const RegisterPassword = () => {
+const RegisterNewPassword = () => {
   const navigate = useNavigate();
   const handleRegisterPassword = () => {
     navigate("/notification", {
@@ -67,4 +67,4 @@ const RegisterPassword = () => {
   );
 };
 
-export default RegisterPassword;
+export default RegisterNewPassword;
