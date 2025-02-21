@@ -1,7 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 
 import iLabrixLogo from "../assets/iLibrary.png";
-import Button from "../components/Button";
 import backgroundImg from "../assets/Background.png";
 
 const IntroPage = () => {
@@ -46,8 +45,8 @@ const IntroPage = () => {
             <Link>Support</Link>
           </div>
           <div className="flex items-center space-x-4 ml-auto flex-shrink-0 text-white">
-            <Link>Sign Up</Link>
-            <Link>Log In</Link>
+            <button onClick={handleRegister}>Sign up</button>
+            <button onClick={handleSignIn}>Sign in</button>
           </div>
         </div>
         <div></div>

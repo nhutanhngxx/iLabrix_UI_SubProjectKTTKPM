@@ -11,6 +11,12 @@ import TabDashboard from "../components/tabs/TabDashboard";
 import TabSearch from "../components/tabs/TabSearch";
 import TabUsers from "../components/tabs/TabUsers";
 
+import checkInOutIcon from "../assets/icons/check-in-out.png";
+import bookIcon from "../assets/icons/book.png";
+import usersIcon from "../assets/icons/users.png";
+import dashboardIcon from "../assets/icons/dashboard.png";
+import searchIcon from "../assets/icons/search.png";
+
 // Danh sách các tab
 const tabs = [
   {
@@ -18,16 +24,36 @@ const tabs = [
     label: "Check-in/out",
     component: <TabBorrow />,
     path: "/check-in-out",
+    icon: checkInOutIcon,
   },
-  { id: "tab2", label: "Books", component: <TabBooks />, path: "/books" },
-  { id: "tab3", label: "Users", component: <TabUsers />, path: "/users" },
+  {
+    id: "tab2",
+    label: "Books",
+    component: <TabBooks />,
+    path: "/books",
+    icon: bookIcon,
+  },
+  {
+    id: "tab3",
+    label: "Users",
+    component: <TabUsers />,
+    path: "/users",
+    icon: usersIcon,
+  },
   {
     id: "tab4",
     label: "Dashboard",
     component: <TabDashboard />,
     path: "/dashboard",
+    icon: dashboardIcon,
   },
-  { id: "tab5", label: "Search", component: <TabSearch />, path: "/search" },
+  {
+    id: "tab5",
+    label: "Search",
+    component: <TabSearch />,
+    path: "/search",
+    icon: searchIcon,
+  },
 ];
 
 // Component hiển thị thời gian hiện tại
@@ -135,7 +161,7 @@ const HomePage = () => {
       {/* Wrapper Pills Tab */}
       <div className="flex flex-1 px-10 pb-10">
         {/* Tabs Điều Hướng */}
-        <div className="w-1/6 h-5/6 rounded-2xl bg-white/30 backdrop-blur-md shadow-lg p-4 flex flex-col space-y-2 mr-6 gap-2">
+        <div className="w-1/6 h-2/3 rounded-2xl bg-white/30 backdrop-blur-md shadow-lg p-4 flex flex-col space-y-2 mr-6 gap-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -147,11 +173,7 @@ const HomePage = () => {
                     : "bg-transparent text-gray-600 hover:bg-gray-300"
                 }`}
             >
-              <img
-                src={`../assets/icons/${tab.id}.png`}
-                className="w-5 h-5"
-                alt={tab.label}
-              />
+              <img src={tab.icon} className="w-6 h-6" alt={tab.label} />
               {tab.label}
             </button>
           ))}
