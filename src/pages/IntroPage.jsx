@@ -66,11 +66,11 @@ const IntroPage = () => {
 
   return (
     <div
-      className="flex items-center flex-col w-screen bg-cover bg-center "
+      className="flex items-center flex-col w-screen bg-repeat-y bg-cover bg-center"
       style={{ backgroundImage: `url(${backgroundImg})` }}
     >
       {/* Header */}
-      <div className="h-14 w-screen bg-black/80 flex items-center border-b border-white fixed top-0 left-0 z-10">
+      <div className="h-20 w-screen backdrop-blur-md flex items-center fixed top-0 left-0 z-10">
         <div className="flex items-center justify-between w-full px-5">
           <div className="flex items-center text-white space-x-10">
             <img src={iLabrixLogo} alt="iLabrix Logo" style={{ height: 50 }} />
@@ -79,7 +79,7 @@ const IntroPage = () => {
             <a href="#feature">Feature</a>
             <a href="#support">Support</a>
           </div>
-          <div className="flex items-center space-x-4 ml-auto flex-shrink-0 text-white">
+          <div className="flex items-center space-x-4 mr-5 ml-auto flex-shrink-0 text-white">
             <Link to="/register">Sign Up</Link>
             <Link to="/login">Log In</Link>
           </div>
@@ -140,7 +140,7 @@ const IntroPage = () => {
             <div className="text-8xl mb-20 text-white font-bold">Introduce</div>
           </div>
           <div className="flex flex-row justify-center items-center gap-10">
-            <div className="w-1/2 text-2xl text-white p-8 border bg-black/25 backdrop-blur-md rounded-[20px]">
+            <div className="w-1/2 text-2xl text-white p-8 bg-black/25 backdrop-blur-md rounded-[20px]">
               <b>iLabrix</b> - Hệ thống quản lý mượn trả sách thông minh. Chào
               mừng bạn đến với iLabrix, nền tảng quản lý mượn trả sách hiện đại,
               giúp sinh viên và giảng viên dễ dàng tiếp cận tài liệu học tập.
@@ -148,7 +148,7 @@ const IntroPage = () => {
               đến một trải nghiệm mượn trả sách nhanh chóng, tiện lợi và minh
               bạch.
             </div>
-            <div className="w-1/2 text-2xl text-white p-8 border bg-black/25 backdrop-blur-md rounded-[20px]">
+            <div className="w-1/2 text-2xl text-white p-8 bg-black/25 backdrop-blur-md rounded-[20px]">
               <b>Tính năng nổi bật:</b>
               <ul className="list-none">
                 <li>Quản lý kho sách trực tuyến.</li>
