@@ -56,9 +56,7 @@ const TabUsers = () => {
       typeof page === "number" ? (
         <button
           key={index}
-          className={`px-3 py-1 mx-1 rounded ${currentPage === page
-            ? "font-bold underline"
-            : "text-gray-700"
+          className={`px-3 py-1 mx-1 rounded ${currentPage === page ? "font-bold underline" : "text-gray-700"
             }`}
           onClick={() => goToPage(page)}
         >
@@ -75,20 +73,31 @@ const TabUsers = () => {
   const startIndex = (currentPage - 1) * usersPerPage;
   const selectdUsers = users.slice(startIndex, startIndex + usersPerPage);
 
+  const handleAddNewUser = () => {
+    alert("Add New User");
+  };
+
   return (
     <div className="text-lg font-medium">
       {/* Header */}
-      <div className="">Header</div>
+      <div className="flex items-center justify-end">
+        <button
+          className="bg-[#0CE346] text-white px-5 py-2 mx-1 rounded-[40px] text-sm"
+          onClick={() => handleAddNewUser()}
+        >
+          Add New User
+        </button>
+      </div>
 
       {/* List Users */}
-      <div className="grid grid-cols-2 gap-4 mt-4 h-3/5">
+      <div className="grid grid-cols-2 gap-7 mt-4 h-3/5">
         {selectdUsers.map((user, index) => (
           <UserItem key={index} user={user} />
         ))}
       </div>
 
       {/* Paging Navigation */}
-      <div className=" fixed bottom-5 left-6">
+      <div className="text-base fixed bottom-1 left-6">
         <button
           className="px-3 py-1 "
           onClick={() => goToPage(currentPage - 1)}
