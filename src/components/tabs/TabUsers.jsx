@@ -33,6 +33,7 @@ const TabUsers = () => {
   ];
   const usersPerPage = 4;
   const totalPages = Math.ceil(users.length / usersPerPage);
+  const [isShowModal, setIsShowModal] = useState(false);
 
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -56,8 +57,9 @@ const TabUsers = () => {
       typeof page === "number" ? (
         <button
           key={index}
-          className={`px-3 py-1 mx-1 rounded ${currentPage === page ? "font-bold underline" : "text-gray-700"
-            }`}
+          className={`px-3 py-1 mx-1 rounded ${
+            currentPage === page ? "font-bold underline" : "text-gray-700"
+          }`}
           onClick={() => goToPage(page)}
         >
           {page}
@@ -74,7 +76,7 @@ const TabUsers = () => {
   const selectdUsers = users.slice(startIndex, startIndex + usersPerPage);
 
   const handleAddNewUser = () => {
-    alert("Add New User");
+    setIsShowModal(true);
   };
 
   return (
@@ -114,6 +116,81 @@ const TabUsers = () => {
           Next
         </button>
       </div>
+
+      {isShowModal && (
+        // Model
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-md shadow-lg rounded-xl flex items-center justify-center">
+          {/* Form */}
+          <div className="bg-white rounded-xl shadow-lg w-4/6 p-10 pb-14">
+            <div className="text-center mb-6 text-3xl font-bold">
+              Add New User
+            </div>
+            <div className="grid grid-cols-[1fr_2fr_1fr_2fr] gap-5 items-center text-lg">
+              <label className="text-right font-semibold">User Name:</label>
+              <input
+                className="placeholder:italic w-full bg-transparent border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                type="text"
+              />
+              <label className="text-right font-semibold">Gender:</label>
+              <input
+                className="placeholder:italic w-full bg-transparent border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                type="text"
+              />
+              <label className="text-right font-semibold">Book ID:</label>
+              <input
+                className="placeholder:italic w-full bg-transparent border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                type="text"
+              />
+              <label className="text-right font-semibold">D.O.I:</label>
+              <input
+                className="placeholder:italic w-full bg-transparent border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                type="date"
+              />
+              <label className="text-right font-semibold">Adhaar ID:</label>
+              <input
+                className="placeholder:italic w-full bg-transparent border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                type="text"
+              />
+              <label className="text-right font-semibold">Email:</label>
+              <input
+                className="placeholder:italic w-full bg-transparent border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                type="email"
+              />
+              <label className="text-right font-semibold">D.O.B:</label>
+              <input
+                className="placeholder:italic w-full bg-transparent border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                type="date"
+              />
+              <label className="text-right font-semibold">Phone:</label>
+              <input
+                className="placeholder:italic w-full bg-transparent border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                type="tel"
+              />
+              <label className="text-right font-semibold">Address:</label>
+              <input
+                className="placeholder:italic w-full bg-transparent border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600 col-span-3"
+                type="text"
+              />
+            </div>
+          </div>
+
+          {/* Button */}
+          <div className="absolute bottom-24 flex gap-x-80 font-semibold text-lg">
+            <button
+              className="bg-[#FF0000] text-white px-10 py-1 mx-1 rounded-[40px]"
+              onClick={() => alert("Delete user")}
+            >
+              Cancel
+            </button>
+            <button
+              className="bg-[#0CE346] text-white px-10 py-1 mx-1 rounded-[40px]"
+              onClick={() => alert("Submit user")}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
