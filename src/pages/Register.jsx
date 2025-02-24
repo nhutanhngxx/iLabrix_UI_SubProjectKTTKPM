@@ -50,7 +50,12 @@ const Register = () => {
         {/* Left side */}
         <div className="w-2/5 flex flex-col items-center justify-center">
           <div className="text-4xl font-bold">Welcome to</div>
-          <img src={iLabrixLogo} className="w-2/3 mx-auto" alt="iLabrix Logo" />
+          <img
+            src={iLabrixLogo}
+            className="w-2/3 mx-auto cursor-pointer"
+            alt="iLabrix Logo"
+            onClick={() => navigate("/")}
+          />
         </div>
 
         {/* Right side */}

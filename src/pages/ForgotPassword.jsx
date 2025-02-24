@@ -3,9 +3,42 @@ import backgroundImg from "../assets/Background.png";
 import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/common/Button";
 import InputField from "../components/common/InputField";
+import { useEffect, useState } from "react";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [otp, setOTP] = useState("");
+  const [isDisableGetCode, setIsDisableGetCode] = useState(true);
+  const [isDisableNext, setIsDisableNext] = useState(true);
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const validateOTP = (otp) => {
+    return otp.length === 6;
+  };
+
+  const handleGetCode = () => {
+    console.log("Email is used to get code otp: " + email);
+  };
+
+  useEffect(() => {
+    if (validateEmail(email)) {
+      setIsDisableGetCode(false);
+    } else {
+      setIsDisableGetCode(true);
+    }
+    if (validateOTP(otp)) {
+      setIsDisableNext(false);
+    } else {
+      setIsDisableNext(true);
+    }
+  }, [email, otp]);
+
   const handleRegisterNewPassword = () => {
     navigate("/register-new-password");
   };
@@ -18,7 +51,12 @@ const ForgotPassword = () => {
         {/* Left side */}
         <div className="w-2/5 flex flex-col items-center justify-center">
           <div className="text-4xl font-bold">Welcome to</div>
-          <img src={iLabrixLogo} className="w-2/3 mx-auto" alt="iLabrix Logo" />
+          <img
+            src={iLabrixLogo}
+            className="w-2/3 mx-auto cursor-pointer"
+            alt="iLabrix Logo"
+            onClick={() => navigate("/")}
+          />
         </div>
 
         {/* Right side */}
@@ -38,20 +76,40 @@ const ForgotPassword = () => {
               label="Email"
               type="email"
               placeholder="Enter your email..."
+              onChange={(e) => {
+                const value = e.target.value;
+                setEmail(value);
+              }}
+              value={email}
             />
             <div className="flex justify-center">
-              <Button backgroundColor={"#CC9933"} textColor={"white"}>
+              <Button
+                backgroundColor={isDisableGetCode ? "gray" : "#CC9933"}
+                textColor={"white"}
+                onClick={handleGetCode}
+                disable={isDisableGetCode}
+              >
                 Get code
               </Button>
             </div>
 
             {/* OTP field */}
-            <InputField label="OTP" type="text" placeholder="Enter OTP..." />
+            <InputField
+              label="OTP"
+              type="number"
+              placeholder="Enter OTP..."
+              onChange={(e) => {
+                const value = e.target.value;
+                setOTP(value);
+              }}
+              value={otp}
+            />
             <div className="flex justify-center">
               <Button
-                backgroundColor={"#CC9933"}
+                backgroundColor={isDisableNext ? "gray" : "#CC9933"}
                 textColor={"white"}
                 onClick={handleRegisterNewPassword}
+                disable={isDisableNext}
               >
                 Next
               </Button>

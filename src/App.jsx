@@ -11,7 +11,7 @@ import HomePage from "./pages/HomePage";
 import TabBorrow from "./components/tabs/TabBorrow";
 import TabBooks from "./components/tabs/TabBooks";
 import TabDashboard from "./components/tabs/TabDashboard";
-import TabSearch from "./components/tabs/TabSearch";
+import TabSearch from "./components/tabs/TabBorrowManagement";
 import TabUsers from "./components/tabs/TabUsers";
 
 function App() {
