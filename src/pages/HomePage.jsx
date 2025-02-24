@@ -120,7 +120,7 @@ const HomePage = () => {
           {/* Thông tin người dùng */}
           <div
             onClick={handleUserClick}
-            className="flex items-center space-x-4 ml-auto flex-shrink-0"
+            className="flex items-center space-x-4 ml-auto flex-shrink-0 cursor-pointer"
           >
             <div className="flex flex-col items-end">
               <span className="text-white font-medium">Nguyễn Nhựt Anh</span>
@@ -143,7 +143,12 @@ const HomePage = () => {
                     <button className="text-blue-500">Settings</button>
                   </li>
                   <li>
-                    <button className="text-blue-500">Logout</button>
+                    <button
+                      className="text-blue-500"
+                      onClick={() => navigate("/")}
+                    >
+                      Logout
+                    </button>
                   </li>
                 </ul>
                 <button
