@@ -7,43 +7,27 @@ const UserItem = ({ user }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative text-lg ">
       {/* User's Information */}
-      <div className="flex items-center h-[225px] px-6 border-b bg-[#FFFAFA] rounded-[40px] gap-5 text-xl shadow-md">
+      <div className="flex items-center py-3 px-8 border-b bg-[#FFFAFA] rounded-[20px] gap-5 shadow-md">
         {/* Image */}
         <div>
           <img
             src={user?.image}
             alt={user?.name || "null"}
-            className="w-[145px] h-[195px] border-2 rounded-[10px] shadow-md"
+            className="w-24 h-32 border-2 rounded-[10px] shadow-md"
           />
         </div>
         {/* user's Infomation */}
-        <div className="font-normal fontSize-[19px]">
-          <div>
-            <b>Name : </b>
+        <div className="text-gray-600">
+          <div className="text-xl font-semibold text-blue-600">
             {user?.name || "Null"}
           </div>
-          <div>
-            <b>Address : </b>
-            {user?.address || "Null"}
-          </div>
-          <div>
-            <b>User ID : </b>
-            {user?.userId || "Null"}
-          </div>
-          <div>
-            <b>Gender : </b>
-            {user?.gender || "0"}
-          </div>
-          <div>
-            <b>Email : </b>
-            {user?.email || "Null"}
-          </div>
-          <div>
-            <b>Phone : </b>
-            {user?.phone || 0}
-          </div>
+          {/* <p className="text-gray-600">ID: {user?.userId || "Null"}</p> */}
+          {/* <p className="text-gray-600">Gender: {user?.gender || "Null"}</p> */}
+          <p className="text-gray-600">Email: {user?.email || "Null"}</p>
+          <p className="text-gray-600">Phone: {user?.phone || "Null"}</p>
+          <p className="text-gray-600">Adress: {user?.address || "Null"}</p>
         </div>
       </div>
 

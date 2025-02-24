@@ -49,7 +49,7 @@ const tabs = [
   },
   {
     id: "tab5",
-    label: "Search",
+    label: "Borrow Management",
     component: <TabSearch />,
     path: "/search",
     icon: searchIcon,
@@ -131,7 +131,7 @@ const HomePage = () => {
           {/* Thông tin người dùng */}
           <div
             onClick={handleUserClick}
-            className="flex items-center space-x-4 ml-auto flex-shrink-0"
+            className="flex items-center space-x-4 ml-auto flex-shrink-0 cursor-pointer"
           >
             <div className="flex flex-col items-end">
               <span className="text-white font-medium">Nguyễn Nhựt Anh</span>
@@ -190,12 +190,12 @@ const HomePage = () => {
       {/* Wrapper Pills Tab */}
       <div className="flex flex-1 px-10 pb-10">
         {/* Tabs Điều Hướng */}
-        <div className="w-1/6  rounded-2xl bg-white/30 backdrop-blur-md shadow-lg p-5 flex flex-col justify-around space-y-2 mr-6 gap-2">
+        <div className="w-1/6 rounded-2xl bg-white/30 backdrop-blur-md shadow-lg p-3 flex flex-col justify-around space-y-2 mr-6 gap-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`p-5 text-left rounded-lg flex items-center gap-2 transition-all
+              className={`px-2 py-5 text-left rounded-lg flex items-center gap-2 transition-all
                 ${
                   activeTab === tab.id
                     ? "bg-transparent text-orange-600 font-semibold shadow-md"

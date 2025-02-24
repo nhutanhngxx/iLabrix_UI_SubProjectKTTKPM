@@ -140,7 +140,7 @@ const TabUsers = () => {
   };
 
   return (
-    <div className="text-lg font-medium">
+    <div className="">
       {/* Header */}
       <div className="flex items-center justify-end">
         <button
@@ -152,7 +152,7 @@ const TabUsers = () => {
       </div>
 
       {/* List Users */}
-      <div className="grid grid-cols-2 gap-7 mt-4 h-3/5">
+      <div className="grid grid-cols-2 gap-7 h-3/5 p-4">
         {selectdUsers.map((user, index) => (
           <UserItem key={index} user={user} />
         ))}
@@ -188,7 +188,7 @@ const TabUsers = () => {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-xl shadow-lg w-4/6 p-10 pb-14"
           >
-            <div className="text-center mb-6 text-3xl font-bold">
+            <div className="text-center mb-6 text-xl font-bold">
               Add New User
             </div>
             <div className="grid grid-cols-[1fr_2fr_1fr_2fr] gap-5 items-center text-lg">
