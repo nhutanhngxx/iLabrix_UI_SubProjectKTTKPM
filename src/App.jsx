@@ -18,7 +18,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* <Route path="/" element={<Home />} /> */}
         <Route index element={<IntroPage />}></Route>
         <Route path="/login" element={<Login />}></Route>
         <Route path="/register" element={<Register />}></Route>
@@ -33,6 +32,7 @@ function App() {
         <Route path="/check-in-out" element={<TabBorrow />} />
         <Route path="/books" element={<TabBooks />} />
         <Route path="/users" element={<TabUsers />} />
+
         <Route path="/dashboard" element={<TabDashboard />} />
         <Route path="/search" element={<TabSearch />} />
       </Routes>
