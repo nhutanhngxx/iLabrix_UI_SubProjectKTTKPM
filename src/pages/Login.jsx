@@ -4,12 +4,40 @@ import backgroundImg from "../assets/Background.png";
 import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/common/Button";
 import InputField from "../components/common/InputField";
+import { useEffect, useState } from "react";
 
 const Register = () => {
   const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isDisable, setIsDisable] = useState(true);
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const validatePassword = (password) => {
+    return password.length >= 6;
+  };
+
+  useEffect(() => {
+    if (validateEmail(email) && validatePassword(password)) {
+      setIsDisable(false);
+    } else {
+      setIsDisable(true);
+    }
+  }, [email, password]);
+
   const handleLogin = () => {
+    let registerData = {};
+    registerData.email = email;
+    registerData.password = password;
+    console.log(registerData);
     navigate("/home-page");
   };
+
   const handleForgotPassword = () => {
     navigate("/forgot-password");
   };
@@ -41,12 +69,22 @@ const Register = () => {
               type="email"
               label="Email"
               placeholder="Enter your email..."
+              onChange={(e) => {
+                const value = e.target.value;
+                setEmail(value);
+              }}
+              value={email}
             />
 
             <InputField
               type="password"
               label="Password"
               placeholder="Enter your password..."
+              onChange={(e) => {
+                const value = e.target.value;
+                setPassword(value);
+              }}
+              value={password}
             />
 
             <div className="mt-2 mb-2 font-bold">
@@ -60,9 +98,10 @@ const Register = () => {
 
             <div className="flex justify-center">
               <Button
-                backgroundColor={"#CC9933"}
+                backgroundColor={isDisable ? "gray" : "#CC9933"}
                 textColor={"white"}
                 onClick={handleLogin}
+                disable={isDisable}
               >
                 Login
               </Button>

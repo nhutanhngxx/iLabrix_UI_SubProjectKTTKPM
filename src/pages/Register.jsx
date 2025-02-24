@@ -4,14 +4,38 @@ import backgroundImg from "../assets/Background.png";
 import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/common/Button";
 import InputField from "../components/common/InputField";
+import { useEffect, useState } from "react";
 
 const Register = () => {
   const navigate = useNavigate();
-  const handleRegister = () => {
-    navigate("/register-password");
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isDisable, setIsDisable] = useState(true);
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
   };
-  const handleLogin = () => {
-    navigate("/login");
+
+  const validatePassword = (password) => {
+    return password.length >= 6;
+  };
+
+  useEffect(() => {
+    if (validateEmail(email) && validatePassword(password)) {
+      setIsDisable(false);
+    } else {
+      setIsDisable(true);
+    }
+  }, [email, password]);
+
+  const handleRegister = () => {
+    let registerData = {};
+    registerData.email = email;
+    registerData.password = password;
+    console.log(registerData);
+    // navigate("/login");
   };
 
   return (
@@ -41,19 +65,29 @@ const Register = () => {
               type="email"
               label="Email"
               placeholder="Enter your email..."
+              onChange={(e) => {
+                const value = e.target.value;
+                setEmail(value);
+              }}
+              value={email}
             />
 
             <InputField
               type="password"
               label="Password"
               placeholder="Enter your new password..."
+              onChange={(e) => {
+                const value = e.target.value;
+                setPassword(value);
+              }}
+              value={password}
             />
 
             <div className="mt-2 mb-2">
               Already have an account?
               <button
                 className="text-orange-600 cursor-pointer bg-transparent border-none ml-1 mr-1 font-bold"
-                onClick={() => handleLogin()}
+                onClick={() => navigate("/login")}
               >
                 Sign in
               </button>
@@ -62,9 +96,10 @@ const Register = () => {
 
             <div className="flex justify-center">
               <Button
-                backgroundColor={"#CC9933"}
+                backgroundColor={isDisable ? "gray" : "#CC9933"}
                 textColor={"white"}
                 onClick={handleRegister}
+                disable={isDisable}
               >
                 Register
               </Button>
