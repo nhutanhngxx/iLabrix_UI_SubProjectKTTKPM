@@ -75,6 +75,7 @@ const IntroPage = () => {
           <div className="flex items-center text-white space-x-10">
             <img src={iLabrixLogo} alt="iLabrix Logo" style={{ height: 50 }} />
             <a href="#introduce">Introduce</a>
+            <a href="#">All books</a>
             <a href="#news-events">News - Events</a>
             <a href="#feature">Feature</a>
             <a href="#support">Support</a>

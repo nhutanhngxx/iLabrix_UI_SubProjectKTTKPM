@@ -35,7 +35,8 @@ const Register = () => {
     registerData.email = email;
     registerData.password = password;
     console.log(registerData);
-    // navigate("/login");
+    alert("Register successfully! Please login to continue.");
+    navigate("/login");
   };
 
   return (

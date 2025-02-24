@@ -1,4 +1,5 @@
 import { useState } from "react";
+import editIcon from "/icons/edit.png";
 
 // Danh sách sách
 const books = [
@@ -125,7 +126,7 @@ const TabBooks = () => {
       <div className="flex items-center justify-between mb-5">
         {/* Bộ lọc */}
         <div className="flex items-center gap-5 font-light">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 h-[40px]">
             <label className="font-medium">Category</label>
             <select className="w-44 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 italic">
               <option value="" disabled selected>
@@ -137,7 +138,7 @@ const TabBooks = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 h-[40px]">
             <label className="font-medium">Language</label>
             <select className="w-48 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 italic">
               <option value="" disabled selected>
@@ -149,23 +150,87 @@ const TabBooks = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-3">
-            <input
+          <div className="flex items-center gap-3 h-[40px]">
+            {/* <input
               placeholder="Search"
               className="w-52 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder:italic"
             ></input>
             <button>
               <img src="/icons/search.png" className="w-6 h-6"></img>
-            </button>
+            </button> */}
+            {/* <div className="p-2 overflow-hidden w-[40px] h-[40px] hover:w-[270px] bg-[#4070f4] shadow-[2px_2px_20px_rgba(0,0,0,0.08)] rounded-full flex group items-center hover:duration-300 duration-300">
+              <div className="flex items-center justify-center fill-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  id="Isolation_Mode"
+                  data-name="Isolation Mode"
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                >
+                  <path d="M18.9,16.776A10.539,10.539,0,1,0,16.776,18.9l5.1,5.1L24,21.88ZM10.5,18A7.5,7.5,0,1,1,18,10.5,7.507,7.507,0,0,1,10.5,18Z"></path>
+                </svg>
+              </div>
+              <input
+                type="text"
+                className="outline-none text-[20px] bg-transparent w-full text-white font-normal px-4"
+              />
+            </div> */}
+            <div className="flex items-center justify-center">
+              <div className="rounded-lg bg-gray-200">
+                <div className="flex">
+                  <div className="flex w-10 items-center justify-center rounded-tl-lg rounded-bl-lg border-r border-gray-200 bg-white">
+                    <svg
+                      viewBox="0 0 20 20"
+                      aria-hidden="true"
+                      className="pointer-events-none absolute w-5 fill-gray-500 transition"
+                    >
+                      <path d="M16.72 17.78a.75.75 0 1 0 1.06-1.06l-1.06 1.06ZM9 14.5A5.5 5.5 0 0 1 3.5 9H2a7 7 0 0 0 7 7v-1.5ZM3.5 9A5.5 5.5 0 0 1 9 3.5V2a7 7 0 0 0-7 7h1.5ZM9 3.5A5.5 5.5 0 0 1 14.5 9H16a7 7 0 0 0-7-7v1.5Zm3.89 10.45 3.83 3.83 1.06-1.06-3.83-3.83-1.06 1.06ZM14.5 9a5.48 5.48 0 0 1-1.61 3.89l1.06 1.06A6.98 6.98 0 0 0 16 9h-1.5Zm-1.61 3.89A5.48 5.48 0 0 1 9 14.5V16a6.98 6.98 0 0 0 4.95-2.05l-1.06-1.06Z"></path>
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
+                    placeholder=""
+                    id=""
+                  ></input>
+                  <input
+                    type="button"
+                    value="Search"
+                    className="bg-blue-500 h-[35px] px-3 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors"
+                  ></input>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Nút thêm sách */}
-        <button
+        {/* <button
           onClick={openModal}
           className="px-5 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
         >
           Add new book
+        </button> */}
+        <button
+          onClick={openModal}
+          title="Add New"
+          className="group cursor-pointer outline-none hover:rotate-90 duration-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="50px"
+            height="50px"
+            viewBox="0 0 24 24"
+            className="stroke-indigo-400 fill-none group-hover:fill-indigo-800 group-active:stroke-indigo-200 group-active:fill-indigo-600 group-active:duration-0 duration-300"
+          >
+            <path
+              d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z"
+              strokeWidth="1.5"
+            ></path>
+            <path d="M8 12H16" strokeWidth="1.5"></path>
+            <path d="M12 16V8" strokeWidth="1.5"></path>
+          </svg>
         </button>
       </div>
 
@@ -195,12 +260,57 @@ const TabBooks = () => {
             </div>
 
             {/* Buttons */}
-            <div className="flex flex-col gap-2 font-semibold">
-              <button className="px-3 py-0.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition text-[12px]">
-                Delete
+            <div className="flex gap-2 absolute bottom-3 right-3">
+              {/* Button Edit */}
+              <button className="rounded-md p-2 hover:bg-blue-200 transition">
+                <img src={editIcon} style={{ width: 25, height: 25 }}></img>
               </button>
-              <button className="px-3 py-0.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition text-[12px]">
-                Edit
+              {/* Button Delete */}
+              <button className="group relative flex h-12 w-12 flex-col items-center justify-center overflow-hidden rounded-xl border-2 bg-red-400 hover:bg-red-600">
+                <svg
+                  viewBox="0 0 1.625 1.625"
+                  className="absolute -top-7 fill-white delay-100 group-hover:top-6 group-hover:animate-[spin_1.4s] group-hover:duration-1000"
+                  height="15"
+                  width="15"
+                >
+                  <path d="M.471 1.024v-.52a.1.1 0 0 0-.098.098v.618c0 .054.044.098.098.098h.487a.1.1 0 0 0 .098-.099h-.39c-.107 0-.195 0-.195-.195"></path>
+                  <path d="M1.219.601h-.163A.1.1 0 0 1 .959.504V.341A.033.033 0 0 0 .926.309h-.26a.1.1 0 0 0-.098.098v.618c0 .054.044.098.098.098h.487a.1.1 0 0 0 .098-.099v-.39a.033.033 0 0 0-.032-.033"></path>
+                  <path d="m1.245.465-.15-.15a.02.02 0 0 0-.016-.006.023.023 0 0 0-.023.022v.108c0 .036.029.065.065.065h.107a.023.023 0 0 0 .023-.023.02.02 0 0 0-.007-.016"></path>
+                </svg>
+                <svg
+                  width="14"
+                  fill="none"
+                  viewBox="0 0 39 7"
+                  className="origin-right duration-500 group-hover:rotate-90"
+                >
+                  <line
+                    strokeWidth="4"
+                    stroke="white"
+                    y2="5"
+                    x2="39"
+                    y1="5"
+                  ></line>
+                  <line
+                    strokeWidth="3"
+                    stroke="white"
+                    y2="1.5"
+                    x2="26.0357"
+                    y1="1.5"
+                    x1="12"
+                  ></line>
+                </svg>
+                <svg width="16" fill="none" viewBox="0 0 33 39" className="">
+                  <mask fill="white" id="path-1-inside-1_8_19">
+                    <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
+                  </mask>
+                  <path
+                    mask="url(#path-1-inside-1_8_19)"
+                    fill="white"
+                    d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                  ></path>
+                  <path strokeWidth="4" stroke="white" d="M12 6L12 29"></path>
+                  <path strokeWidth="4" stroke="white" d="M21 6V29"></path>
+                </svg>
               </button>
             </div>
           </div>
@@ -317,7 +427,7 @@ const TabBooks = () => {
                     <input
                       type="text"
                       value={inputValue}
-                      placeholder="Chọn thể loại..."
+                      placeholder="Select genre..."
                       className="border-none outline-none flex-1 placeholder:italic"
                       readOnly
                     />
@@ -343,7 +453,7 @@ const TabBooks = () => {
                 </div>
 
                 {/* Ngôn ngữ */}
-                <label>Chọn ngôn ngữ :</label>
+                <label>Select language:</label>
                 <select id="language" name="language" className="ml-2">
                   <option value="af">Afrikaans</option>
                   <option value="sq">Albanian</option>
