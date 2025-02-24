@@ -145,7 +145,7 @@ const HomePage = () => {
             />
             {isModalOpen && (
               <div
-                className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50 flex justify-end pr-5 pt-24 transition-opacity duration-300"
+                className="fixed -inset-5 bg-black bg-opacity-30 backdrop-blur-sm z-50 flex justify-end pr-10 pt-24 transition-opacity duration-300"
                 onClick={() => setIsModalOpen(false)}
               >
                 <div

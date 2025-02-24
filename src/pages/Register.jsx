@@ -35,8 +35,9 @@ const Register = () => {
     registerData.email = email;
     registerData.password = password;
     console.log(registerData);
-    alert("Register successfully! Please login to continue.");
-    navigate("/login");
+    navigate("/notification", {
+      state: { message: "Account registration successful!" },
+    });
   };
 
   return (
