@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-// import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import backgroundImg from "../assets/Background.png";
 import logoHorizontal from "../assets/iLibrary.png";
@@ -16,7 +16,8 @@ import bookIcon from "/icons/book.png";
 import usersIcon from "/icons/users.png";
 import dashboardIcon from "/icons/dashboard.png";
 import searchIcon from "/icons/search.png";
-import { useNavigate } from "react-router-dom";
+
+import { mockUser } from "../mock/mockData";
 
 // Danh sách các tab
 const tabs = [
@@ -86,9 +87,13 @@ const CurrentDateTime = () => {
 };
 
 const HomePage = () => {
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState("tab1");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
+  const [user, setUser] = useState(mockUser);
+
   const handleViewProfile = () => {
     setIsProfileModalOpen(true);
     setIsModalOpen(false);
@@ -98,12 +103,10 @@ const HomePage = () => {
     setIsModalOpen(false);
   };
 
-  const navigate = useNavigate();
-  // const location = useLocation();
-  // const handleTabClick = (tabId, path) => {
-  //   setActiveTab(tabId);
-  //   navigate(path);
-  // };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -135,8 +138,10 @@ const HomePage = () => {
             className="flex items-center space-x-4 ml-auto flex-shrink-0 cursor-pointer"
           >
             <div className="flex flex-col items-end">
-              <span className="text-white font-medium">Nguyễn Nhựt Anh</span>
-              <span className="text-white opacity-75">Admin</span>
+              <span className="text-white font-medium">
+                {mockUser?.fullName}
+              </span>
+              <span className="text-white opacity-75">{mockUser?.role}</span>
             </div>
             <img
               src={avt}
@@ -240,7 +245,9 @@ const HomePage = () => {
                 <input
                   className="mt-1 p-2 w-full border rounded-md font-medium"
                   type="text"
-                  value={"Nguyễn Nhựt Anh"}
+                  name="fullName"
+                  value={user?.fullName}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -256,7 +263,8 @@ const HomePage = () => {
                   name="email"
                   id="email"
                   type="email"
-                  value={"nhutanhngxx@gmail.com"}
+                  value={user?.email}
+                  onChange={handleInputChange}
                 />
               </div>
 
