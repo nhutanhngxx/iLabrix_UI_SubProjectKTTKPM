@@ -3,7 +3,7 @@ export const mockUser = {
   userName: "nna",
   passwordHash: "123456",
   fullName: "Nguyễn Nhựt Anh",
-  email: "nguyennhutanh@gmail.com",
+  email: "nna@gmail.com",
   role: "Admin",
   createdAt: "2021-10-10",
 };

@@ -6,6 +6,7 @@ import Button from "../components/common/Button";
 import InputField from "../components/common/InputField";
 import { useEffect, useState } from "react";
 import Loading from "../components/common/Loading";
+import { mockUser } from "../mock/mockData";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -42,34 +43,73 @@ const Register = () => {
     setIsLoading(true);
     setError("");
 
-    try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(registerData),
-      });
+    // Thay thành useEffect
+    setTimeout(() => {
+      try {
+        // const response = await fetch("http://localhost:8080/api/auth/login", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        // Token: Bear agdfádjháhgjáhjdagsj
+        //   },
+        //   body: JSON.stringify(registerData),
+        // });
 
-      const result = await response.json();
-      console.log(result);
+        // const result = await response.json();
+        // console.log(result);
 
-      if (!response.ok) {
-        throw new Error(result.message || "Something went wrong");
+        // if (!response.ok) {
+        //   throw new Error(result.message || "Something went wrong");
+        // }
+
+        if (email !== mockUser.email || password !== mockUser.passwordHash) {
+          throw new Error("Email or password is incorrect!");
+        }
+
+        console.log("Login successfull!");
+        navigate("/home-page");
+      } catch (err) {
+        setError(err.message);
+        console.log(error);
+      } finally {
+        setIsLoading(false);
       }
-      // Lưu token vào localStorage
-      localStorage.setItem("token", result.token);
-      console.log("Login successfull!");
-      navigate("/home-page");
-    } catch (err) {
-      setError(err.message);
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
+    }, 1000);
   };
+  // Sau khi lấy được user xong, lưu userId, và username vào redux/session
 
-  const handleForgotPassword = () => {
+  // const handleLogin = () => {
+  //   const loginData = {
+  //     email: email,
+  //     password: password,
+  //   };
+
+  //   setIsLoading(true);
+  //   setError("");
+
+  //   fetch("http://localhost:8080/api/auth/login", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(loginData),
+  //   })
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         throw new Error("Login failed!");
+  //       }
+  //       return response.json();
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     })
+  //     .finally(() => {
+  //       setIsLoading(false);
+  //     });
+  // };
+
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
     navigate("/forgot-password");
   };
 
@@ -103,7 +143,13 @@ const Register = () => {
             </div>
 
             {/* Form */}
-            <div className="w-3/5">
+            <form
+              className="w-3/5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLogin();
+              }}
+            >
               <InputField
                 type="email"
                 label="Email"
@@ -127,13 +173,19 @@ const Register = () => {
               />
 
               <div className="mt-2 mb-2 font-bold">
-                <button
+                <a
                   className="text-gray-600 hover:text-black cursor-pointer bg-transparent border-none"
                   onClick={handleForgotPassword}
                 >
                   Forgot Password?
-                </button>
+                </a>
               </div>
+
+              {error && (
+                <div className="p-5 text-lg font-semibold text-red-500 text-center">
+                  {error}
+                </div>
+              )}
 
               <div className="flex justify-center">
                 <Button
@@ -145,7 +197,7 @@ const Register = () => {
                   Login
                 </Button>
               </div>
-            </div>
+            </form>
           </div>
         )}
       </div>
