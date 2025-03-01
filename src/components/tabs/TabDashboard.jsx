@@ -1,5 +1,10 @@
 const TabDashboard = () => {
-  return <div className="text-lg font-medium">Tab Dashboard</div>;
+  return (
+    <div>
+      {/* Header Tab: Overview, Anylistic */}
+      <div className="text-lg font-medium">Header</div>
+    </div>
+  );
 };
 
 export default TabDashboard;
