@@ -11,7 +11,7 @@ import HomePage from "./pages/HomePage";
 import TabBorrow from "./components/tabs/TabBorrow";
 import TabBooks from "./components/tabs/TabBooks";
 import TabDashboard from "./components/tabs/TabDashboard";
-import TabSearch from "./components/tabs/TabSearch";
+import TabSearch from "./components/tabs/TabBorrowManagement";
 import TabUsers from "./components/tabs/TabUsers";
 
 function App() {
@@ -32,6 +32,7 @@ function App() {
         <Route path="/check-in-out" element={<TabBorrow />} />
         <Route path="/books" element={<TabBooks />} />
         <Route path="/users" element={<TabUsers />} />
+
         <Route path="/dashboard" element={<TabDashboard />} />
         <Route path="/search" element={<TabSearch />} />
       </Routes>

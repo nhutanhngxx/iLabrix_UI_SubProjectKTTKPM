@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-const Button = ({onClick, children, backgroundColor, textColor }) => {
+const Button = ({ onClick, children, backgroundColor, textColor, disable }) => {
   const buttonStyle = {
     backgroundColor: backgroundColor || "#4285F4",
     color: textColor || "white",
@@ -12,7 +12,11 @@ const Button = ({onClick, children, backgroundColor, textColor }) => {
     fontWeight: "500",
     width: "150px",
   };
-  return <button style={buttonStyle} onClick={onClick}>{children}</button>;
+  return (
+    <button style={buttonStyle} onClick={onClick} disabled={disable}>
+      {children}
+    </button>
+  );
 };
 
 Button.propTypes = {
@@ -20,6 +24,7 @@ Button.propTypes = {
   backgroundColor: PropTypes.string,
   textColor: PropTypes.string,
   onClick: PropTypes.func,
+  disable: PropTypes.bool,
 };
 
 export default Button;

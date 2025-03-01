@@ -4,8 +4,7 @@ import { useLocation } from "react-router-dom";
 // import { Link } from "react-router-dom";
 import backgroundImg from "../assets/Background.png";
 import iLabrixLogo from "../assets/iLibrary.png";
-import Button from "../components/Button";
-import InputField from "../components/InputField";
+import Button from "../components/common/Button";
 
 const Notification = () => {
   const location = useLocation();

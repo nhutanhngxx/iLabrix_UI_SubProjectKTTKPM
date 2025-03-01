@@ -75,6 +75,7 @@ const IntroPage = () => {
           <div className="flex items-center text-white space-x-10">
             <img src={iLabrixLogo} alt="iLabrix Logo" style={{ height: 50 }} />
             <a href="#introduce">Introduce</a>
+            <a href="#">All books</a>
             <a href="#news-events">News - Events</a>
             <a href="#feature">Feature</a>
             <a href="#support">Support</a>
@@ -96,10 +97,24 @@ const IntroPage = () => {
           {/* Previous Button */}
           <div className="w-1/12">
             <button
+              className="cursor-pointer duration-200 hover:scale-125 active:scale-100"
+              title="Go Back"
               onClick={handlePrevBook}
-              className="absolute left-0 bg-gray-800 text-white p-5 text-xl rounded-full"
             >
-              &lt;
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="50px"
+                height="50px"
+                viewBox="0 0 24 24"
+                className="stroke-white/75 hover:stroke-white"
+              >
+                <path
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeWidth="1.5"
+                  d="M11 6L5 12M5 12L11 18M5 12H19"
+                ></path>
+              </svg>
             </button>
           </div>
           {/* Image */}
@@ -123,10 +138,24 @@ const IntroPage = () => {
           {/* Next Button */}
           <div className="w-1/12">
             <button
+              className="cursor-pointer duration-200 hover:scale-125 active:scale-100"
+              title="Go Back"
               onClick={handleNextBook}
-              className="absolute right-0 bg-gray-800 text-white p-5 text-xl rounded-full"
             >
-              &gt;
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="50px"
+                height="50px"
+                viewBox="0 0 24 24"
+                className="stroke-white/75 hover:stroke-white"
+              >
+                <path
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeWidth="1.5"
+                  d="M13 6L19 12M19 12L13 18M19 12H5"
+                ></path>
+              </svg>
             </button>
           </div>
         </div>

@@ -1,9 +1,9 @@
-export const Users = [
-  {
-    userID: 1,
-    userName: "john_doe",
-    passwordHash: "123456",
-    fullName: "John Doe",
-    email: "john@gmail.com",
-  },
-];
+export const mockUser = {
+  userId: 1,
+  userName: "nna",
+  passwordHash: "123456",
+  fullName: "Nguyễn Nhựt Anh",
+  email: "nna@gmail.com",
+  role: "Admin",
+  createdAt: "2021-10-10",
+};
