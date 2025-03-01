@@ -6,7 +6,7 @@ import Button from "../components/common/Button";
 import InputField from "../components/common/InputField";
 import { useEffect, useState } from "react";
 import Loading from "../components/common/Loading";
-import { mockUser } from "../mock/mockData";
+import { mockUsers } from "../mock/mockData";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -62,7 +62,10 @@ const Register = () => {
         //   throw new Error(result.message || "Something went wrong");
         // }
 
-        if (email !== mockUser.email || password !== mockUser.passwordHash) {
+        if (
+          email !== mockUsers[0].email ||
+          password !== mockUsers[0].passwordHash
+        ) {
           throw new Error("Email or password is incorrect!");
         }
 

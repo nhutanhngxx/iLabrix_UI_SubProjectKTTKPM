@@ -17,7 +17,7 @@ import usersIcon from "/icons/users.png";
 import dashboardIcon from "/icons/dashboard.png";
 import searchIcon from "/icons/search.png";
 
-import { mockUser } from "../mock/mockData";
+import { mockUsers } from "../mock/mockData";
 
 // Danh sách các tab
 const tabs = [
@@ -92,7 +92,7 @@ const HomePage = () => {
   const [activeTab, setActiveTab] = useState("tab1");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
-  const [user, setUser] = useState(mockUser);
+  const [user, setUser] = useState(mockUsers[0]);
 
   const handleViewProfile = () => {
     setIsProfileModalOpen(true);
@@ -139,9 +139,11 @@ const HomePage = () => {
           >
             <div className="flex flex-col items-end">
               <span className="text-white font-medium">
-                {mockUser?.fullName}
+                {mockUsers[0]?.fullName}
               </span>
-              <span className="text-white opacity-75">{mockUser?.role}</span>
+              <span className="text-white opacity-75">
+                {mockUsers[0]?.role}
+              </span>
             </div>
             <img
               src={avt}
