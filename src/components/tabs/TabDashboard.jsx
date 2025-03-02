@@ -72,19 +72,19 @@ const TabDashboard = () => {
   // });
 
   // Pie Chart Data for Late Return
-  const lateReturnPieChartData = [
-    {
-      id: 0,
-      value: totalBooksReturned,
-      label: "Under 7 days",
-    },
-    {
-      id: 1,
-      value: totalBooks - totalBooksInInventory,
-      label: "7 - 14 days",
-    },
-    { id: 2, value: totalBooksLateReturn, label: "Over 14 days" },
-  ];
+  // const lateReturnPieChartData = [
+  //   {
+  //     id: 0,
+  //     value: totalBooksReturned,
+  //     label: "Under 7 days",
+  //   },
+  //   {
+  //     id: 1,
+  //     value: totalBooks - totalBooksInInventory,
+  //     label: "7 - 14 days",
+  //   },
+  //   { id: 2, value: totalBooksLateReturn, label: "Over 14 days" },
+  // ];
 
   // Line Chart Data with 2 series
   const uData = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
@@ -101,99 +101,110 @@ const TabDashboard = () => {
 
   const OverViewTab = () => {
     return (
-      <div>
-        <div className="flex justify-around gap-10">
-          {/* BorrowRecords - Pie Chart */}
-          <div className="flex justify-around items-center border border-gray-300 ">
-            <div>
-              <PieChart
-                colors={["red", "blue", "green"]}
-                series={[
-                  {
-                    data: bookPieChartData,
+      <div className="grid grid-cols-2 gap-2">
+        {/* BorrowRecords - Pie Chart */}
+        <div className="flex justify-center">
+          <div>
+            <PieChart
+              colors={["green", "yellow", "oklch(0.704 0.191 22.216)"]}
+              series={[
+                {
+                  data: bookPieChartData,
+                  highlightScope: { fade: "global", highlight: "item" },
+                  faded: {
+                    innerRadius: 30,
+                    additionalRadius: -30,
+                    color: "gray",
                   },
-                ]}
-                title="Borrow Records"
-                width={400}
-                height={200}
-              />
-              <div className="text-center">
-                Total books in inventory: {totalBooks}
+                },
+              ]}
+              title="Borrow Records"
+              width={400}
+              height={225}
+            />
+            <div className="text-center">
+              Total books in inventory: {totalBooks}
+            </div>
+          </div>
+        </div>
+
+        {/* BorrowRecords - Borrowed Today, Returned Yesterday */}
+        <div className="flex flex-col gap-4 items-center justify-center border-2 border-gray-400 rounded-xl">
+          <div className="bg-white/75 py-2 px-5 rounded-xl">
+            <div className="text-lg font-medium">Books Borrowed Today</div>
+            <div className="flex justify-around mt-2 items-center">
+              <div className="text-xl">{booksBorrowedToday}</div>
+              <div className="text-sm">
+                {(booksBorrowedToday / booksBorrowedYesterday) * 100}%
               </div>
             </div>
           </div>
-
-          {/* BorrowRecords - Borrowed Today, Returned Yesterday */}
-          <div className="flex flex-col gap-20">
-            <div>
-              <div className="text-lg font-medium">Books Borrowed Today</div>
-              <div className="flex justify-around">
-                <div>{booksBorrowedToday}</div>
-                <div>
-                  {(booksBorrowedToday / booksBorrowedYesterday) * 100}%
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="text-lg font-medium">Users Borrowed Today</div>
-              <div className="flex justify-around">
-                <div>{usersBorrowedToday}</div>
-                <div>
-                  {(usersBorrowedToday / usersBorrowedYesterday) * 100}%
-                </div>
+          <div className="bg-white/75 py-2 px-5 rounded-xl">
+            <div className="text-lg font-medium">Users Borrowed Today</div>
+            <div className="flex justify-around mt-2 items-center">
+              <div className="text-xl">{usersBorrowedToday}</div>
+              <div className="text-sm">
+                {(usersBorrowedToday / usersBorrowedYesterday) * 100}%
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-around gap-10 mt-10">
-          {/* Late Return - Pie Chart */}
-          <div className="flex flex-col items-center border border-gray-300">
+        {/* Late Return - Pie Chart */}
+        <div className="flex justify-center ">
+          <div>
             <PieChart
-              colors={["red", "blue", "green"]}
+              colors={["orange", "skyblue", "oklch(0.396 0.141 25.723)"]}
               series={[
                 {
-                  data: lateReturnPieChartData,
+                  data: bookPieChartData,
+                  highlightScope: { fade: "global", highlight: "item" },
+                  faded: {
+                    innerRadius: 30,
+                    additionalRadius: -30,
+                    color: "gray",
+                  },
+                  innerRadius: 30,
                 },
               ]}
               title="Borrow Records"
               width={400}
-              height={200}
+              height={225}
             />
             <div className="text-center">
-              Total books late ruturn: {totalBooks - totalBooksInInventory}
+              Total books late ruturn: {totalBooks}
             </div>
           </div>
+        </div>
 
-          {/* Number of Borrwer - Liner Chart */}
-          <div className="flex flex-col items-center border border-gray-300">
-            <LineChart
-              xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
-              series={[
-                {
-                  data: [2, 5.5, 2, 8.5, 1.5, 5],
-                },
-              ]}
-              width={500}
-              height={300}
-            />
-            <div className="text-center">
-              Biểu đồ số người mượn sách theo thời gian
-            </div>
+        {/* Number of Borrwer - Liner Chart */}
+        <div className="flex flex-col items-center justify-center ">
+          <LineChart
+            xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
+            series={[
+              {
+                data: [2, 5.5, 2, 8.5, 1.5, 5],
+              },
+            ]}
+            width={550}
+            height={225}
+          />
+          <div className="text-center">
+            Biểu đồ số người mượn sách theo thời gian
           </div>
         </div>
       </div>
     );
   };
 
-  const AnylisticTab = () => {
+  const AnalysisTab = () => {
     return (
-      <div className="flex justify-around gap-10 ">
+      <div className="flex justify-around gap-10 items-center h-full mt-10">
         {/* Borrow && Return - Liner Chart */}
         <div className="flex flex-col items-center border border-gray-300">
           <LineChart
             width={500}
-            height={300}
+            height={250}
             series={[
               { data: pData, label: "Borrow" },
               { data: uData, label: "Return" },
@@ -229,30 +240,34 @@ const TabDashboard = () => {
 
   return (
     <div>
-      {/* Header Tab: Overview - Anylistic */}
-      <div className="h-12 flex justify-around text-center items-center border-b border-gray-300">
+      {/* Header Tab: Overview - Analysis */}
+      <div className=" flex gap-5 text-center items-center">
         <div
-          className={`text-2xl font-medium cursor-pointer ${
-            activeTab === "overview" ? "border-b-2 border-blue-500" : ""
+          className={`text-xl px-10 cursor-pointer  ${
+            activeTab === "overview"
+              ? "border-b-2  border-blue-500 font-bold"
+              : ""
           }`}
           onClick={() => handleTabClick("overview")}
         >
           Overview
         </div>
         <div
-          className={`text-2xl font-medium cursor-pointer ${
-            activeTab === "anylistic" ? "border-b-2 border-blue-500" : ""
+          className={`text-xl px-10 cursor-pointer ${
+            activeTab === "analysis"
+              ? "border-b-2  border-blue-500 font-bold"
+              : ""
           }`}
-          onClick={() => handleTabClick("anylistic")}
+          onClick={() => handleTabClick("analysis")}
         >
-          Anylistic
+          Analysis
         </div>
       </div>
 
       {/* Tab Content */}
-      <div>
+      <div className="mt-5">
         {activeTab === "overview" && <OverViewTab />}
-        {activeTab === "anylistic" && <AnylisticTab />}
+        {activeTab === "analysis" && <AnalysisTab />}
       </div>
     </div>
   );
