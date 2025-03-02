@@ -13,6 +13,7 @@ import TabBooks from "./components/tabs/TabBooks";
 import TabDashboard from "./components/tabs/TabDashboard";
 import TabSearch from "./components/tabs/TabBorrowManagement";
 import TabUsers from "./components/tabs/TabUsers";
+import UserPage from "./pages/UserPage";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />}></Route>
         <Route path="/register-password" element={<RegisterPassword />}></Route>
         <Route path="/home-page" element={<HomePage />}></Route>
+        <Route path="/user-page" element={<UserPage />}></Route>
         <Route
           path="/register-new-password"
           element={<RegisterNewPassword />}

@@ -191,6 +191,7 @@ export const mockBooks = [
     publishedDate: "2014-07-31",
     totalCopies: 10,
     availableCopies: 10,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 2,
@@ -201,6 +202,7 @@ export const mockBooks = [
     publishedDate: "2012-09-18",
     totalCopies: 8,
     availableCopies: 8,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 3,
@@ -211,6 +213,7 @@ export const mockBooks = [
     publishedDate: "1950-07-01",
     totalCopies: 12,
     availableCopies: 12,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 4,
@@ -221,6 +224,7 @@ export const mockBooks = [
     publishedDate: "2006-05-23",
     totalCopies: 15,
     availableCopies: 15,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 5,
@@ -231,6 +235,7 @@ export const mockBooks = [
     publishedDate: "2004-09-30",
     totalCopies: 10,
     availableCopies: 10,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 6,
@@ -241,6 +246,7 @@ export const mockBooks = [
     publishedDate: "2014-11-06",
     totalCopies: 7,
     availableCopies: 7,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 7,
@@ -251,6 +257,7 @@ export const mockBooks = [
     publishedDate: "2001-01-30",
     totalCopies: 9,
     availableCopies: 9,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 8,
@@ -261,6 +268,7 @@ export const mockBooks = [
     publishedDate: "2012-09-18",
     totalCopies: 5,
     availableCopies: 5,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 9,
@@ -271,6 +279,7 @@ export const mockBooks = [
     publishedDate: "2001-10-02",
     totalCopies: 6,
     availableCopies: 6,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 10,
@@ -281,6 +290,7 @@ export const mockBooks = [
     publishedDate: "1996-04-01",
     totalCopies: 11,
     availableCopies: 11,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 11,
@@ -291,6 +301,7 @@ export const mockBooks = [
     publishedDate: "2014-11-06",
     totalCopies: 4,
     availableCopies: 4,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 12,
@@ -301,6 +312,7 @@ export const mockBooks = [
     publishedDate: "2008-12-02",
     totalCopies: 3,
     availableCopies: 3,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 13,
@@ -311,6 +323,7 @@ export const mockBooks = [
     publishedDate: "1997-11-01",
     totalCopies: 6,
     availableCopies: 6,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 14,
@@ -321,6 +334,7 @@ export const mockBooks = [
     publishedDate: "2006-04-27",
     totalCopies: 8,
     availableCopies: 8,
+    image: "https://picsum.photos/125/185",
   },
   {
     bookId: 15,
@@ -331,6 +345,7 @@ export const mockBooks = [
     publishedDate: "2006-10-17",
     totalCopies: 10,
     availableCopies: 10,
+    image: "https://picsum.photos/125/185",
   },
 ];
 
