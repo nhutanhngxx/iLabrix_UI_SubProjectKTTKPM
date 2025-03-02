@@ -39,7 +39,7 @@ const UserPage = () => {
 
   return (
     <div
-      className="flex items-center flex-col w-screen bg-repeat-y bg-cover bg-center"
+      className="flex items-center flex-col w-full bg-repeat-y bg-cover bg-center"
       style={{ backgroundImage: `url(${backgroundImg})` }}
     >
       {/* Header */}
@@ -61,122 +61,164 @@ const UserPage = () => {
       </div>
 
       {/* Container */}
-      <div className="flex justify-around mt-24 w-3/4">
+      <div className="flex justify-around mt-20 w-4/5">
         {/* Left Side - Filter*/}
-        <div>
-          <div className="p-5 bg-white rounded-lg shadow-md">
-            <h1 className="text-3xl font-semibold text-blue-600">FILTER BY</h1>
-            <hr className="my-2 mb-6" />
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <label htmlFor="category" className="font-bold">
-                  Category:
-                </label>
-                <select id="category" className="p-2 border rounded-md">
-                  <option value="all">All</option>
-                  <option value="fiction">Fiction</option>
-                  <option value="non-fiction">Non-Fiction</option>
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="author" className="font-bold">
-                  Author:
-                </label>
-                <input
-                  type="text"
-                  id="author"
-                  className="p-2 border rounded-md"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="publisher" className="font-bold">
-                  Publisher:
-                </label>
-                <input
-                  type="text"
-                  id="publisher"
-                  className="p-2 border rounded-md"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="price" className="font-bold">
-                  Price:
-                </label>
+        <div className="p-5 backdrop-blur-3xl rounded-lg shadow-md h-fit">
+          <h1 className="text-3xl font-semibold text-blue-600">FILTER BY</h1>
+          <hr className="my-2 mb-2" />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="category" className="font-bold text-white">
+                Category:
+              </label>
+              <select id="category" className="p-2 border rounded-md">
+                <option value="all">All</option>
+                <option value="fiction">Fiction</option>
+                <option value="non-fiction">Non-Fiction</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="author" className="font-bold text-white">
+                Author:
+              </label>
+              <input
+                type="text"
+                id="author"
+                className="p-2 border rounded-md"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="publisher" className="font-bold text-white">
+                Publisher:
+              </label>
+              <input
+                type="text"
+                id="publisher"
+                className="p-2 border rounded-md"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="price" className="font-bold text-white">
+                Price:
+              </label>
+              <input
+                type="number"
+                id="price"
+                className="p-2 border rounded-md"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="price" className="font-bold text-white">
+                Release Year:
+              </label>
+              <div className="flex gap-2 text-sm items-center justify-between">
+                <label className="text-white">From:</label>
                 <input
                   type="number"
-                  id="price"
+                  id="release-year-from"
                   className="p-2 border rounded-md"
                 />
               </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="price" className="font-bold">
-                  Release Year:
-                </label>
-                <div className="flex gap-2 text-sm items-center justify-between">
-                  <label>From:</label>
-                  <input
-                    type="number"
-                    id="release-year-from"
-                    className="p-2 border rounded-md"
-                  />
-                </div>
-                <div className="flex gap-2 text-sm items-center justify-between">
-                  <label>To:</label>
-                  <input
-                    type="number"
-                    id="release-year-to"
-                    className="p-2 border rounded-md"
-                  />
-                </div>
+              <div className="flex gap-2 text-sm items-center justify-between">
+                <label className="text-white">To:</label>
+                <input
+                  type="number"
+                  id="release-year-to"
+                  className="p-2 border rounded-md"
+                />
               </div>
+            </div>
 
-              <div className="flex flex-col gap-1">
-                <label htmlFor="advanced-filter" className="font-bold">
-                  Advanced Filter:
-                </label>
-                {advancedFilter && (
-                  <div>
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="language" className="font-bold">
-                        Language:
-                      </label>
-                      <input
-                        type="text"
-                        id="language"
-                        className="p-2 border rounded-md"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="availability" className="font-bold">
-                        Availability:
-                      </label>
-                      <input
-                        type="text"
-                        id="availability"
-                        className="p-2 border rounded-md"
-                      />
-                    </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="advanced-filter" className="font-bold text-white">
+                Advanced Filter:
+              </label>
+              {advancedFilter && (
+                <div>
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="language" className="font-bold text-white">
+                      Language:
+                    </label>
+                    <input
+                      type="text"
+                      id="language"
+                      className="p-2 border rounded-md"
+                    />
                   </div>
-                )}
-                <button
-                  onClick={() => setAdvancedFilter(!advancedFilter)}
-                  className="text-blue-600 font-semibold"
-                >
-                  {advancedFilter ? "Hide" : "Show"}
-                </button>
-              </div>
-
-              <button className="bg-[#CC9933] text-white rounded-[35px] font-medium py-2">
-                Filter
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor="availability"
+                      className="font-bold text-white"
+                    >
+                      Availability:
+                    </label>
+                    <input
+                      type="text"
+                      id="availability"
+                      className="p-2 border rounded-md"
+                    />
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={() => setAdvancedFilter(!advancedFilter)}
+                className="text-blue-600 font-semibold"
+              >
+                {advancedFilter ? "Hide" : "Show"}
               </button>
             </div>
+
+            <button className="bg-[#CC9933] text-white rounded-[35px] font-medium py-2">
+              Filter
+            </button>
           </div>
         </div>
 
         {/* Right Side - All books*/}
-        <div>
-          <div className="grid grid-cols-2 gap-5">
-            {mockBooks.map((book) => (
+        <div className="backdrop-blur-3xl rounded-lg shadow-md p-5 w-3/4">
+          <h1 className="text-3xl font-semibold text-white">ALL BOOKS</h1>
+          <hr className="my-3" />
+          {/* Sort and Search */}
+          <div className="flex items-center gap-3 mb-4">
+            <label className="text-white text-xl font-medium ">Sort by:</label>
+            <select className="py-1 px-3 border rounded-xl">
+              <option value="title">Title</option>
+              <option value="author">Author</option>
+              <option value="price">Price</option>
+              <option value="release-year">Release Year</option>
+            </select>
+            <select className="py-1 px-3 border rounded-xl">
+              <option value="asc">A-Z</option>
+              <option value="desc">Z-A</option>
+            </select>
+            <div className="flex items-center justify-center ">
+              <div className="flex">
+                <div className="flex w-10 items-center justify-center rounded-tl-lg rounded-bl-lg border-r border-gray-200 bg-white p-5">
+                  <svg
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    className="pointer-events-none absolute w-5 fill-gray-500 transition"
+                  >
+                    <path d="M16.72 17.78a.75.75 0 1 0 1.06-1.06l-1.06 1.06ZM9 14.5A5.5 5.5 0 0 1 3.5 9H2a7 7 0 0 0 7 7v-1.5ZM3.5 9A5.5 5.5 0 0 1 9 3.5V2a7 7 0 0 0-7 7h1.5ZM9 3.5A5.5 5.5 0 0 1 14.5 9H16a7 7 0 0 0-7-7v1.5Zm3.89 10.45 3.83 3.83 1.06-1.06-3.83-3.83-1.06 1.06ZM14.5 9a5.48 5.48 0 0 1-1.61 3.89l1.06 1.06A6.98 6.98 0 0 0 16 9h-1.5Zm-1.61 3.89A5.48 5.48 0 0 1 9 14.5V16a6.98 6.98 0 0 0 4.95-2.05l-1.06-1.06Z"></path>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  className="w-full max-w-[160px] bg-white pl-2 text-base outline-0"
+                  placeholder="Search text..."
+                  id=""
+                />
+                <input
+                  type="button"
+                  value="Search"
+                  className="bg-blue-500 px-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+          {/* All Books */}
+          <div className="grid grid-cols-2 gap-5 mt-5">
+            {displayBooks.map((book) => (
               <div
                 key={book.bookId}
                 className="flex items-center p-4 border rounded-lg shadow-md bg-white relative"
