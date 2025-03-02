@@ -7,6 +7,17 @@ import { mockBooks } from "../mock/mockData";
 const UserPage = () => {
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
   const [advancedFilter, setAdvancedFilter] = useState(false);
+  const [displayBooks, setDisplayBooks] = useState(mockBooks);
+  const [filter, setFilter] = useState({
+    category: "all",
+    author: "",
+    publisher: "",
+    price: "",
+    releaseYearFrom: "",
+    releaseYearTo: "",
+    language: "",
+    availability: "",
+  });
 
   // Cuộn màn hình lên
   const handleScroll = () => {
