@@ -87,17 +87,10 @@ const TabDashboard = () => {
   // ];
 
   // Line Chart Data with 2 series
-  const uData = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
-  const pData = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
-  const xLabels = [
-    "Page A",
-    "Page B",
-    "Page C",
-    "Page D",
-    "Page E",
-    "Page F",
-    "Page G",
-  ];
+  const uData = [15, 2, 5, 8, 3, 7, 4, 6, 5, 8, 2, 5];
+  const pData = [2, 5, 2, 9, 2, 5, 3, 7, 4, 6, 5, 8];
+  const xLabels_Month = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  // const xLabels_Weak = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   const OverViewTab = () => {
     return (
@@ -180,10 +173,10 @@ const TabDashboard = () => {
         {/* Number of Borrwer - Liner Chart */}
         <div className="flex flex-col items-center justify-center ">
           <LineChart
-            xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
+            xAxis={[{ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }]}
             series={[
               {
-                data: [2, 5.5, 2, 8.5, 1.5, 5],
+                data: [2, 5.5, 2, 8.5, 1.5, 5, 3, 7, 4, 6, 5, 8],
               },
             ]}
             width={550}
@@ -201,37 +194,39 @@ const TabDashboard = () => {
     return (
       <div className="flex justify-around gap-10 items-center h-full mt-10">
         {/* Borrow && Return - Liner Chart */}
-        <div className="flex flex-col items-center border border-gray-300">
+        <div className="flex flex-col items-center">
           <LineChart
             width={500}
-            height={250}
+            height={400}
             series={[
-              { data: pData, label: "Borrow" },
-              { data: uData, label: "Return" },
+              { data: pData, label: "Borrow", showMark: false, type: "line" },
+              { data: uData, label: "Return", showMark: false, type: "line" },
             ]}
-            xAxis={[{ scaleType: "point", data: xLabels }]}
+            xAxis={[{ scaleType: "point", data: xLabels_Month }]}
           />
-          <div className="text-center">
+          <div className="text-center text-xl">
             Biểu đồ số sách mượn và trả theo thời gian
           </div>
         </div>
 
         {/* Favorite Category - Liner Chart */}
-        <div className="flex flex-col items-center border border-gray-300">
+        <div className="flex flex-col items-center">
           <BarChart
             xAxis={[
-              { scaleType: "band", data: ["group A", "group B", "group C"] },
+              {
+                scaleType: "band",
+                data: ["Kinh dị", "Khoa học", "Tiểu thuyết"],
+                // label: "Biểu đồ thể loại sách được yêu thích nhất",
+              },
             ]}
-            series={[
-              { data: [4, 3, 5] },
-              { data: [1, 6, 3] },
-              { data: [2, 5, 6] },
-            ]}
+            yAxis={[{ scaleType: "linear" }]}
+            series={[{ data: [10, 7, 5] }]}
+            // layout="horizontal"
             width={500}
-            height={300}
+            height={400}
           />
-          <div className="text-center">
-            Biểu đồ số lượng sách mượn theo thể loại
+          <div className="text-center text-xl">
+            Biểu đồ thể loại sách được yêu thích nhất
           </div>
         </div>
       </div>
