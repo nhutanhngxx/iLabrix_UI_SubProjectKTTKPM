@@ -35,6 +35,8 @@ const Register = () => {
   }, [email, password]);
 
   const handleLogin = async () => {
+    if (isDisable) return;
+
     let registerData = {};
     registerData.email = email;
     registerData.password = password;

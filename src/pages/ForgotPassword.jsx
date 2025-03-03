@@ -23,6 +23,7 @@ const ForgotPassword = () => {
   };
 
   const handleGetCode = () => {
+    if (isDisableGetCode) return;
     console.log("Email is used to get code otp: " + email);
   };
 
@@ -40,6 +41,7 @@ const ForgotPassword = () => {
   }, [email, otp]);
 
   const handleRegisterNewPassword = () => {
+    if (isDisableNext) return;
     navigate("/register-new-password");
   };
   return (

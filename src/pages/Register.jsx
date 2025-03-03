@@ -31,11 +31,14 @@ const Register = () => {
   }, [email, password]);
 
   const handleRegister = () => {
+    if (isDisable) return;
     let registerData = {};
     registerData.email = email;
     registerData.password = password;
     console.log(registerData);
-    alert("Register successfully! Please login to continue.");
+    navigate("/notification", {
+      state: { message: "Account registration successful!" },
+    });
     navigate("/login");
   };
 

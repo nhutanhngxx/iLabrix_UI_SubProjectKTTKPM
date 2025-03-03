@@ -20,6 +20,7 @@ const RegisterPassword = () => {
     }
   }, [password, rePassword]);
   const handleRegisterPassword = () => {
+    if (isDisable) return;
     navigate("/notification", {
       state: { message: "Account registration successful!" },
     });
