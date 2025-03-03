@@ -13,7 +13,7 @@ const TabBorrow = () => {
             isCheckIn ? "text-blue-600 font-bold" : "text-gray-500"
           }`}
         >
-          Check In
+          Borrow Book
         </div>
 
         <Switch
@@ -35,7 +35,7 @@ const TabBorrow = () => {
             !isCheckIn ? "text-red-600 font-bold" : "text-gray-500"
           }`}
         >
-          Check Out
+          Return Book
         </div>
       </div>
 
@@ -136,7 +136,7 @@ const TabBorrow = () => {
               Check In
             </button> */}
             <button className="bg-gradient-to-r from-blue-800 to-purple-400 hover:from-purple-400 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out">
-              CHECK IN
+              BORROW BOOK
             </button>
           </div>
         </div>
@@ -189,7 +189,7 @@ const TabBorrow = () => {
               Check Out
             </button> */}
             <button className="bg-gradient-to-r from-red-600  to-orange-500 hover:from-orange-500 hover:to-red-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 transition duration-300 ease-in-out">
-              CHECK OUT
+              RETURN BOOK
             </button>
           </div>
         </div>
