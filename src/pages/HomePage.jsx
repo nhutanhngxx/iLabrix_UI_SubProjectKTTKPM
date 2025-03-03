@@ -16,7 +16,7 @@ import checkInOutIcon from "/icons/check-in-out.png";
 import bookIcon from "/icons/book.png";
 import usersIcon from "/icons/users.png";
 import dashboardIcon from "/icons/dashboard.png";
-import searchIcon from "/icons/search.png";
+import managementIcon from "/icons/management.png";
 
 import { logout } from "../redux/slice/userSlice";
 
@@ -26,7 +26,7 @@ import { mockUsers } from "../mock/mockData";
 const tabs = [
   {
     id: "tab1",
-    label: "Check-in/out",
+    label: "Borrow Book",
     component: <TabBorrow />,
     path: "/check-in-out",
     icon: checkInOutIcon,
@@ -56,8 +56,8 @@ const tabs = [
     id: "tab5",
     label: "Borrow Management",
     component: <TabBorrrowManagement />,
-    path: "/search",
-    icon: searchIcon,
+    path: "/management",
+    icon: managementIcon,
   },
 ];
 
