@@ -11,8 +11,9 @@ import HomePage from "./pages/HomePage";
 import TabBorrow from "./components/tabs/TabBorrow";
 import TabBooks from "./components/tabs/TabBooks";
 import TabDashboard from "./components/tabs/TabDashboard";
-import TabSearch from "./components/tabs/TabBorrowManagement";
 import TabUsers from "./components/tabs/TabUsers";
+import UserPage from "./pages/UserPage";
+import TabBorrrowManagement from "./components/tabs/TabBorrowManagement";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />}></Route>
         <Route path="/register-password" element={<RegisterPassword />}></Route>
         <Route path="/home-page" element={<HomePage />}></Route>
+        <Route path="/user-page" element={<UserPage />}></Route>
         <Route
           path="/register-new-password"
           element={<RegisterNewPassword />}
@@ -32,9 +34,8 @@ function App() {
         <Route path="/check-in-out" element={<TabBorrow />} />
         <Route path="/books" element={<TabBooks />} />
         <Route path="/users" element={<TabUsers />} />
-
         <Route path="/dashboard" element={<TabDashboard />} />
-        <Route path="/search" element={<TabSearch />} />
+        <Route path="/management" element={<TabBorrrowManagement />} />
       </Routes>
     </BrowserRouter>
   );

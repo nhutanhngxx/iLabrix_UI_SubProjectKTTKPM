@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-// import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import backgroundImg from "../assets/Background.png";
 import logoHorizontal from "../assets/iLibrary.png";
@@ -16,7 +16,8 @@ import bookIcon from "/icons/book.png";
 import usersIcon from "/icons/users.png";
 import dashboardIcon from "/icons/dashboard.png";
 import managementIcon from "/icons/management.png";
-import { useNavigate } from "react-router-dom";
+
+import { mockUsers } from "../mock/mockData";
 
 // Danh sách các tab
 const tabs = [
@@ -63,6 +64,7 @@ const CurrentDateTime = () => {
     date: "",
     time: "",
   });
+
   useEffect(() => {
     const updateTime = () => {
       const currentDate = new Date();
@@ -75,6 +77,7 @@ const CurrentDateTime = () => {
     updateTime();
     return () => clearInterval(interval);
   }, []);
+
   return (
     <div className="flex gap-4">
       <span>{currentDateTime.date}</span>
@@ -84,13 +87,12 @@ const CurrentDateTime = () => {
 };
 
 const HomePage = () => {
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState("tab1");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [userName, setUserName] = useState("nhutanhngxx");
-  const [fullName, setFullName] = useState("Nguyen Nhut Anh");
+  const [user, setUser] = useState(mockUsers[0]);
 
   const handleViewProfile = () => {
     setIsProfileModalOpen(true);
@@ -101,12 +103,12 @@ const HomePage = () => {
     setIsModalOpen(false);
   };
 
-  const navigate = useNavigate();
-  // const location = useLocation();
-  // const handleTabClick = (tabId, path) => {
-  //   setActiveTab(tabId);
-  //   navigate(path);
-  // };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleUserClick = () => {
     setIsModalOpen(!isModalOpen);
@@ -136,8 +138,12 @@ const HomePage = () => {
             className="flex items-center space-x-4 ml-auto flex-shrink-0 cursor-pointer"
           >
             <div className="flex flex-col items-end">
-              <span className="text-white font-medium">Nguyễn Nhựt Anh</span>
-              <span className="text-white opacity-75">Admin</span>
+              <span className="text-white font-medium">
+                {mockUsers[0]?.fullName}
+              </span>
+              <span className="text-white opacity-75">
+                {mockUsers[0]?.role}
+              </span>
             </div>
             <img
               src={avt}
@@ -225,35 +231,26 @@ const HomePage = () => {
       {/* Modal View profile */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="w-1/3 mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
-            <h2 className="text-3xl items-center text-sky-900 font-bold mb-6">
+          <div className="max-w-md w-full mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
+            <h2 className="text-2xl items-center text-sky-900 font-bold mb-6">
               Your Profile
             </h2>
 
-            <form method="post" action="#" className="mb-10">
-              <div className="mb-4 flex gap-5">
-                <div className="w-1/2">
-                  <label className="block text-sm font-medium text-gray-600">
-                    User Name
-                  </label>
-                  <input
-                    className="mt-1 p-2 border rounded-md font-medium w-full"
-                    type="text"
-                    readOnly
-                    value={userName}
-                  />
-                </div>
-                <div className="w-1/2">
-                  <label className="block text-sm font-medium text-gray-600">
-                    Full Name
-                  </label>
-                  <input
-                    className="mt-1 p-2 border rounded-md font-medium w-full"
-                    type="text"
-                    onChange={(e) => setFullName(e.target.value)}
-                    value={fullName}
-                  />
-                </div>
+            <form method="post" action="#">
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-medium text-gray-600"
+                  htmlFor="name"
+                >
+                  Full Name
+                </label>
+                <input
+                  className="mt-1 p-2 w-full border rounded-md font-medium"
+                  type="text"
+                  name="fullName"
+                  value={user?.fullName}
+                  onChange={handleInputChange}
+                />
               </div>
 
               <div className="mb-4">
@@ -268,7 +265,8 @@ const HomePage = () => {
                   name="email"
                   id="email"
                   type="email"
-                  value={"nhutanhngxx@gmail.com"}
+                  value={user?.email}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -288,7 +286,7 @@ const HomePage = () => {
                 ></textarea>
               </div>
 
-              <div className="flex gap-5 absolute bottom-5 right-5">
+              <div className="flex  justify-around">
                 <button
                   onClick={() => setIsProfileModalOpen(false)}
                   className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
@@ -312,9 +310,10 @@ const HomePage = () => {
       {isChangePWModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="max-w-md w-full mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
-            <h2 className="text-3xl items-center text-sky-900 font-bold mb-6">
+            <h2 className="text-2xl items-center text-sky-900 font-bold mb-6">
               Change Password
             </h2>
+
             <form method="post" action="#">
               <div className="mb-4">
                 <label
@@ -356,15 +355,15 @@ const HomePage = () => {
                 ></input>
               </div>
 
-              <div className="flex justify-around">
+              <div className="flex  justify-around">
                 <button
                   onClick={() => setIsChangePWModalOpen(false)}
                   className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
                 >
                   Close
                 </button>
+
                 <button
-                  onClick={() => setIsChangePWModalOpen(false)}
                   className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
                   type="submit"
                 >
@@ -373,6 +372,7 @@ const HomePage = () => {
               </div>
             </form>
           </div>
+          {/* Modal Change password */}
         </div>
       )}
     </div>
