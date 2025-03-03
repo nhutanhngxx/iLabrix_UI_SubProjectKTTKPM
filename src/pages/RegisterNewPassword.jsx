@@ -21,6 +21,7 @@ const RegisterNewPassword = () => {
   }, [password, rePassword]);
 
   const handleRegisterPassword = () => {
+    if (isDisable) return;
     if (rePassword === password)
       navigate("/notification", {
         state: { message: "Password reset successful!" },

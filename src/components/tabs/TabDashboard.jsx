@@ -113,7 +113,7 @@ const TabDashboard = () => {
               ]}
               title="Borrow Records"
               width={400}
-              height={225}
+              height={150}
             />
             <div className="text-center">
               Total books in inventory: {totalBooks}
@@ -122,7 +122,7 @@ const TabDashboard = () => {
         </div>
 
         {/* BorrowRecords - Borrowed Today, Returned Yesterday */}
-        <div className="flex flex-col gap-4 items-center justify-center border-2 border-gray-400 rounded-xl">
+        <div className="flex gap-5 items-center justify-center border-2 border-gray-400 rounded-xl">
           <div className="bg-white/75 py-2 px-5 rounded-xl">
             <div className="text-lg font-medium">Books Borrowed Today</div>
             <div className="flex justify-around mt-2 items-center">
@@ -162,7 +162,7 @@ const TabDashboard = () => {
               ]}
               title="Borrow Records"
               width={400}
-              height={225}
+              height={150}
             />
             <div className="text-center">
               Total books late ruturn: {totalBooks}
@@ -179,8 +179,8 @@ const TabDashboard = () => {
                 data: [2, 5.5, 2, 8.5, 1.5, 5, 3, 7, 4, 6, 5, 8],
               },
             ]}
-            width={550}
-            height={225}
+            width={500}
+            height={200}
           />
           <div className="text-center">
             Biểu đồ số người mượn sách theo thời gian
@@ -197,7 +197,7 @@ const TabDashboard = () => {
         <div className="flex flex-col items-center">
           <LineChart
             width={500}
-            height={400}
+            height={300}
             series={[
               { data: pData, label: "Borrow", showMark: false, type: "line" },
               { data: uData, label: "Return", showMark: false, type: "line" },
@@ -223,7 +223,7 @@ const TabDashboard = () => {
             series={[{ data: [10, 7, 5] }]}
             // layout="horizontal"
             width={500}
-            height={400}
+            height={300}
           />
           <div className="text-center text-xl">
             Biểu đồ thể loại sách được yêu thích nhất

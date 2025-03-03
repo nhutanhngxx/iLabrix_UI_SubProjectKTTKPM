@@ -31,6 +31,7 @@ const Register = () => {
   }, [email, password]);
 
   const handleRegister = () => {
+    if (isDisable) return;
     let registerData = {};
     registerData.email = email;
     registerData.password = password;
@@ -38,6 +39,7 @@ const Register = () => {
     navigate("/notification", {
       state: { message: "Account registration successful!" },
     });
+    navigate("/login");
   };
 
   return (

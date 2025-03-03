@@ -34,6 +34,8 @@ const Register = () => {
   }, [email, password]);
 
   const handleLogin = async () => {
+    if (isDisable) return;
+
     let registerData = {};
     registerData.email = email;
     registerData.password = password;
@@ -78,7 +80,6 @@ const Register = () => {
       }
     }, 1000);
   };
-
   // Sau khi lấy được user xong, lưu userId, và username vào redux/session
 
   // const handleLogin = () => {

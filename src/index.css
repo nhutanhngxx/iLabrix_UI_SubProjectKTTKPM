@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* @font-face {
+  font-family: "Imbue";
+  src: url("../public/fonts/Imbue-VariableFont_opsz\,wght.ttf")
+    format("truetype");
+}
+
+body {
+  font-family: "Imbue", sans-serif;
+} */
