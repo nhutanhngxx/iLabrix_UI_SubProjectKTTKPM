@@ -14,6 +14,7 @@ import TabDashboard from "./components/tabs/TabDashboard";
 import TabSearch from "./components/tabs/TabBorrowManagement";
 import TabUsers from "./components/tabs/TabUsers";
 import UserPage from "./pages/UserPage";
+import "../src/index.css";
 
 function App() {
   return (
