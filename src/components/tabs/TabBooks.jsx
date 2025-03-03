@@ -51,20 +51,63 @@ const books = [
 ];
 
 const TabBooks = () => {
-  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [isInforBookModalOpen, setIsInforBookModalOpen] = useState(false);
+  const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] =
+    useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [inputValue, setInputValue] = useState("");
-  const genres = ["Fantasy", "Sci-Fi", "Horror", "Mystery", "Romance"];
-  const handleGenreClick = (genre) => {
-    if (!selectedGenres.includes(genre)) {
-      setSelectedGenres([...selectedGenres, genre]);
+  const categorys = ["Fantasy", "Sci-Fi", "Horror", "Mystery", "Romance"];
+  const handleGenreClick = (category) => {
+    if (!selectedCategories.includes(category)) {
+      setSelectedCategories([...selectedCategories, category]);
     }
   };
-  const handleRemoveGenre = (genre) => {
-    setSelectedGenres(selectedGenres.filter((g) => g !== genre));
+  const handleRemoveCategories = (category) => {
+    setSelectedCategories(selectedCategories.filter((g) => g !== category));
   };
 
+  // Phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const booksPerPage = 4;
+  const totalPages = Math.ceil(books.length / booksPerPage);
+  const startIndex = (currentPage - 1) * booksPerPage;
+  const selectdBooks = books.slice(startIndex, startIndex + booksPerPage);
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
+  const renderPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("...");
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(currentPage + 1, totalPages - 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return pages.map((page, index) =>
+      typeof page === "number" ? (
+        <button
+          key={index}
+          className={`px-3 py-1 mx-1 rounded ${
+            currentPage === page ? "font-bold underline" : "text-gray-700"
+          }`}
+          onClick={() => goToPage(page)}
+        >
+          {page}
+        </button>
+      ) : (
+        <span key={index} className="px-2 text-gray-500">
+          {page}
+        </span>
+      )
+    );
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newBook, setNewBook] = useState({
     name: "",
@@ -73,9 +116,8 @@ const TabBooks = () => {
     publisher: "",
     price: "",
     image: "",
-    genre: [],
+    category: [],
   });
-
   // Xử lý modal
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => {
@@ -87,18 +129,16 @@ const TabBooks = () => {
       publisher: "",
       price: "",
       image: "",
-      genre: [],
+      category: [],
     });
   };
-
   // Thêm sách
   const handleAddBook = () => {
     if (!newBook.name || !newBook.author) {
       alert("Vui lòng nhập đầy đủ thông tin sách!");
       return;
     }
-
-    setBooks([...books, { ...newBook, bookId: `B00${books.length + 1}` }]);
+    // setBooks([...books, { ...newBook, bookId: `B00${books.length + 1}` }]);
     closeModal();
   };
 
@@ -120,12 +160,22 @@ const TabBooks = () => {
     }
   };
 
+  // Mở modal xem Information's book
+  const handleViewInforBook = () => {
+    setIsInforBookModalOpen(true);
+  };
+
+  // Mở modal Xác nhận xóa
+  const handleConfirmDelete = () => {
+    setIsConfirmDeleteModalOpen(true);
+  };
   return (
     <div className="text-lg p-2">
       {/* Thanh công cụ */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-5 ">
         {/* Bộ lọc */}
         <div className="flex items-center gap-5 font-light">
+          {/* Category */}
           <div className="flex items-center gap-3 h-[40px]">
             <label className="font-medium">Category</label>
             <select className="w-44 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 italic">
@@ -137,7 +187,7 @@ const TabBooks = () => {
               <option value="category3">Category 3</option>
             </select>
           </div>
-
+          {/* Language */}
           <div className="flex items-center gap-3 h-[40px]">
             <label className="font-medium">Language</label>
             <select className="w-48 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 italic">
@@ -149,33 +199,8 @@ const TabBooks = () => {
               <option value="language3">Language 3</option>
             </select>
           </div>
-
+          {/* Search */}
           <div className="flex items-center gap-3 h-[40px]">
-            {/* <input
-              placeholder="Search"
-              className="w-52 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder:italic"
-            ></input>
-            <button>
-              <img src="/icons/search.png" className="w-6 h-6"></img>
-            </button> */}
-            {/* <div className="p-2 overflow-hidden w-[40px] h-[40px] hover:w-[270px] bg-[#4070f4] shadow-[2px_2px_20px_rgba(0,0,0,0.08)] rounded-full flex group items-center hover:duration-300 duration-300">
-              <div className="flex items-center justify-center fill-white">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  id="Isolation_Mode"
-                  data-name="Isolation Mode"
-                  viewBox="0 0 24 24"
-                  width="20"
-                  height="20"
-                >
-                  <path d="M18.9,16.776A10.539,10.539,0,1,0,16.776,18.9l5.1,5.1L24,21.88ZM10.5,18A7.5,7.5,0,1,1,18,10.5,7.507,7.507,0,0,1,10.5,18Z"></path>
-                </svg>
-              </div>
-              <input
-                type="text"
-                className="outline-none text-[20px] bg-transparent w-full text-white font-normal px-4"
-              />
-            </div> */}
             <div className="flex items-center justify-center">
               <div className="rounded-lg bg-gray-200">
                 <div className="flex">
@@ -204,17 +229,9 @@ const TabBooks = () => {
             </div>
           </div>
         </div>
-
         {/* Nút thêm sách */}
-        {/* <button
-          onClick={openModal}
-          className="px-5 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
-        >
-          Add new book
-        </button> */}
         <button
           onClick={openModal}
-          title="Add New"
           className="group cursor-pointer outline-none hover:rotate-90 duration-300"
         >
           <svg
@@ -222,7 +239,7 @@ const TabBooks = () => {
             width="50px"
             height="50px"
             viewBox="0 0 24 24"
-            className="stroke-indigo-400 fill-none group-hover:fill-indigo-800 group-active:stroke-indigo-200 group-active:fill-indigo-600 group-active:duration-0 duration-300"
+            className="stroke-indigo-400 fill-none group-hover:fill-indigo-100 group-active:stroke-indigo-200 group-active:fill-indigo-600 group-active:duration-0 duration-300"
           >
             <path
               d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z"
@@ -235,7 +252,7 @@ const TabBooks = () => {
       </div>
 
       {/* Hiển thị danh sách sách */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-7">
         {currentBooks.map((book) => (
           <div
             key={book.bookId}
@@ -254,7 +271,6 @@ const TabBooks = () => {
                 {book.name}
               </h2>
               <p className="text-gray-600">Author: {book.author}</p>
-              <p className="text-gray-600">Pages: {book.pages}</p>
               <p className="text-gray-600">Publisher: {book.publisher}</p>
               <p className="text-green-600 font-bold">${book.price}</p>
             </div>
@@ -262,11 +278,18 @@ const TabBooks = () => {
             {/* Buttons */}
             <div className="flex gap-2 absolute bottom-3 right-3">
               {/* Button Edit */}
-              <button className="rounded-md p-2 hover:bg-blue-200 transition">
+              <button
+                className="rounded-md p-2 hover:bg-blue-200 transition"
+                onClick={handleViewInforBook}
+              >
                 <img src={editIcon} style={{ width: 25, height: 25 }}></img>
               </button>
+
               {/* Button Delete */}
-              <button className="group relative flex h-12 w-12 flex-col items-center justify-center overflow-hidden rounded-xl border-2 bg-red-400 hover:bg-red-600">
+              <button
+                onClick={handleConfirmDelete}
+                className="group relative flex h-12 w-12 flex-col items-center justify-center overflow-hidden rounded-xl border-2 bg-red-400 hover:bg-red-600"
+              >
                 <svg
                   viewBox="0 0 1.625 1.625"
                   className="absolute -top-7 fill-white delay-100 group-hover:top-6 group-hover:animate-[spin_1.4s] group-hover:duration-1000"
@@ -318,7 +341,7 @@ const TabBooks = () => {
       </div>
 
       {/* Nút chuyển trang */}
-      <div className="flex mt-3 gap-4 bottom-3 right-7 absolute">
+      {/* <div className="flex mt-3 gap-4 bottom-3 right-7 absolute">
         <button
           onClick={prevPage}
           disabled={currentPage === 1}
@@ -345,201 +368,346 @@ const TabBooks = () => {
         >
           <img src="/icons/next-button.png" alt="Next" className="w-5 h-5" />
         </button>
+      </div> */}
+      <div className="absolute text-base bottom-3 right-7">
+        <button
+          className="px-3 py-1 "
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        {renderPageNumbers()}
+        <button
+          className="px-3 py-1 "
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
       </div>
 
       {/* Modal Add new Book */}
       {isModalOpen && (
         // bg-white/30 backdrop-blur-md shadow-lg rounded-2xl
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-md shadow-lg rounded-xl flex items-center justify-center">
-          <div className="p-5 bg-white rounded-xl shadow-lg w-4/6">
+        <div
+          onClick={() => setIsModalOpen(false)}
+          className="fixed inset-0 flex items-center justify-center bg-black/30 bg-opacity-50 z-50 rounded-lg" // blur đen
+          // className="fixed inset-0 bg-black/20 backdrop-blur-md shadow-lg rounded-xl flex items-center justify-center"  // blur xám
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            // className="p-5 bg-white rounded-xl shadow-lg w-4/6"
+            className="w-4/6 mx-auto relative overflow-hidden z-10 bg-white p-5 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12"
+          >
             <div>
-              <h2 className="text-xl text-center font-semibold mb-4">
-                Add New Book
+              <h2 className="text-3xl text-center font-bold mb-4 text-sky-900">
+                Add new Book
               </h2>
             </div>
-            <div className="grid grid-cols-2 gap-20">
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  placeholder="Enter Book title"
-                  className="placeholder:italic w-full px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
-                  value={newBook.name}
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, name: e.target.value })
-                  }
-                />
+            <form method="post" action="#" className="mb-10">
+              <div className="grid grid-cols-2 gap-20">
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Enter Book title"
+                    className="placeholder:text-sm w-full px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                    value={newBook.name}
+                    onChange={(e) =>
+                      setNewBook({ ...newBook, name: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="Enter Author name"
+                    className="placeholder:text-sm w-full px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                    value={newBook.author}
+                    onChange={(e) =>
+                      setNewBook({ ...newBook, author: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="Enter ISBN"
+                    className="placeholder:text-sm w-full px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                  />
 
-                <input
-                  type="text"
-                  placeholder="Enter Author name"
-                  className="placeholder:italic w-full px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
-                  value={newBook.author}
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, author: e.target.value })
-                  }
-                />
-                <input
-                  type="text"
-                  placeholder="Enter Publisher"
-                  className="placeholder:italic w-full px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
-                  value={newBook.publisher}
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, publisher: e.target.value })
-                  }
-                />
-                <input
-                  type="number"
-                  placeholder="Enter Pages"
-                  className="placeholder:italic w-full px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
-                  value={newBook.pages}
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, pages: e.target.value })
-                  }
-                />
-                <input
-                  type="number"
-                  placeholder="Enter Price"
-                  className="placeholder:italic w-full px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
-                  value={newBook.price}
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, price: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                {/* Chọn Genre có sẵn */}
-                <div className="flex flex-wrap gap-2 min-h-[40px]">
-                  {selectedGenres.map((genre) => (
-                    <span
-                      key={genre}
-                      className="px-3 py-1 bg-blue-500 text-white rounded-full flex items-center space-x-1"
-                    >
-                      {genre}
-                      <button
-                        onClick={() => handleRemoveGenre(genre)}
-                        className="ml-2 text-sm font-bold hover:text-red-300"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                  {selectedGenres.length === 0 && (
+                  {/* Số lượng có sẵn */}
+                  <div className="flex items-center gap-3">
                     <input
-                      type="text"
-                      value={inputValue}
-                      placeholder="Select genre..."
-                      className="border-none outline-none flex-1 placeholder:italic"
-                      readOnly
+                      type="number"
+                      placeholder="Total books"
+                      className="placeholder:text-sm w-1/2 px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Books available"
+                      className="placeholder:text-sm w-1/2 px-3 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                    />
+                  </div>
+
+                  {/* Published date */}
+                  <div className="flex items-center">
+                    <label className="w-full opacity-50 font-semibold">
+                      Published date
+                    </label>
+                    <input
+                      type="date"
+                      placeholder="Enter Publication date"
+                      className="placeholder:text-sm w-1/2 bg-transparent py-2 border-b border-blue-400 focus:outline-none focus:ring-0 focus:border-blue-600"
+                    />
+                  </div>
+
+                  {/* Ngôn ngữ */}
+                  <div className="flex justify-between">
+                    <label className="font-semibold opacity-50">
+                      Select language
+                    </label>
+                    <select
+                      id="language"
+                      name="language"
+                      className="ml-2 bg-transparent"
+                    >
+                      <option value="af">Afrikaans</option>
+                      <option value="sq">Albanian</option>
+                      <option value="am">Amharic</option>
+                      <option value="ar">Arabic</option>
+                      <option value="hy">Armenian</option>
+                      <option value="az">Azerbaijani</option>
+                      <option value="eu">Basque</option>
+                      <option value="be">Belarusian</option>
+                      <option value="bn">Bengali</option>
+                      <option value="bs">Bosnian</option>
+                      <option value="bg">Bulgarian</option>
+                      <option value="ca">Catalan</option>
+                      <option value="zh">Chinese</option>
+                      <option value="hr">Croatian</option>
+                      <option value="cs">Czech</option>
+                      <option value="da">Danish</option>
+                      <option value="nl">Dutch</option>
+                      <option value="en">English</option>
+                      <option value="et">Estonian</option>
+                      <option value="fi">Finnish</option>
+                      <option value="fr">French</option>
+                      <option value="ka">Georgian</option>
+                      <option value="de">German</option>
+                      <option value="el">Greek</option>
+                      <option value="he">Hebrew</option>
+                      <option value="hi">Hindi</option>
+                      <option value="hu">Hungarian</option>
+                      <option value="is">Icelandic</option>
+                      <option value="id">Indonesian</option>
+                      <option value="it">Italian</option>
+                      <option value="ja">Japanese</option>
+                      <option value="ko">Korean</option>
+                      <option value="lv">Latvian</option>
+                      <option value="lt">Lithuanian</option>
+                      <option value="ms">Malay</option>
+                      <option value="mn">Mongolian</option>
+                      <option value="no">Norwegian</option>
+                      <option value="fa">Persian</option>
+                      <option value="pl">Polish</option>
+                      <option value="pt">Portuguese</option>
+                      <option value="ro">Romanian</option>
+                      <option value="ru">Russian</option>
+                      <option value="sr">Serbian</option>
+                      <option value="sk">Slovak</option>
+                      <option value="sl">Slovenian</option>
+                      <option value="es">Spanish</option>
+                      <option value="sv">Swedish</option>
+                      <option value="th">Thai</option>
+                      <option value="tr">Turkish</option>
+                      <option value="uk">Ukrainian</option>
+                      <option value="ur">Urdu</option>
+                      <option value="vi">Vietnamese</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Chọn Category có sẵn */}
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2 min-h-[40px]">
+                    {selectedCategories.map((category) => (
+                      <span
+                        key={category}
+                        className="bg-blue-500 text-white text-sm rounded-md flex items-center space-x-1 px-2"
+                      >
+                        {category}
+                        <button
+                          onClick={() => handleRemoveCategories(category)}
+                          className="ml-2 text-sm font-bold hover:text-red-600"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    {selectedCategories.length === 0 && (
+                      <input
+                        type="text"
+                        value={inputValue}
+                        placeholder="Select category..."
+                        className="border-none outline-none flex-1 bg-transparent placeholder:text-sm"
+                        readOnly
+                      />
+                    )}
+                  </div>
+
+                  {/* Danh sách các Genre có sẵn */}
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {categorys.map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => handleGenreClick(category)}
+                        className={`px-2 py-1 rounded-md ${
+                          selectedCategories.includes(category)
+                            ? "bg-transparent cursor-not-allowed"
+                            : "bg-blue-100 hover:bg-blue-300"
+                        }`}
+                        disabled={selectedCategories.includes(category)}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    className="mt-1 p-2 w-full border rounded-md text-sm bg-transparent"
+                    rows="2"
+                    placeholder="Description"
+                  ></textarea>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="w-full px-3 py-2 border-b border-blue-400 bg-transparent focus:outline-none "
+                    onChange={(e) =>
+                      setNewBook({ ...newBook, image: e.target.files[0] })
+                    }
+                  />
+                  {/* Preview ảnh đã được chọn */}
+                  {newBook.image && (
+                    <img
+                      src={URL.createObjectURL(newBook.image)}
+                      alt="Preview"
+                      className="mt-2 w-20 h-20 object-cover"
                     />
                   )}
                 </div>
-
-                {/* Danh sách các Genre có sẵn */}
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {genres.map((genre) => (
-                    <button
-                      key={genre}
-                      onClick={() => handleGenreClick(genre)}
-                      className={`px-2 py-1 border rounded-md ${
-                        selectedGenres.includes(genre)
-                          ? "bg-gray-300 cursor-not-allowed"
-                          : "bg-blue-100 hover:bg-blue-300"
-                      }`}
-                      disabled={selectedGenres.includes(genre)}
-                    >
-                      {genre}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Ngôn ngữ */}
-                <label>Select language:</label>
-                <select id="language" name="language" className="ml-2">
-                  <option value="af">Afrikaans</option>
-                  <option value="sq">Albanian</option>
-                  <option value="am">Amharic</option>
-                  <option value="ar">Arabic</option>
-                  <option value="hy">Armenian</option>
-                  <option value="az">Azerbaijani</option>
-                  <option value="eu">Basque</option>
-                  <option value="be">Belarusian</option>
-                  <option value="bn">Bengali</option>
-                  <option value="bs">Bosnian</option>
-                  <option value="bg">Bulgarian</option>
-                  <option value="ca">Catalan</option>
-                  <option value="zh">Chinese</option>
-                  <option value="hr">Croatian</option>
-                  <option value="cs">Czech</option>
-                  <option value="da">Danish</option>
-                  <option value="nl">Dutch</option>
-                  <option value="en">English</option>
-                  <option value="et">Estonian</option>
-                  <option value="fi">Finnish</option>
-                  <option value="fr">French</option>
-                  <option value="ka">Georgian</option>
-                  <option value="de">German</option>
-                  <option value="el">Greek</option>
-                  <option value="he">Hebrew</option>
-                  <option value="hi">Hindi</option>
-                  <option value="hu">Hungarian</option>
-                  <option value="is">Icelandic</option>
-                  <option value="id">Indonesian</option>
-                  <option value="it">Italian</option>
-                  <option value="ja">Japanese</option>
-                  <option value="ko">Korean</option>
-                  <option value="lv">Latvian</option>
-                  <option value="lt">Lithuanian</option>
-                  <option value="ms">Malay</option>
-                  <option value="mn">Mongolian</option>
-                  <option value="no">Norwegian</option>
-                  <option value="fa">Persian</option>
-                  <option value="pl">Polish</option>
-                  <option value="pt">Portuguese</option>
-                  <option value="ro">Romanian</option>
-                  <option value="ru">Russian</option>
-                  <option value="sr">Serbian</option>
-                  <option value="sk">Slovak</option>
-                  <option value="sl">Slovenian</option>
-                  <option value="es">Spanish</option>
-                  <option value="sv">Swedish</option>
-                  <option value="th">Thai</option>
-                  <option value="tr">Turkish</option>
-                  <option value="uk">Ukrainian</option>
-                  <option value="ur">Urdu</option>
-                  <option value="vi">Vietnamese</option>
-                </select>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="w-full px-3 py-2 border-b border-blue-400 bg-transparent focus:outline-none focus:ring-0 focus:border-blue-600"
-                  onChange={(e) =>
-                    setNewBook({ ...newBook, image: e.target.files[0] })
-                  }
-                />
-                {/* Preview ảnh đã được chọn */}
-                {/* {newBook.image && (
-                  <img
-                    src={URL.createObjectURL(newBook.image)}
-                    alt="Preview"
-                    className="mt-2 w-20 h-20 object-cover"
-                  />
-                )} */}
               </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-4 ">
+            </form>
+
+            <div className="flex gap-5 absolute bottom-5 right-5">
               <button
-                onClick={closeModal}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-gray-500 transition"
+                onClick={() => setIsModalOpen(false)}
+                className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
               >
-                Cancel
+                Close
               </button>
               <button
                 onClick={handleAddBook}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                type="submit"
               >
                 Add new book
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal View Information's Book */}
+      {isInforBookModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 bg-opacity-50 z-50 rounded-lg">
+          <div className="w-full h-full mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
+            <h2 className="text-2xl items-center text-sky-900 font-bold mb-6">
+              Information's Book
+            </h2>
+            <form method="post" action="#">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-600">
+                  Title book
+                </label>
+                <input
+                  className="mt-1 p-2 w-full border rounded-md font-medium"
+                  type="text"
+                  value={"Tuổi trẻ hoang dại"}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-600">
+                  Author
+                </label>
+                <input
+                  className="mt-1 p-2 w-full border rounded-md font-medium"
+                  // name="email"
+                  // id="email"
+                  // type="email"
+                  value={"F. Scott Fitzgerald"}
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-5 absolute bottom-5 right-5">
+                <button
+                  onClick={() => setIsInforBookModalOpen(false)}
+                  className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                >
+                  Close
+                </button>
+
+                <button
+                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                  type="submit"
+                >
+                  Update Book
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Xác nhận xóa */}
+      {isConfirmDeleteModalOpen && (
+        <div
+          onClick={() => setIsConfirmDeleteModalOpen(false)}
+          className="fixed inset-0 flex items-center justify-center bg-black/30 bg-opacity-50 z-50 rounded-lg"
+        >
+          <div className="w-[300px] mx-auto relative overflow-hidden z-10 bg-white p-4 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
+            {/* <div
+            onClick={(e) => e.stopPropagation()}
+            className="group select-none w-[300px] flex flex-col p-4 relative items-center justify-center bg-gray-800 border border-gray-800 shadow-lg rounded-2xl"
+          > */}
+            <div className="">
+              <div className="text-center p-3 flex-auto justify-center">
+                <svg
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  className="group-hover:animate-bounce w-12 h-12 flex items-center text-gray-600 fill-red-500 mx-auto"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    clipRule="evenodd"
+                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                    fillRule="evenodd"
+                  ></path>
+                </svg>
+                <h2 className="text-3xl font-bold py-4 text-sky-900">
+                  Are you sure?
+                </h2>
+                <p className="font-bold text-sm text-gray-500 px-2">
+                  Do you really want to continue ? This process cannot be undone
+                </p>
+              </div>
+              <div className="p-2 mt-2 text-center flex justify-around md:block">
+                <button
+                  onClick={() => setIsConfirmDeleteModalOpen(false)}
+                  className="mb-2 md:mb-0 bg-gray-700 px-5 py-2 text-sm shadow-sm font-medium tracking-wider border-2 border-gray-600 hover:border-gray-700 text-gray-300 rounded-full hover:shadow-lg hover:bg-gray-800 transition ease-in duration-300"
+                >
+                  Cancel
+                </button>
+                <button className="bg-red-500 hover:bg-transparent px-5 ml-4 py-2 text-sm shadow-sm hover:shadow-lg font-medium tracking-wider border-2 border-red-500 hover:border-red-500 text-white hover:text-red-500 rounded-full transition ease-in duration-300">
+                  Confirm
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 const TabDashboard = () => {
-  return <div className="text-lg font-medium">Tab Dashboard</div>;
+  return <div className="text-lg font-medium"></div>;
 };
 
 export default TabDashboard;
