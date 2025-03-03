@@ -1,5 +1,5 @@
 import { useState } from "react";
-import UserItem from "../UserItem";
+import UserItem from "../items/UserItem";
 
 const TabUsers = () => {
   const users = [
