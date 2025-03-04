@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import iLabrixLogo from "../assets/iLibrary.png";
 import backgroundImg from "../assets/Background.png";
@@ -23,6 +23,7 @@ const books = [
 ];
 
 const IntroPage = () => {
+  const navigate = useNavigate();
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
   const [currentBookIndex, setCurrentBookIndex] = useState(0);
 
@@ -75,7 +76,12 @@ const IntroPage = () => {
           <div className="flex items-center text-white space-x-10">
             <img src={iLabrixLogo} alt="iLabrix Logo" style={{ height: 50 }} />
             <a href="#introduce">Introduce</a>
-            <a href="#">All books</a>
+            <a
+              onClick={() => navigate("/user-page")}
+              className="cursor-pointer"
+            >
+              All books
+            </a>
             <a href="#news-events">News - Events</a>
             <a href="#feature">Feature</a>
             <a href="#support">Support</a>
