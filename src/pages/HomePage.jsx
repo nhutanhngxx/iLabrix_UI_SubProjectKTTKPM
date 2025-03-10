@@ -22,6 +22,13 @@ import { mockUsers } from "../mock/mockData";
 // Danh sách các tab
 const tabs = [
   {
+    id: "tab4",
+    label: "Dashboard",
+    component: <TabDashboard />,
+    path: "/dashboard",
+    icon: dashboardIcon,
+  },
+  {
     id: "tab1",
     label: "Borrow Book",
     component: <TabBorrow />,
@@ -42,13 +49,7 @@ const tabs = [
     path: "/users",
     icon: usersIcon,
   },
-  {
-    id: "tab4",
-    label: "Dashboard",
-    component: <TabDashboard />,
-    path: "/dashboard",
-    icon: dashboardIcon,
-  },
+
   {
     id: "tab5",
     label: "Borrow Management",
