@@ -67,7 +67,7 @@ const IntroPage = () => {
 
   return (
     <div
-      className="flex items-center flex-col w-screen bg-repeat-y bg-cover bg-center"
+      className="flex items-center flex-col w-full bg-repeat-y bg-cover bg-center"
       style={{ backgroundImage: `url(${backgroundImg})` }}
     >
       {/* Header */}
@@ -77,7 +77,7 @@ const IntroPage = () => {
             <img src={iLabrixLogo} alt="iLabrix Logo" style={{ height: 50 }} />
             <a href="#introduce">Introduce</a>
             <a
-              onClick={() => navigate("/user-page")}
+              onClick={() => navigate("/all-books")}
               className="cursor-pointer"
             >
               All books

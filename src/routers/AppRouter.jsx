@@ -6,7 +6,7 @@ import Notification from "../pages/Notification";
 import ForgotPassword from "../pages/ForgotPassword";
 import RegisterPassword from "../pages/RegisterPassword";
 import HomePage from "../pages/HomePage";
-import UserPage from "../pages/UserPage";
+import AllBooksPage from "../pages/AllBooksPage";
 import RegisterNewPassword from "../pages/RegisterNewPassword";
 
 const AppRouter = () => {
@@ -20,7 +20,7 @@ const AppRouter = () => {
         <Route path="/forgot-password" element={<ForgotPassword />}></Route>
         <Route path="/register-password" element={<RegisterPassword />}></Route>
         <Route path="/home-page" element={<HomePage />}></Route>
-        <Route path="/user-page" element={<UserPage />}></Route>
+        <Route path="/all-books" element={<AllBooksPage />}></Route>
         <Route
           path="/register-new-password"
           element={<RegisterNewPassword />}
