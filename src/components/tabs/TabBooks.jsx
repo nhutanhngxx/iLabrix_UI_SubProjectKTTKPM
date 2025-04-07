@@ -1,55 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import editIcon from "/icons/edit.png";
 
-// Danh sách sách
-const books = [
-  {
-    bookId: "B001",
-    name: "The Great Gatsby",
-    author: "F. Scott Fitzgerald",
-    pages: 180,
-    publisher: "Scribner",
-    price: 10.99,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-  {
-    bookId: "B002",
-    name: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    pages: 281,
-    publisher: "J.B. Lippincott & Co.",
-    price: 12.5,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-  {
-    bookId: "B003",
-    name: "1984",
-    author: "George Orwell",
-    pages: 328,
-    publisher: "Secker & Warburg",
-    price: 15.0,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-  {
-    bookId: "B004",
-    name: "Pride and Prejudice",
-    author: "Jane Austen",
-    pages: 279,
-    publisher: "T. Egerton",
-    price: 9.75,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-  {
-    bookId: "B005",
-    name: "The Catcher in the Rye",
-    author: "J.D. Salinger",
-    pages: 277,
-    publisher: "Little, Brown and Company",
-    price: 11.99,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-];
-
 const TabBooks = () => {
   const api_fake = "https://67cedd26823da0212a807409.mockapi.io/iLabrix/books";
   const [allBooks, setAllBooks] = useState([]);
@@ -69,7 +20,6 @@ const TabBooks = () => {
     fetchBooks();
   }, []);
 
-  const [isInforBookModalOpen, setIsInforBookModalOpen] = useState(false);
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] =
     useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -110,7 +60,7 @@ const TabBooks = () => {
   // Phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const booksPerPage = 4;
-  const totalPages = Math.ceil(books.length / booksPerPage);
+  const totalPages = Math.ceil(allBooks.length / booksPerPage);
   const startIndex = (currentPage - 1) * booksPerPage;
   const selectdBooks = allBooks.slice(startIndex, startIndex + booksPerPage);
   const goToPage = (page) => {
@@ -186,10 +136,13 @@ const TabBooks = () => {
   // Phân trang để hiển thị Sách
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
+  const currentBooks = allBooks.slice(indexOfFirstBook, indexOfLastBook);
 
   // Mở modal xem Information's book
-  const handleViewInforBook = () => {
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [isInforBookModalOpen, setIsInforBookModalOpen] = useState(false);
+  const handleViewInforBook = (book) => {
+    setSelectedBook(book);
     setIsInforBookModalOpen(true);
   };
 
@@ -298,14 +251,14 @@ const TabBooks = () => {
             />
 
             {/* Thông tin sách */}
-            <div className="flex flex-col justify-between h-full space-y-2">
+            <div className="flex flex-col justify-between h-full space-y-2 w-3/5">
               <h2 className="text-xl font-semibold text-blue-600">
                 {book.title}
               </h2>
               <p className="text-gray-600 text-sm flex-grow">{book.author}</p>
               <p className="text-gray-600 text-sm flex-grow">{book.category}</p>
               <p className="text-gray-600 text-sm flex-grow">{book.language}</p>
-              <p className="text-gray-600 text-sm truncate w-[230px] flex-grow">
+              <p className="text-gray-600 text-sm truncate w-11/12 flex-grow">
                 {book.description}
               </p>
             </div>
@@ -315,7 +268,7 @@ const TabBooks = () => {
               {/* Button Edit */}
               <button
                 className="rounded-md p-2 hover:bg-blue-200 transition"
-                onClick={handleViewInforBook}
+                onClick={() => handleViewInforBook(book)}
               >
                 <img src={editIcon} style={{ width: 25, height: 25 }}></img>
               </button>
@@ -376,34 +329,6 @@ const TabBooks = () => {
       </div>
 
       {/* Nút chuyển trang */}
-      {/* <div className="flex mt-3 gap-4 bottom-3 right-7 absolute">
-        <button
-          onClick={prevPage}
-          disabled={currentPage === 1}
-          className={`px-2 py-1 rounded-md ${
-            currentPage === 1
-              ? "bg-transparent opacity-50 cursor-not-allowed"
-              : "bg-transparent hover:bg-slate-200"
-          } transition`}
-        >
-          <img
-            src="/icons/previous-button.png"
-            alt="Previous"
-            className="w-5 h-5"
-          />
-        </button>
-        <button
-          onClick={nextPage}
-          disabled={currentPage === Math.ceil(books.length / booksPerPage)}
-          className={`px-2 py-1 rounded-md ${
-            currentPage === Math.ceil(books.length / booksPerPage)
-              ? "bg-transparent opacity-50 cursor-not-allowed"
-              : "bg-transparent hover:bg-slate-200"
-          } transition`}
-        >
-          <img src="/icons/next-button.png" alt="Next" className="w-5 h-5" />
-        </button>
-      </div> */}
       <div className="absolute text-base bottom-3 right-7">
         <button
           className="px-3 py-1 "
@@ -661,7 +586,7 @@ const TabBooks = () => {
                   {/* Hiển thị ảnh */}
                   <div className="bg-slate-200 w-4/5 h-4/5 rounded-lg overflow-hidden flex justify-center items-center">
                     <img
-                      src={preview}
+                      src={selectedBook.image_url}
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />
@@ -695,7 +620,7 @@ const TabBooks = () => {
                       <input
                         className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
                         type="text"
-                        value={"Tuổi trẻ hoang dại"}
+                        value={selectedBook.title}
                       />
                     </div>
                     <div className="mb-4 w-1/3">
@@ -705,7 +630,7 @@ const TabBooks = () => {
                       <input
                         className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
                         type="text"
-                        value={"F. Scott Fitzgerald"}
+                        value={selectedBook.author}
                       />
                     </div>
                   </div>
@@ -718,7 +643,7 @@ const TabBooks = () => {
                       <input
                         className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
                         type="text"
-                        value={"Where to display book description.."}
+                        value={selectedBook.description}
                       />
                     </div>
                     <div className="mb-4 w-1/3">
@@ -728,7 +653,7 @@ const TabBooks = () => {
                       <input
                         className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
                         type="text"
-                        value={"3486-3436-3869-2835"}
+                        value={selectedBook.isbn}
                       />
                     </div>
                   </div>
@@ -741,7 +666,7 @@ const TabBooks = () => {
                       <input
                         className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
                         type="text"
-                        value={"F. Scott Fitzgerald"}
+                        value={selectedBook.category}
                       />
                     </div>
                     <div className="mb-4 w-1/3">
@@ -751,6 +676,7 @@ const TabBooks = () => {
                       <input
                         className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
                         type="number"
+                        value={selectedBook.year_published}
                       />
                     </div>
                     <div className="mb-4 w-1/3">
@@ -760,7 +686,7 @@ const TabBooks = () => {
                       <input
                         className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
                         type="text"
-                        value={"Vietnamese"}
+                        value={selectedBook.language}
                       />
                     </div>
                   </div>

@@ -137,7 +137,7 @@ const TabBorrowManagement = () => {
   };
 
   return (
-    <div className="p-4">
+    <div>
       <div className="flex justify-between items-center pb-4">
         <h2 className="text-3xl items-center text-sky-900 font-bold">
           Manage book borrowing/returning
@@ -193,7 +193,7 @@ const TabBorrowManagement = () => {
       </div>
 
       {/* Bảng hiển thị danh sách phiếu mượn */}
-      <div className="overflow-auto max-h-[330px]">
+      <div className="overflow-auto max-h-[calc(100vh-300px)]">
         <table className="min-w-full border-collapse">
           <thead className="bg-gray-100">
             <tr>

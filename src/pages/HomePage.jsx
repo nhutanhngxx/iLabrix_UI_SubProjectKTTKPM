@@ -22,28 +22,28 @@ import { mockUsers } from "../mock/mockData";
 // Danh sách các tab
 const tabs = [
   {
-    id: "tab4",
+    id: "tab1",
     label: "Dashboard",
     component: <TabDashboard />,
     path: "/dashboard",
     icon: dashboardIcon,
   },
   {
-    id: "tab1",
+    id: "tab2",
     label: "Borrow Book",
     component: <TabBorrow />,
     path: "/check-in-out",
     icon: checkInOutIcon,
   },
   {
-    id: "tab2",
+    id: "tab3",
     label: "Books",
     component: <TabBooks />,
     path: "/books",
     icon: bookIcon,
   },
   {
-    id: "tab3",
+    id: "tab4",
     label: "Users",
     component: <TabUsers />,
     path: "/users",
@@ -200,9 +200,9 @@ const HomePage = () => {
       </div>
 
       {/* Wrapper Pills Tab */}
-      <div className="flex flex-1 px-10 pb-10">
+      <div className="flex flex-1 px-5 pb-5">
         {/* Tabs Điều Hướng */}
-        <div className="w-1/6 rounded-2xl bg-white/30 backdrop-blur-md shadow-lg p-3 flex flex-col justify-around space-y-2 mr-6 gap-2">
+        <div className="w-1/6 h-fit rounded-2xl bg-white/30 backdrop-blur-md shadow-lg p-3 flex flex-col justify-start space-y-2 mr-6 gap-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}

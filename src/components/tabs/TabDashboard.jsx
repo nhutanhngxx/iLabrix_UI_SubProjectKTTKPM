@@ -144,7 +144,7 @@ const TabDashboard = () => {
         </div>
 
         {/* Late Return - Pie Chart */}
-        <div className="flex justify-center ">
+        <div className="flex justify-center">
           <div>
             <PieChart
               colors={["orange", "skyblue", "oklch(0.396 0.141 25.723)"]}
@@ -236,7 +236,7 @@ const TabDashboard = () => {
   return (
     <div>
       {/* Header Tab: Overview - Analysis */}
-      <div className=" flex gap-5 text-center items-center">
+      <div className="flex gap-5 text-center items-center">
         <div
           className={`text-xl px-10 cursor-pointer  ${
             activeTab === "overview"
