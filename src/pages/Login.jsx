@@ -3,12 +3,15 @@ import backgroundImg from "../assets/Background.png";
 import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/common/Button";
 import InputField from "../components/common/InputField";
-import { useEffect, useState } from "react";
 import Loading from "../components/common/Loading";
-import { mockUsers } from "../mock/mockData";
+
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { login } from "../redux/slice/userSlice";
 
 const Register = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,84 +36,41 @@ const Register = () => {
     }
   }, [email, password]);
 
+  // Sau khi lấy được user xong, lưu userId, và username vào redux/session
   const handleLogin = async () => {
-    if (isDisable) return;
-
-    let registerData = {};
-    registerData.email = email;
-    registerData.password = password;
-    console.log(registerData);
+    let registerData = {
+      email,
+      password,
+    };
 
     setIsLoading(true);
     setError("");
 
-    // Thay thành useEffect
-    setTimeout(() => {
-      try {
-        // const response = await fetch("http://localhost:8080/api/auth/login", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        // Token: Bear agdfádjháhgjáhjdagsj
-        //   },
-        //   body: JSON.stringify(registerData),
-        // });
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(registerData),
+      });
 
-        // const result = await response.json();
-        // console.log(result);
-
-        // if (!response.ok) {
-        //   throw new Error(result.message || "Something went wrong");
-        // }
-
-        if (
-          email !== mockUsers[0].email ||
-          password !== mockUsers[0].passwordHash
-        ) {
-          throw new Error("Email or password is incorrect!");
-        }
-
-        console.log("Login successfull!");
-        navigate("/home-page");
-      } catch (err) {
-        setError(err.message);
-        console.log(error);
-      } finally {
-        setIsLoading(false);
+      if (!response.ok) {
+        throw new Error(response.message || "Something went wrong");
       }
-    }, 1000);
+
+      const result = response.json();
+
+      dispatch(login(result.user, result.token));
+
+      navigate("/home-page");
+    } catch (err) {
+      setError(err.message);
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
-  // Sau khi lấy được user xong, lưu userId, và username vào redux/session
-
-  // const handleLogin = () => {
-  //   const loginData = {
-  //     email: email,
-  //     password: password,
-  //   };
-
-  //   setIsLoading(true);
-  //   setError("");
-
-  //   fetch("http://localhost:8080/api/auth/login", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(loginData),
-  //   })
-  //     .then((response) => {
-  //       if (!response.ok) {
-  //         throw new Error("Login failed!");
-  //       }
-  //       return response.json();
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //     })
-  //     .finally(() => {
-  //       setIsLoading(false);
-  //     });
-  // };
 
   const handleForgotPassword = (e) => {
     e.preventDefault();

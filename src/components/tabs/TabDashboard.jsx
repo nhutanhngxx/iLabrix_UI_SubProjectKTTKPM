@@ -62,30 +62,6 @@ const TabDashboard = () => {
     { id: 2, value: totalBooksLateReturn, label: "Quá hạn" },
   ];
 
-  // const lateReutrnUnder7Days = mockBorrowRecords.reduce((total, record) => {
-  //   const currentDate = new Date();
-  //   const dueDate = new Date(record.dueDate);
-  //   const lateDays = currentDate - dueDate;
-  //   return lateDays < 7 && !record.isReturned // return record.returnDate === ""
-  //     ? total + record.bookId.length
-  //     : total;
-  // });
-
-  // Pie Chart Data for Late Return
-  // const lateReturnPieChartData = [
-  //   {
-  //     id: 0,
-  //     value: totalBooksReturned,
-  //     label: "Under 7 days",
-  //   },
-  //   {
-  //     id: 1,
-  //     value: totalBooks - totalBooksInInventory,
-  //     label: "7 - 14 days",
-  //   },
-  //   { id: 2, value: totalBooksLateReturn, label: "Over 14 days" },
-  // ];
-
   // Line Chart Data with 2 series
   const uData = [15, 2, 5, 8, 3, 7, 4, 6, 5, 8, 2, 5];
   const pData = [2, 5, 2, 9, 2, 5, 3, 7, 4, 6, 5, 8];
@@ -171,7 +147,7 @@ const TabDashboard = () => {
         </div>
 
         {/* Number of Borrwer - Liner Chart */}
-        <div className="flex flex-col items-center justify-center ">
+        <div className="flex flex-col items-center justify-center">
           <LineChart
             xAxis={[{ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }]}
             series={[

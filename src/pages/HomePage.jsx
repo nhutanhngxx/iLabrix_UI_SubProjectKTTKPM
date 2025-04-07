@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 
 import backgroundImg from "../assets/Background.png";
 import logoHorizontal from "../assets/iLibrary.png";
@@ -16,6 +17,8 @@ import bookIcon from "/icons/book.png";
 import usersIcon from "/icons/users.png";
 import dashboardIcon from "/icons/dashboard.png";
 import managementIcon from "/icons/management.png";
+
+import { logout } from "../redux/slice/userSlice";
 
 import { mockUsers } from "../mock/mockData";
 
@@ -89,11 +92,41 @@ const CurrentDateTime = () => {
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const userStored = useSelector((state) => state.user);
+  console.log(userStored);
 
+  const [user, setUser] = useState(mockUsers[0]);
   const [activeTab, setActiveTab] = useState("tab1");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
-  const [user, setUser] = useState(mockUsers[0]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("accessToken");
+      const user_id = localStorage.getItem("user_id");
+      try {
+        const respone = await fetch(
+          "http://localhost:3001/users/profile/" + user_id,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (respone.ok) {
+          const data = await respone.json();
+          setUser(data);
+        } else {
+          console.log("Error fetching profile");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleViewProfile = () => {
     setIsProfileModalOpen(true);
@@ -109,10 +142,13 @@ const HomePage = () => {
     setUser((prevUser) => ({ ...prevUser, [name]: value }));
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const handleUserClick = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
   };
 
   return (
@@ -185,7 +221,7 @@ const HomePage = () => {
                     </li>
                     <li>
                       <button
-                        onClick={() => navigate("/")}
+                        onClick={handleLogout}
                         className="text-red-500 font-medium hover:bg-red-100 px-3 py-2 rounded-md transition-all duration-200"
                       >
                         Logout
