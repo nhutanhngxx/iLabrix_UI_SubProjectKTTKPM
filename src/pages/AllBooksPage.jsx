@@ -43,6 +43,7 @@ const UserPage = () => {
       "release-year-to",
       "language",
       "availability",
+      "search",
     ].forEach((id) => {
       const element = document.getElementById(id);
       if (element) element.value = "";
@@ -307,7 +308,7 @@ const UserPage = () => {
                   type="text"
                   className="w-full max-w-[160px] bg-white pl-2 text-base outline-0"
                   placeholder="Search text..."
-                  id=""
+                  id="search"
                   onChange={(e) => setSearchText(e.target.value)}
                 />
                 <input
