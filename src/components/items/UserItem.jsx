@@ -17,14 +17,14 @@ const UserItem = ({ user }) => {
           <img
             // src={user?.image}
             src={userIcon}
-            alt={user?.name || "null"}
+            alt={user?.fullName || "null"}
             className="w-24 h-32 object-cover rounded-md mr-4 border"
           />
         </div>
         {/* user's Infomation */}
         <div className="text-gray-600 flex-1">
           <div className="text-xl font-semibold text-blue-600">
-            {user?.name || "Null"}
+            {user?.fullName || "Null"}
           </div>
           {/* <p className="text-gray-600">ID: {user?.userId || "Null"}</p> */}
           {/* <p className="text-gray-600">Gender: {user?.gender || "Null"}</p> */}
@@ -92,7 +92,7 @@ const UserItem = ({ user }) => {
 UserItem.propTypes = {
   user: PropTypes.shape({
     userId: PropTypes.string,
-    name: PropTypes.string,
+    fullName: PropTypes.string,
     address: PropTypes.string,
     gender: PropTypes.string,
     email: PropTypes.string,

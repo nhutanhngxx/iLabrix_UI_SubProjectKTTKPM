@@ -262,7 +262,15 @@ const UserPage = () => {
               <label htmlFor="category" className="font-bold">
                 Category:
               </label>
-              <select id="category" className="p-2 border rounded-md">
+              <select
+                id="category"
+                className="p-2.5 text-sm bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full appearance-none bg-no-repeat bg-right pr-8 cursor-pointer hover:border-blue-400 transition-colors"
+                style={{
+                  backgroundImage: `url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>')`,
+                  backgroundPosition: "right 0.5rem center",
+                  backgroundSize: "1rem",
+                }}
+              >
                 <option value="all">All</option>
                 <option value="fiction">Fiction</option>
                 <option value="non-fiction">Non-Fiction</option>
@@ -389,6 +397,12 @@ const UserPage = () => {
                 setSortBy(newSortBy);
                 handleSort(newSortBy, sortOrder);
               }}
+              className="p-2.5 text-sm bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-40 appearance-none bg-no-repeat bg-right pr-8 cursor-pointer hover:border-blue-400 transition-colors"
+              style={{
+                backgroundImage: `url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>')`,
+                backgroundPosition: "right 0.5rem center",
+                backgroundSize: "1rem",
+              }}
             >
               <option value="title">Title</option>
               <option value="author">Author</option>
@@ -401,6 +415,12 @@ const UserPage = () => {
                 const newSortOrder = e.target.value;
                 setSortOrder(newSortOrder);
                 handleSort(sortBy, newSortOrder);
+              }}
+              className="p-2.5 text-sm bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-24 appearance-none bg-no-repeat bg-right pr-8 cursor-pointer hover:border-blue-400 transition-colors"
+              style={{
+                backgroundImage: `url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>')`,
+                backgroundPosition: "right 0.5rem center",
+                backgroundSize: "1rem",
               }}
             >
               <option value="asc">A-Z</option>
