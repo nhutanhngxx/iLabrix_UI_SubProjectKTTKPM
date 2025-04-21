@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useReactToPrint } from "react-to-print";
+import html2pdf from "html2pdf.js";
+import Invoice from "../invoice/Invoice";
 
 const allBorrowers = [
   {
@@ -100,10 +103,40 @@ const allBorrowers = [
 ];
 
 const TabBorrowManagement = () => {
+  const componentRef = useRef();
   const [statusUpdates, setStatusUpdates] = useState({});
   const [selectedBorrower, setSelectedBorrower] = useState(null);
-
   const [borrowers, setBorrowers] = useState(allBorrowers);
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  const handleSearch = () => {
+    const keyword = searchKeyword.trim().toLowerCase();
+    if (keyword === "") {
+      setBorrowers(allBorrowers);
+    } else {
+      setBorrowers(
+        allBorrowers.filter(
+          (user) =>
+            user.name.toLowerCase().includes(keyword) ||
+            user.book.toLowerCase().includes(keyword)
+        )
+      );
+    }
+  };
+
+  const handlePrint = () => {
+    const element = componentRef.current;
+
+    const opt = {
+      margin: 0.5,
+      filename: `invoice_${selectedBorrower.name || "borrower"}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    };
+
+    html2pdf().set(opt).from(element).save();
+  };
 
   // Khi chọn trạng thái, cập nhật danh sách borrowers
   const handleFilterChange = (e) => {
@@ -115,25 +148,6 @@ const TabBorrowManagement = () => {
         allBorrowers.filter((user) => user.status === selectedStatus)
       );
     }
-  };
-
-  const handleStatusChange = (id, newStatus) => {
-    setStatusUpdates((prev) => ({ ...prev, [id]: newStatus }));
-  };
-
-  const handleUpdate = (id) => {
-    setBorrowers((prevBorrowers) =>
-      prevBorrowers.map((user) =>
-        user.id === id
-          ? { ...user, status: statusUpdates[id] || user.status }
-          : user
-      )
-    );
-    setStatusUpdates((prev) => {
-      const updated = { ...prev };
-      delete updated[id];
-      return updated;
-    });
   };
 
   return (
@@ -180,10 +194,13 @@ const TabBorrowManagement = () => {
                   className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
                   placeholder=""
                   id=""
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
                 ></input>
                 <input
                   type="button"
                   value="Search"
+                  onClick={handleSearch}
                   className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg"
                 ></input>
               </div>
@@ -370,10 +387,21 @@ const TabBorrowManagement = () => {
               >
                 Update
               </button>
-              <button className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80">
+              <button
+                onClick={handlePrint}
+                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+              >
                 Print
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Phiếu mượn để in */}
+      {selectedBorrower && (
+        <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+          <div ref={componentRef}>
+            <Invoice borrower={selectedBorrower} />
           </div>
         </div>
       )}
