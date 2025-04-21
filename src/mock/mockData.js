@@ -367,87 +367,91 @@ export const mockBooks = [
 export const mockCategories = [
   {
     categoryId: 1,
-    categoryName: "Fantasy",
+    categoryName: "Giả tưởng",
   },
   {
     categoryId: 2,
-    categoryName: "Dystopian",
+    categoryName: "Phản địa đàng",
   },
   {
     categoryId: 3,
-    categoryName: "Classic",
+    categoryName: "Kinh điển",
   },
   {
     categoryId: 4,
-    categoryName: "Romance",
+    categoryName: "Lãng mạn",
   },
   {
     categoryId: 5,
-    categoryName: "Historical",
+    categoryName: "Lịch sử",
   },
   {
     categoryId: 6,
-    categoryName: "Epic",
+    categoryName: "Sử thi",
   },
   {
     categoryId: 7,
-    categoryName: "Science Fiction",
+    categoryName: "Khoa học viễn tưởng",
   },
   {
     categoryId: 8,
-    categoryName: "Thriller",
+    categoryName: "Giật gân",
   },
   {
     categoryId: 9,
-    categoryName: "Mystery",
+    categoryName: "Bí ẩn",
   },
   {
     categoryId: 10,
-    categoryName: "Biography",
+    categoryName: "Tiểu sử",
   },
   {
     categoryId: 11,
-    categoryName: "Self-Help",
+    categoryName: "Tự lực",
   },
   {
     categoryId: 12,
-    categoryName: "Health",
+    categoryName: "Sức khỏe",
   },
   {
     categoryId: 13,
-    categoryName: "Travel",
+    categoryName: "Du lịch",
   },
   {
     categoryId: 14,
-    categoryName: "Children's",
+    categoryName: "Thiếu nhi",
   },
   {
     categoryId: 15,
-    categoryName: "Cooking",
+    categoryName: "Nấu ăn",
   },
   {
     categoryId: 16,
-    categoryName: "Art",
+    categoryName: "Nghệ thuật",
   },
   {
     categoryId: 17,
-    categoryName: "Poetry",
+    categoryName: "Thơ ca",
   },
   {
     categoryId: 18,
-    categoryName: "Drama",
+    categoryName: "Kịch",
   },
   {
     categoryId: 19,
-    categoryName: "Adventure",
+    categoryName: "Phiêu lưu",
   },
   {
     categoryId: 20,
-    categoryName: "Horror",
+    categoryName: "Kinh dị",
   },
   {
     categoryId: 21,
-    categoryName: "Comics",
+    categoryName: "Truyện tranh",
+  },
+  {
+    categoryId: 22,
+    categoryName: "Văn học",
   },
 ];
 
