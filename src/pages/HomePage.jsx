@@ -25,6 +25,13 @@ import { mockUsers } from "../mock/mockData";
 // Danh sách các tab
 const tabs = [
   {
+    id: "tab4",
+    label: "Dashboard",
+    component: <TabDashboard />,
+    path: "/dashboard",
+    icon: dashboardIcon,
+  },
+  {
     id: "tab1",
     label: "Dashboard",
     component: <TabDashboard />,
@@ -52,7 +59,6 @@ const tabs = [
     path: "/users",
     icon: usersIcon,
   },
-
   {
     id: "tab5",
     label: "Borrow Management",
@@ -97,7 +103,7 @@ const HomePage = () => {
   console.log(userStored);
 
   const [user, setUser] = useState(mockUsers[0]);
-  const [activeTab, setActiveTab] = useState("tab1");
+  const [activeTab, setActiveTab] = useState("tab4");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
