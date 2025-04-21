@@ -1,62 +1,53 @@
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import editIcon from "/icons/edit.png";
 
-// Danh sách sách
-const books = [
-  {
-    bookId: "B001",
-    name: "The Great Gatsby",
-    author: "F. Scott Fitzgerald",
-    pages: 180,
-    publisher: "Scribner",
-    price: 10.99,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-  {
-    bookId: "B002",
-    name: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    pages: 281,
-    publisher: "J.B. Lippincott & Co.",
-    price: 12.5,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-  {
-    bookId: "B003",
-    name: "1984",
-    author: "George Orwell",
-    pages: 328,
-    publisher: "Secker & Warburg",
-    price: 15.0,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-  {
-    bookId: "B004",
-    name: "Pride and Prejudice",
-    author: "Jane Austen",
-    pages: 279,
-    publisher: "T. Egerton",
-    price: 9.75,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-  {
-    bookId: "B005",
-    name: "The Catcher in the Rye",
-    author: "J.D. Salinger",
-    pages: 277,
-    publisher: "Little, Brown and Company",
-    price: 11.99,
-    image: "https://i.ibb.co/hRDwYJMT/tuoi-tre-hoang-dai.png",
-  },
-];
-
 const TabBooks = () => {
-  const [isInforBookModalOpen, setIsInforBookModalOpen] = useState(false);
+  const api_fake = "https://67cedd26823da0212a807409.mockapi.io/iLabrix/books";
+  const [allBooks, setAllBooks] = useState([]);
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await fetch(api_fake);
+        if (!response.ok) {
+          throw new Error("Lỗi khi lấy dữ liệu");
+        }
+        const data = await response.json();
+        setAllBooks(data);
+      } catch (error) {
+        console.error("Lỗi API:", error);
+      }
+    };
+    fetchBooks();
+  }, []);
+
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] =
     useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const categorys = ["Fantasy", "Sci-Fi", "Horror", "Mystery", "Romance"];
+
+  // Thông tin chi tiết của sách
+  const fileInputRef = useRef(null);
+  const [preview, setPreview] = useState(
+    "https://www.worldbookday.com/wp-content/uploads/2023/11/BookStacks_large_1-1-e1700482243590.png"
+  ); // Ảnh mặc định
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    } else {
+      console.error("fileInputRef.current is null");
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl); // Cập nhật ảnh xem trước
+    }
+  };
+  //
+
   const handleGenreClick = (category) => {
     if (!selectedCategories.includes(category)) {
       setSelectedCategories([...selectedCategories, category]);
@@ -69,9 +60,9 @@ const TabBooks = () => {
   // Phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const booksPerPage = 4;
-  const totalPages = Math.ceil(books.length / booksPerPage);
+  const totalPages = Math.ceil(allBooks.length / booksPerPage);
   const startIndex = (currentPage - 1) * booksPerPage;
-  const selectdBooks = books.slice(startIndex, startIndex + booksPerPage);
+  const selectdBooks = allBooks.slice(startIndex, startIndex + booksPerPage);
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
@@ -145,23 +136,13 @@ const TabBooks = () => {
   // Phân trang để hiển thị Sách
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
-
-  // Chuyển trang
-  const nextPage = () => {
-    if (currentPage < Math.ceil(books.length / booksPerPage)) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
+  const currentBooks = allBooks.slice(indexOfFirstBook, indexOfLastBook);
 
   // Mở modal xem Information's book
-  const handleViewInforBook = () => {
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [isInforBookModalOpen, setIsInforBookModalOpen] = useState(false);
+  const handleViewInforBook = (book) => {
+    setSelectedBook(book);
     setIsInforBookModalOpen(true);
   };
 
@@ -177,8 +158,10 @@ const TabBooks = () => {
         <div className="flex items-center gap-5 font-light">
           {/* Category */}
           <div className="flex items-center gap-3 h-[40px]">
-            <label className="font-medium">Category</label>
-            <select className="w-44 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 italic">
+            <label className="block text-sm font-medium text-gray-600">
+              Category
+            </label>
+            <select className="w-44 px-2 py-2 rounded-md text-sm font-medium">
               <option value="" disabled selected>
                 Select a Category
               </option>
@@ -189,8 +172,10 @@ const TabBooks = () => {
           </div>
           {/* Language */}
           <div className="flex items-center gap-3 h-[40px]">
-            <label className="font-medium">Language</label>
-            <select className="w-48 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 italic">
+            <label className="block text-sm font-medium text-gray-600">
+              Language
+            </label>
+            <select className="w-44 px-2 py-2 rounded-md text-sm font-medium">
               <option value="" disabled selected>
                 Select a Language
               </option>
@@ -222,7 +207,7 @@ const TabBooks = () => {
                   <input
                     type="button"
                     value="Search"
-                    className="bg-blue-500 h-[35px] px-3 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors"
+                    className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg"
                   ></input>
                 </div>
               </div>
@@ -252,27 +237,30 @@ const TabBooks = () => {
       </div>
 
       {/* Hiển thị danh sách sách */}
-      <div className="grid grid-cols-2 gap-7">
-        {currentBooks.map((book) => (
+      <div className="grid grid-cols-2 gap-7 h-full">
+        {selectdBooks.map((book) => (
           <div
             key={book.bookId}
-            className="flex items-center p-4 border rounded-lg shadow-md bg-white relative"
+            className="flex h-full items-center p-3 border rounded-lg shadow-md bg-white relative"
           >
             {/* Ảnh sách */}
             <img
-              src={book.image}
+              src={book.image_url}
               alt={book.name}
               className="w-24 h-32 object-cover rounded-md mr-4"
             />
 
             {/* Thông tin sách */}
-            <div className="flex-1">
+            <div className="flex flex-col justify-between h-full space-y-2 w-3/5">
               <h2 className="text-xl font-semibold text-blue-600">
-                {book.name}
+                {book.title}
               </h2>
-              <p className="text-gray-600">Author: {book.author}</p>
-              <p className="text-gray-600">Publisher: {book.publisher}</p>
-              <p className="text-green-600 font-bold">${book.price}</p>
+              <p className="text-gray-600 text-sm flex-grow">{book.author}</p>
+              <p className="text-gray-600 text-sm flex-grow">{book.category}</p>
+              <p className="text-gray-600 text-sm flex-grow">{book.language}</p>
+              <p className="text-gray-600 text-sm truncate w-11/12 flex-grow">
+                {book.description}
+              </p>
             </div>
 
             {/* Buttons */}
@@ -280,7 +268,7 @@ const TabBooks = () => {
               {/* Button Edit */}
               <button
                 className="rounded-md p-2 hover:bg-blue-200 transition"
-                onClick={handleViewInforBook}
+                onClick={() => handleViewInforBook(book)}
               >
                 <img src={editIcon} style={{ width: 25, height: 25 }}></img>
               </button>
@@ -341,34 +329,6 @@ const TabBooks = () => {
       </div>
 
       {/* Nút chuyển trang */}
-      {/* <div className="flex mt-3 gap-4 bottom-3 right-7 absolute">
-        <button
-          onClick={prevPage}
-          disabled={currentPage === 1}
-          className={`px-2 py-1 rounded-md ${
-            currentPage === 1
-              ? "bg-transparent opacity-50 cursor-not-allowed"
-              : "bg-transparent hover:bg-slate-200"
-          } transition`}
-        >
-          <img
-            src="/icons/previous-button.png"
-            alt="Previous"
-            className="w-5 h-5"
-          />
-        </button>
-        <button
-          onClick={nextPage}
-          disabled={currentPage === Math.ceil(books.length / booksPerPage)}
-          className={`px-2 py-1 rounded-md ${
-            currentPage === Math.ceil(books.length / booksPerPage)
-              ? "bg-transparent opacity-50 cursor-not-allowed"
-              : "bg-transparent hover:bg-slate-200"
-          } transition`}
-        >
-          <img src="/icons/next-button.png" alt="Next" className="w-5 h-5" />
-        </button>
-      </div> */}
       <div className="absolute text-base bottom-3 right-7">
         <button
           className="px-3 py-1 "
@@ -618,30 +578,162 @@ const TabBooks = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black/30 bg-opacity-50 z-50 rounded-lg">
           <div className="w-full h-full mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
             <h2 className="text-2xl items-center text-sky-900 font-bold mb-6">
-              Information's Book
+              Information of Book
             </h2>
             <form method="post" action="#">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-600">
-                  Title book
-                </label>
-                <input
-                  className="mt-1 p-2 w-full border rounded-md font-medium"
-                  type="text"
-                  value={"Tuổi trẻ hoang dại"}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-600">
-                  Author
-                </label>
-                <input
-                  className="mt-1 p-2 w-full border rounded-md font-medium"
-                  // name="email"
-                  // id="email"
-                  // type="email"
-                  value={"F. Scott Fitzgerald"}
-                />
+              <div className="flex gap-5">
+                <div className="w-1/5 flex flex-col items-center">
+                  {/* Hiển thị ảnh */}
+                  <div className="bg-slate-200 w-4/5 h-4/5 rounded-lg overflow-hidden flex justify-center items-center">
+                    <img
+                      src={selectedBook.image_url}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Input file ẩn */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+
+                  {/* Nút chọn ảnh */}
+                  <button
+                    type="button"
+                    onClick={handleButtonClick}
+                    className="mt-5 px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                  >
+                    Change Picture
+                  </button>
+                </div>
+
+                <div className="w-4/5">
+                  <div className="flex gap-5">
+                    <div className="mb-4 w-2/3">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Title book
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="text"
+                        value={selectedBook.title}
+                      />
+                    </div>
+                    <div className="mb-4 w-1/3">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Author
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="text"
+                        value={selectedBook.author}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-5">
+                    <div className="mb-4 w-2/3">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Description
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="text"
+                        value={selectedBook.description}
+                      />
+                    </div>
+                    <div className="mb-4 w-1/3">
+                      <label className="block text-sm font-medium text-gray-600">
+                        ISBN
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="text"
+                        value={selectedBook.isbn}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-5">
+                    <div className="mb-4 w-1/3">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Category
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="text"
+                        value={selectedBook.category}
+                      />
+                    </div>
+                    <div className="mb-4 w-1/3">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Year published
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="number"
+                        value={selectedBook.year_published}
+                      />
+                    </div>
+                    <div className="mb-4 w-1/3">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Language
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="text"
+                        value={selectedBook.language}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-5">
+                    <div className="mb-4 w-1/6">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Total books
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="number"
+                        value={106}
+                      />
+                    </div>
+                    {/* Available books <= Total books */}
+                    <div className="mb-4 w-1/6">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Available books
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="number"
+                        value={106}
+                      />
+                    </div>
+                    <div className="mb-4 w-1/6">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Pages
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="number"
+                        value={230}
+                      />
+                    </div>
+                    <div className="mb-4 w-1/2">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Notes
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="text"
+                        value={"Note's book"}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Buttons */}

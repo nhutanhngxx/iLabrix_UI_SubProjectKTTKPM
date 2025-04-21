@@ -66,7 +66,7 @@ const IntroPage = () => {
 
   return (
     <div
-      className="flex items-center flex-col w-screen bg-repeat-y bg-cover bg-center"
+      className="flex items-center flex-col bg-repeat-y bg-cover bg-center"
       style={{ backgroundImage: `url(${backgroundImg})` }}
     >
       {/* Header */}

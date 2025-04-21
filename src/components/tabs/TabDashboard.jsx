@@ -62,30 +62,6 @@ const TabDashboard = () => {
     { id: 2, value: totalBooksLateReturn, label: "Quá hạn" },
   ];
 
-  // const lateReutrnUnder7Days = mockBorrowRecords.reduce((total, record) => {
-  //   const currentDate = new Date();
-  //   const dueDate = new Date(record.dueDate);
-  //   const lateDays = currentDate - dueDate;
-  //   return lateDays < 7 && !record.isReturned // return record.returnDate === ""
-  //     ? total + record.bookId.length
-  //     : total;
-  // });
-
-  // Pie Chart Data for Late Return
-  // const lateReturnPieChartData = [
-  //   {
-  //     id: 0,
-  //     value: totalBooksReturned,
-  //     label: "Under 7 days",
-  //   },
-  //   {
-  //     id: 1,
-  //     value: totalBooks - totalBooksInInventory,
-  //     label: "7 - 14 days",
-  //   },
-  //   { id: 2, value: totalBooksLateReturn, label: "Over 14 days" },
-  // ];
-
   // Line Chart Data with 2 series
   const uData = [15, 2, 5, 8, 3, 7, 4, 6, 5, 8, 2, 5];
   const pData = [2, 5, 2, 9, 2, 5, 3, 7, 4, 6, 5, 8];
@@ -113,7 +89,7 @@ const TabDashboard = () => {
               ]}
               title="Borrow Records"
               width={400}
-              height={225}
+              height={150}
             />
             <div className="text-center">
               Total books in inventory: {totalBooks}
@@ -122,7 +98,7 @@ const TabDashboard = () => {
         </div>
 
         {/* BorrowRecords - Borrowed Today, Returned Yesterday */}
-        <div className="flex flex-col gap-4 items-center justify-center border-2 border-gray-400 rounded-xl">
+        <div className="flex gap-5 items-center justify-center border-2 border-gray-400 rounded-xl">
           <div className="bg-white/75 py-2 px-5 rounded-xl">
             <div className="text-lg font-medium">Books Borrowed Today</div>
             <div className="flex justify-around mt-2 items-center">
@@ -144,7 +120,7 @@ const TabDashboard = () => {
         </div>
 
         {/* Late Return - Pie Chart */}
-        <div className="flex justify-center ">
+        <div className="flex justify-center">
           <div>
             <PieChart
               colors={["orange", "skyblue", "oklch(0.396 0.141 25.723)"]}
@@ -162,7 +138,7 @@ const TabDashboard = () => {
               ]}
               title="Borrow Records"
               width={400}
-              height={225}
+              height={150}
             />
             <div className="text-center">
               Total books late ruturn: {totalBooks}
@@ -171,7 +147,7 @@ const TabDashboard = () => {
         </div>
 
         {/* Number of Borrwer - Liner Chart */}
-        <div className="flex flex-col items-center justify-center ">
+        <div className="flex flex-col items-center justify-center">
           <LineChart
             xAxis={[{ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }]}
             series={[
@@ -179,8 +155,8 @@ const TabDashboard = () => {
                 data: [2, 5.5, 2, 8.5, 1.5, 5, 3, 7, 4, 6, 5, 8],
               },
             ]}
-            width={550}
-            height={225}
+            width={500}
+            height={200}
           />
           <div className="text-center">
             Biểu đồ số người mượn sách theo thời gian
@@ -197,7 +173,7 @@ const TabDashboard = () => {
         <div className="flex flex-col items-center">
           <LineChart
             width={500}
-            height={400}
+            height={300}
             series={[
               { data: pData, label: "Borrow", showMark: false, type: "line" },
               { data: uData, label: "Return", showMark: false, type: "line" },
@@ -223,7 +199,7 @@ const TabDashboard = () => {
             series={[{ data: [10, 7, 5] }]}
             // layout="horizontal"
             width={500}
-            height={400}
+            height={300}
           />
           <div className="text-center text-xl">
             Biểu đồ thể loại sách được yêu thích nhất
@@ -236,7 +212,7 @@ const TabDashboard = () => {
   return (
     <div>
       {/* Header Tab: Overview - Analysis */}
-      <div className=" flex gap-5 text-center items-center">
+      <div className="flex gap-5 text-center items-center">
         <div
           className={`text-xl px-10 cursor-pointer  ${
             activeTab === "overview"

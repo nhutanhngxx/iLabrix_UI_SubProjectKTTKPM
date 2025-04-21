@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-// import { Link } from "react-router-dom";
 import backgroundImg from "../assets/Background.png";
 import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/common/Button";

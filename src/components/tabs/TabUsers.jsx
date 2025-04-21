@@ -1,5 +1,5 @@
 import { useState } from "react";
-import UserItem from "../UserItem";
+import UserItem from "../items/UserItem";
 
 const TabUsers = () => {
   const users = [
@@ -155,7 +155,7 @@ const TabUsers = () => {
               <input
                 type="button"
                 value="Search"
-                className="bg-blue-500 h-[35px] px-3 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors"
+                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg"
               ></input>
             </div>
           </div>
