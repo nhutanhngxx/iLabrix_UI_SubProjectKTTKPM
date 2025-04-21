@@ -6,7 +6,7 @@ import { mockBooks } from "../mock/mockData";
 
 const UserPage = () => {
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
-  const [advancedFilter, setAdvancedFilter] = useState(false);
+  // const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayBooks, setDisplayBooks] = useState(mockBooks);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState({
@@ -17,6 +17,8 @@ const UserPage = () => {
     language: "",
     availability: "",
   });
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("title");
 
   // Hàm giúp xử lý sự kiện thay đổi input trong filter
   const handleChangeInput = (e) => {
@@ -52,16 +54,104 @@ const UserPage = () => {
   };
 
   // Hàm sắp xếp sách theo tiêu chí
-  const handleSort = () => {};
+  const handleSort = (sortBy, sortOrder) => {
+    const sortedBooks = [...displayBooks].sort((a, b) => {
+      let compareA, compareB;
 
-  // Hàm tìm kiếm sách bằng cách nhập text vào ô search
+      switch (sortBy) {
+        case "title":
+          compareA = a.title.toLowerCase();
+          compareB = b.title.toLowerCase();
+          break;
+        case "author":
+          compareA = a.author.toLowerCase();
+          compareB = b.author.toLowerCase();
+          break;
+        case "availability":
+          compareA = parseFloat(a.availableCopies);
+          compareB = parseFloat(b.availableCopies);
+          break;
+        case "release-year":
+          compareA = new Date(a.publishedDate).getFullYear();
+          compareB = new Date(b.publishedDate).getFullYear();
+          break;
+        default:
+          return 0;
+      }
+
+      if (sortOrder === "asc") {
+        return compareA > compareB ? 1 : -1;
+      } else {
+        return compareA < compareB ? 1 : -1;
+      }
+    });
+
+    setDisplayBooks(sortedBooks);
+  };
+
+  // Hàm tìm kiếm sách theo nhiều tiêu chí
   const handleSearch = () => {
-    const newListBooks = mockBooks.filter(
-      (book) =>
-        book.title.toLowerCase().includes(searchText.trim().toLowerCase()) ||
-        book.author.toLowerCase().includes(searchText.trim().toLowerCase())
-    );
-    setDisplayBooks(newListBooks);
+    const searchResults = mockBooks.filter((book) => {
+      // Tìm kiếm theo từ khóa chung (title hoặc author)
+      if (searchText) {
+        const searchLower = searchText.trim().toLowerCase();
+        const matchesKeyword =
+          book.title.toLowerCase().includes(searchLower) ||
+          book.author.toLowerCase().includes(searchLower);
+
+        if (!matchesKeyword) return false;
+      }
+
+      // Lọc theo category
+      const category = document.getElementById("category").value;
+      if (category && category !== "all" && book.category !== category) {
+        return false;
+      }
+
+      // Lọc theo title cụ thể
+      if (
+        filter.title &&
+        !book.title.toLowerCase().includes(filter.title.trim().toLowerCase())
+      ) {
+        return false;
+      }
+
+      // Lọc theo author cụ thể
+      if (
+        filter.author &&
+        !book.author.toLowerCase().includes(filter.author.trim().toLowerCase())
+      ) {
+        return false;
+      }
+
+      // Lọc theo năm xuất bản
+      const bookYear = new Date(book.publishedDate).getFullYear();
+      if (filter.releaseYearFrom) {
+        const yearFrom = parseInt(filter.releaseYearFrom);
+        if (!isNaN(yearFrom) && bookYear < yearFrom) return false;
+      }
+      if (filter.releaseYearTo) {
+        const yearTo = parseInt(filter.releaseYearTo);
+        if (!isNaN(yearTo) && bookYear > yearTo) return false;
+      }
+
+      // Lọc theo ngôn ngữ
+      if (filter.language && book.language !== filter.language) {
+        return false;
+      }
+
+      // Lọc theo số lượng có sẵn
+      if (filter.availability) {
+        const availableCount = parseInt(filter.availability);
+        if (!isNaN(availableCount) && book.availableCopies !== availableCount) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    setDisplayBooks(searchResults);
   };
 
   // Lọc sách theo các điều kiện trong filter
@@ -104,7 +194,6 @@ const UserPage = () => {
       if (filter.availability && book.availableCopies !== filter.availability) {
         return false;
       }
-      console.log(filter);
 
       return true;
     });
@@ -129,9 +218,19 @@ const UserPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Sắp xếp sách ban đầu khi trang được tải
+  useEffect(() => {
+    // Chỉ sắp xếp khi component được mount lần đầu tiên
+    const initialSort = () => {
+      handleSort(sortBy, sortOrder);
+    };
+    initialSort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div
-      className="flex items-center flex-col w-full bg-repeat-y bg-cover bg-center"
+      className="flex items-center flex-col w-full min-h-screen bg-no-repeat bg-fixed bg-cover bg-center"
       style={{ backgroundImage: `url(${backgroundImg})` }}
     >
       {/* Header */}
@@ -139,11 +238,11 @@ const UserPage = () => {
         <div className="flex items-center justify-between w-full px-5">
           <div className="flex items-center text-white space-x-10">
             <img src={iLabrixLogo} alt="iLabrix Logo" style={{ height: 50 }} />
-            <a href="#introduce">Introduce</a>
-            <a href="#">All books</a>
-            <a href="#news-events">News - Events</a>
-            <a href="#feature">Feature</a>
-            <a href="#support">Support</a>
+            <a href="">Introduce</a>
+            <a href="">All books</a>
+            <a href="">News - Events</a>
+            <a href="">Feature</a>
+            <a href="">Support</a>
           </div>
           <div className="flex items-center space-x-4 mr-5 ml-auto flex-shrink-0 text-white">
             <Link to="/register">Sign Up</Link>
@@ -194,7 +293,7 @@ const UserPage = () => {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="price" className="font-bold">
+              <label htmlFor="release-year" className="font-bold">
                 Release Year:
               </label>
               <div className="flex gap-2 text-sm items-center justify-between">
@@ -219,7 +318,7 @@ const UserPage = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
+            {/* <div className="flex flex-col gap-1">
               <label htmlFor="advanced-filter" className="font-bold">
                 Advanced Filter:
               </label>
@@ -257,7 +356,7 @@ const UserPage = () => {
               >
                 {advancedFilter ? "Hide" : "Show"}
               </button>
-            </div>
+            </div> */}
 
             <div className="w-full justify-between flex gap-2">
               <button
@@ -277,19 +376,33 @@ const UserPage = () => {
         </div>
 
         {/* Right Side - All books*/}
-        <div className="backdrop-blur-3xl rounded-lg shadow-md p-5 w-4/5">
+        <div className="backdrop-blur-3xl rounded-lg h-fit shadow-md p-5 w-4/5">
           <h1 className="text-2xl font-semibold text-white">ALL BOOKS</h1>
           <hr className="my-3" />
           {/* Sort and Search */}
           <div className="flex items-center gap-3 mb-4">
             <label className="text-white text-lg font-medium ">Sort by:</label>
-            <select className="py-1 px-3 border rounded-xl">
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                const newSortBy = e.target.value;
+                setSortBy(newSortBy);
+                handleSort(newSortBy, sortOrder);
+              }}
+            >
               <option value="title">Title</option>
               <option value="author">Author</option>
-              <option value="price">Price</option>
+              <option value="availability">Availability Copies</option>
               <option value="release-year">Release Year</option>
             </select>
-            <select className="py-1 px-3 border rounded-xl text-sm">
+            <select
+              value={sortOrder}
+              onChange={(e) => {
+                const newSortOrder = e.target.value;
+                setSortOrder(newSortOrder);
+                handleSort(sortBy, newSortOrder);
+              }}
+            >
               <option value="asc">A-Z</option>
               <option value="desc">Z-A</option>
             </select>
@@ -321,43 +434,75 @@ const UserPage = () => {
             </div>
           </div>
           {/* All Books */}
-          <div className="grid grid-cols-3 gap-5 mt-5">
-            {displayBooks.map((book) => (
-              <div
-                key={book.bookId}
-                className="flex items-center p-4 border rounded-lg shadow-md bg-white relative"
+          {displayBooks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-10 mt-5 bg-white rounded-lg shadow-md">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-16 w-16 text-gray-400 mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                {/* Ảnh sách */}
-                <img
-                  src={book.image}
-                  alt={book.name}
-                  className="w-[100px] h-[125px] object-cover rounded-md mr-4"
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
+              </svg>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                No books found
+              </h3>
+              <p className="text-gray-500 text-center">
+                We do not have any books that match your search criteria. Please
+                try adjusting your filters or search terms.
+              </p>
+              <button
+                onClick={handleResetFilter}
+                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
+              >
+                Reset Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-5 mt-5">
+              {displayBooks.map((book) => (
+                <div
+                  key={book.bookId}
+                  className="flex items-center p-4 border rounded-lg shadow-md bg-white relative"
+                >
+                  {/* Ảnh sách */}
+                  <img
+                    src={book.image}
+                    alt={book.name}
+                    className="w-[100px] h-[125px] object-cover rounded-md mr-4"
+                  />
 
-                {/* Thông tin sách */}
-                <div className="flex-1 text-sm">
-                  <h2 className="text-lg font-semibold text-blue-600">
-                    {book.title}
-                  </h2>
-                  <p className="text-gray-600">Author: {book.author}</p>
-                  <p className="text-gray-600">Language: {book.language}</p>
-                  <p className="text-gray-600">
-                    Published Date: {book.publishedDate}
-                  </p>
-                  <p className="text-gray-600">
-                    Available Copies: {book.availableCopies}
-                  </p>
-                </div>
+                  {/* Thông tin sách */}
+                  <div className="flex-1 text-sm">
+                    <h2 className="text-lg font-semibold text-blue-600">
+                      {book.title}
+                    </h2>
+                    <p className="text-gray-600">Author: {book.author}</p>
+                    <p className="text-gray-600">Language: {book.language}</p>
+                    <p className="text-gray-600">
+                      Published Date: {book.publishedDate}
+                    </p>
+                    <p className="text-gray-600">
+                      Available Copies: {book.availableCopies}
+                    </p>
+                  </div>
 
-                {/* Buttons */}
-                <div className="flex gap-2 absolute -bottom-3 right-3">
-                  <button className="bg-[#CC9933] text-white px-3 py-1 rounded-[35px] font-medium text-sm">
-                    Borrow
-                  </button>
+                  {/* Buttons */}
+                  <div className="flex gap-2 absolute -bottom-3 right-3">
+                    <button className="bg-[#CC9933] text-white px-3 py-1 rounded-[35px] font-medium text-sm">
+                      Borrow
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
