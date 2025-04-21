@@ -25,13 +25,6 @@ import { mockUsers } from "../mock/mockData";
 // Danh sách các tab
 const tabs = [
   {
-    id: "tab4",
-    label: "Dashboard",
-    component: <TabDashboard />,
-    path: "/dashboard",
-    icon: dashboardIcon,
-  },
-  {
     id: "tab1",
     label: "Dashboard",
     component: <TabDashboard />,
