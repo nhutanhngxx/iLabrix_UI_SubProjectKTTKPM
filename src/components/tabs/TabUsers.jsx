@@ -1,34 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UserItem from "../items/UserItem";
+import { mockUsers } from "../../mock/mockData";
 
 const TabUsers = () => {
-  const users = [
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-  ];
   const [userData, setUserData] = useState({
     userName: "",
     gender: "",
@@ -40,11 +14,18 @@ const TabUsers = () => {
     phone: "",
     address: "",
   });
+  const [users, setUsers] = useState(mockUsers);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState(users);
+
   const usersPerPage = 4;
-  const totalPages = Math.ceil(users.length / usersPerPage);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
   const startIndex = (currentPage - 1) * usersPerPage;
-  const selectdUsers = users.slice(startIndex, startIndex + usersPerPage);
+  const selectdUsers = filteredUsers.slice(
+    startIndex,
+    startIndex + usersPerPage
+  );
   const [isShowModal, setIsShowModal] = useState(false);
   // Hàm chuyển trang theo số trang
   const goToPage = (page) => {
@@ -129,6 +110,32 @@ const TabUsers = () => {
     setIsShowModal(false);
   };
 
+  // Hàm xử lý tìm kiếm
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      setFilteredUsers(users);
+      setCurrentPage(1);
+      return;
+    }
+
+    const searchTermLower = searchTerm.toLowerCase();
+    const filtered = users.filter(
+      (user) =>
+        user.fullName.toLowerCase().includes(searchTermLower) ||
+        user.userName.toLowerCase().includes(searchTermLower) ||
+        user.email.toLowerCase().includes(searchTermLower) ||
+        user.role.toLowerCase().includes(searchTermLower)
+    );
+
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset về trang đầu tiên sau khi tìm kiếm
+  };
+
+  // Cập nhật filteredUsers khi users thay đổi
+  useEffect(() => {
+    setFilteredUsers(users);
+  }, [users]);
+
   return (
     <div className="text-lg p-2">
       {/* Header */}
@@ -149,14 +156,17 @@ const TabUsers = () => {
               <input
                 type="text"
                 className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
-                placeholder=""
-                id=""
-              ></input>
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              />
               <input
                 type="button"
                 value="Search"
-                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg"
-              ></input>
+                onClick={handleSearch}
+                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg cursor-pointer"
+              />
             </div>
           </div>
         </div>
@@ -184,11 +194,46 @@ const TabUsers = () => {
       </div>
 
       {/* List Users */}
-      <div className="grid grid-cols-2 gap-7 h-3/5">
-        {selectdUsers.map((user, index) => (
-          <UserItem key={index} user={user} />
-        ))}
-      </div>
+      {filteredUsers.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-10 mt-5 bg-white rounded-lg shadow-md">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-16 w-16 text-gray-400 mb-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            No users found
+          </h3>
+          <p className="text-gray-500 text-center">
+            No users match your search criteria. Please try a different search
+            term.
+          </p>
+          <button
+            onClick={() => {
+              setSearchTerm("");
+              setFilteredUsers(users);
+            }}
+            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
+          >
+            Clear Search
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-7 h-3/5">
+          {selectdUsers.map((user, index) => (
+            <UserItem key={index} user={user} />
+          ))}
+        </div>
+      )}
 
       {/* Paging Navigation */}
       <div className="absolute text-base bottom-3 right-7">
@@ -313,7 +358,8 @@ const TabUsers = () => {
             </div>
             <div className="flex justify-end gap-3 mt-4">
               <button
-                onClick={() => setIsShowModal(false)}
+                onClick={handleCancel}
+                type="reset"
                 className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
               >
                 Close
@@ -321,6 +367,7 @@ const TabUsers = () => {
               <button
                 className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
                 type="submit"
+                onClick={handleSubmit}
               >
                 Add new user
               </button>
