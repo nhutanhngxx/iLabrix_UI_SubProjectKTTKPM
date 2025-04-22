@@ -52,14 +52,14 @@ const TabDashboard = () => {
     {
       id: 0,
       value: totalBooksReturned,
-      label: "Đã trả",
+      label: "Returned",
     },
     {
       id: 1,
       value: totalBooks - totalBooksInInventory,
-      label: "Đang mượn",
+      label: "Borrowing",
     },
-    { id: 2, value: totalBooksLateReturn, label: "Quá hạn" },
+    { id: 2, value: totalBooksLateReturn, label: "Over" },
   ];
 
   // Line Chart Data with 2 series
@@ -70,9 +70,9 @@ const TabDashboard = () => {
 
   const OverViewTab = () => {
     return (
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 grid-rows-4 gap-2">
         {/* BorrowRecords - Pie Chart */}
-        <div className="flex justify-center">
+        <div className="flex justify-center row-span-2">
           <div>
             <PieChart
               colors={["green", "yellow", "oklch(0.704 0.191 22.216)"]}
@@ -89,7 +89,7 @@ const TabDashboard = () => {
               ]}
               title="Borrow Records"
               width={400}
-              height={150}
+              height={200}
             />
             <div className="text-center">
               Total books in inventory: {totalBooks}
@@ -98,7 +98,7 @@ const TabDashboard = () => {
         </div>
 
         {/* BorrowRecords - Borrowed Today, Returned Yesterday */}
-        <div className="flex gap-5 items-center justify-center border-2 border-gray-400 rounded-xl">
+        <div className="flex gap-5 items-center justify-center border-2 border-gray-400 rounded-xl row-span-1">
           <div className="bg-white/75 py-2 px-5 rounded-xl">
             <div className="text-lg font-medium">Books Borrowed Today</div>
             <div className="flex justify-around mt-2 items-center">
@@ -119,8 +119,25 @@ const TabDashboard = () => {
           </div>
         </div>
 
+        {/* Number of Borrwer - Liner Chart */}
+        <div className="flex flex-col items-center justify-center row-span-3">
+          <LineChart
+            xAxis={[{ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }]}
+            series={[
+              {
+                data: [2, 5.5, 2, 8.5, 1.5, 5, 3, 7, 4, 6, 5, 8],
+              },
+            ]}
+            width={500}
+            height={350}
+          />
+          <div className="text-center">
+            Chart of number of people borrowing books over time
+          </div>
+        </div>
+
         {/* Late Return - Pie Chart */}
-        <div className="flex justify-center">
+        <div className="flex justify-center row-span-2">
           <div>
             <PieChart
               colors={["orange", "skyblue", "oklch(0.396 0.141 25.723)"]}
@@ -138,28 +155,11 @@ const TabDashboard = () => {
               ]}
               title="Borrow Records"
               width={400}
-              height={150}
+              height={200}
             />
             <div className="text-center">
-              Total books late ruturn: {totalBooks}
+              Total books late return: {totalBooks}
             </div>
-          </div>
-        </div>
-
-        {/* Number of Borrwer - Liner Chart */}
-        <div className="flex flex-col items-center justify-center">
-          <LineChart
-            xAxis={[{ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }]}
-            series={[
-              {
-                data: [2, 5.5, 2, 8.5, 1.5, 5, 3, 7, 4, 6, 5, 8],
-              },
-            ]}
-            width={500}
-            height={200}
-          />
-          <div className="text-center">
-            Biểu đồ số người mượn sách theo thời gian
           </div>
         </div>
       </div>
@@ -173,7 +173,7 @@ const TabDashboard = () => {
         <div className="flex flex-col items-center">
           <LineChart
             width={500}
-            height={300}
+            height={400}
             series={[
               { data: pData, label: "Borrow", showMark: false, type: "line" },
               { data: uData, label: "Return", showMark: false, type: "line" },
@@ -181,7 +181,7 @@ const TabDashboard = () => {
             xAxis={[{ scaleType: "point", data: xLabels_Month }]}
           />
           <div className="text-center text-xl">
-            Biểu đồ số sách mượn và trả theo thời gian
+            Number of books borrowed and returned
           </div>
         </div>
 
@@ -199,10 +199,10 @@ const TabDashboard = () => {
             series={[{ data: [10, 7, 5] }]}
             // layout="horizontal"
             width={500}
-            height={300}
+            height={400}
           />
           <div className="text-center text-xl">
-            Biểu đồ thể loại sách được yêu thích nhất
+            Number of most popular genres
           </div>
         </div>
       </div>

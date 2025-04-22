@@ -1,9 +1,14 @@
 import { useRef, useState, useEffect } from "react";
 import editIcon from "/icons/edit.png";
+import { mockCategories } from "../../mock/mockData";
 
 const TabBooks = () => {
   const api_fake = "https://67cedd26823da0212a807409.mockapi.io/iLabrix/books";
+  const [categorys, setCategories] = useState(mockCategories);
   const [allBooks, setAllBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
     const fetchBooks = async () => {
       try {
@@ -13,6 +18,7 @@ const TabBooks = () => {
         }
         const data = await response.json();
         setAllBooks(data);
+        setFilteredBooks(data);
       } catch (error) {
         console.error("Lỗi API:", error);
       }
@@ -20,11 +26,148 @@ const TabBooks = () => {
     fetchBooks();
   }, []);
 
+  // Hàm tìm kiếm sách
+  const handleSearch = () => {
+    applyFilters();
+  };
+
+  // Hàm áp dụng các bộ lọc (category và search)
+  const applyFilters = () => {
+    let filtered = [...allBooks];
+
+    // Lọc theo category nếu có
+    if (selectedCategoryId) {
+      const categoryIdNum = Number(selectedCategoryId);
+      filtered = filtered.filter((book) => {
+        // Kiểm tra trường categories (mảng các categoryId)
+        if (book.categories && Array.isArray(book.categories)) {
+          return book.categories.includes(categoryIdNum);
+        }
+
+        // Kiểm tra trường category (mảng các categoryId)
+        if (book.category && Array.isArray(book.category)) {
+          return book.category.includes(categoryIdNum);
+        }
+
+        // Kiểm tra trường category (chuỗi hoặc số)
+        if (book.category) {
+          return (
+            book.category === selectedCategoryId ||
+            book.category === categoryIdNum
+          );
+        }
+
+        // Kiểm tra trường categoryId
+        if (book.categoryId) {
+          return (
+            book.categoryId === selectedCategoryId ||
+            book.categoryId === categoryIdNum
+          );
+        }
+
+        return false;
+      });
+    }
+
+    // Lọc theo từ khóa tìm kiếm nếu có
+    if (searchTerm.trim()) {
+      const searchTermLower = searchTerm.toLowerCase();
+      filtered = filtered.filter((book) => {
+        // Tìm kiếm theo tên sách
+        if (book.title && book.title.toLowerCase().includes(searchTermLower)) {
+          return true;
+        }
+
+        // Tìm kiếm theo tên tác giả
+        if (
+          book.author &&
+          book.author.toLowerCase().includes(searchTermLower)
+        ) {
+          return true;
+        }
+
+        // Tìm kiếm theo mô tả
+        if (
+          book.description &&
+          book.description.toLowerCase().includes(searchTermLower)
+        ) {
+          return true;
+        }
+
+        // Tìm kiếm theo thể loại
+        if (book.categories && Array.isArray(book.categories)) {
+          const hasMatchingCategory = book.categories.some((catId) => {
+            const category = categorys.find((c) => c.categoryId === catId);
+            return (
+              category &&
+              category.categoryName.toLowerCase().includes(searchTermLower)
+            );
+          });
+          if (hasMatchingCategory) return true;
+        }
+
+        if (book.category && Array.isArray(book.category)) {
+          const hasMatchingCategory = book.category.some((catId) => {
+            const category = categorys.find((c) => c.categoryId === catId);
+            return (
+              category &&
+              category.categoryName.toLowerCase().includes(searchTermLower)
+            );
+          });
+          if (hasMatchingCategory) return true;
+        }
+
+        // Tìm kiếm theo category là số
+        if (book.category && typeof book.category === "number") {
+          const category = categorys.find(
+            (c) => c.categoryId === book.category
+          );
+          if (
+            category &&
+            category.categoryName.toLowerCase().includes(searchTermLower)
+          ) {
+            return true;
+          }
+        }
+
+        // Tìm kiếm theo category là chuỗi
+        if (book.category && typeof book.category === "string") {
+          if (book.category.toLowerCase().includes(searchTermLower)) {
+            return true;
+          }
+          // Kiểm tra xem chuỗi có phải là tên category không
+          const matchingCategory = categorys.find(
+            (c) => c.categoryName.toLowerCase() === book.category.toLowerCase()
+          );
+          if (
+            matchingCategory &&
+            matchingCategory.categoryName
+              .toLowerCase()
+              .includes(searchTermLower)
+          ) {
+            return true;
+          }
+        }
+
+        return false;
+      });
+    }
+
+    setFilteredBooks(filtered);
+    setCurrentPage(1); // Reset về trang đầu tiên khi áp dụng bộ lọc
+  };
+
+  // Cập nhật filteredBooks khi các bộ lọc thay đổi
+  useEffect(() => {
+    applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategoryId, searchTerm, allBooks]);
+
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] =
     useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [inputValue, setInputValue] = useState("");
-  const categorys = ["Fantasy", "Sci-Fi", "Horror", "Mystery", "Romance"];
+  // const categorys = ["Fantasy", "Sci-Fi", "Horror", "Mystery", "Romance"];
 
   // Thông tin chi tiết của sách
   const fileInputRef = useRef(null);
@@ -60,9 +203,12 @@ const TabBooks = () => {
   // Phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const booksPerPage = 4;
-  const totalPages = Math.ceil(allBooks.length / booksPerPage);
+  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
   const startIndex = (currentPage - 1) * booksPerPage;
-  const selectdBooks = allBooks.slice(startIndex, startIndex + booksPerPage);
+  const selectdBooks = filteredBooks.slice(
+    startIndex,
+    startIndex + booksPerPage
+  );
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
@@ -133,10 +279,11 @@ const TabBooks = () => {
     closeModal();
   };
 
-  // Phân trang để hiển thị Sách
-  const indexOfLastBook = currentPage * booksPerPage;
-  const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = allBooks.slice(indexOfFirstBook, indexOfLastBook);
+  // Hàm xử lý khi chọn category
+  const handleCategoryChange = (e) => {
+    setSelectedCategoryId(e.target.value);
+    setCurrentPage(1); // Reset về trang đầu tiên khi thay đổi category
+  };
 
   // Mở modal xem Information's book
   const [selectedBook, setSelectedBook] = useState(null);
@@ -161,13 +308,17 @@ const TabBooks = () => {
             <label className="block text-sm font-medium text-gray-600">
               Category
             </label>
-            <select className="w-44 px-2 py-2 rounded-md text-sm font-medium">
-              <option value="" disabled selected>
-                Select a Category
-              </option>
-              <option value="category1">Category 1</option>
-              <option value="category2">Category 2</option>
-              <option value="category3">Category 3</option>
+            <select
+              className="w-44 px-2 py-2 rounded-md text-sm font-medium"
+              value={selectedCategoryId}
+              onChange={handleCategoryChange}
+            >
+              <option value="">All Categories</option>
+              {categorys.map((category) => (
+                <option key={category.categoryId} value={category.categoryId}>
+                  {category.categoryName}
+                </option>
+              ))}
             </select>
           </div>
           {/* Language */}
@@ -201,14 +352,17 @@ const TabBooks = () => {
                   <input
                     type="text"
                     className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
-                    placeholder=""
-                    id=""
-                  ></input>
+                    placeholder="Tìm kiếm sách..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  />
                   <input
                     type="button"
                     value="Search"
-                    className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg"
-                  ></input>
+                    onClick={handleSearch}
+                    className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg cursor-pointer"
+                  />
                 </div>
               </div>
             </div>
@@ -237,96 +391,180 @@ const TabBooks = () => {
       </div>
 
       {/* Hiển thị danh sách sách */}
-      <div className="grid grid-cols-2 gap-7 h-full">
-        {selectdBooks.map((book) => (
-          <div
-            key={book.bookId}
-            className="flex h-full items-center p-3 border rounded-lg shadow-md bg-white relative"
+      {filteredBooks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-10 mt-5 bg-white rounded-lg shadow-md">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-16 w-16 text-gray-400 mb-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            {/* Ảnh sách */}
-            <img
-              src={book.image_url}
-              alt={book.name}
-              className="w-24 h-32 object-cover rounded-md mr-4"
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
-
-            {/* Thông tin sách */}
-            <div className="flex flex-col justify-between h-full space-y-2 w-3/5">
-              <h2 className="text-xl font-semibold text-blue-600">
-                {book.title}
-              </h2>
-              <p className="text-gray-600 text-sm flex-grow">{book.author}</p>
-              <p className="text-gray-600 text-sm flex-grow">{book.category}</p>
-              <p className="text-gray-600 text-sm flex-grow">{book.language}</p>
-              <p className="text-gray-600 text-sm truncate w-11/12 flex-grow">
-                {book.description}
-              </p>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex gap-2 absolute bottom-3 right-3">
-              {/* Button Edit */}
+          </svg>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            Không tìm thấy sách nào
+          </h3>
+          <p className="text-gray-500 text-center">
+            {searchTerm ? (
+              <>
+                Không có sách nào phù hợp với từ khóa &quot;{searchTerm}
+                &quot;.
+              </>
+            ) : selectedCategoryId ? (
+              <>
+                Không có sách nào trong danh mục &quot;
+                {categorys.find(
+                  (c) => c.categoryId === Number(selectedCategoryId)
+                )?.categoryName || ""}
+                &quot;.
+              </>
+            ) : (
+              <>Không có sách nào trong hệ thống.</>
+            )}
+          </p>
+          <div className="flex gap-3 mt-4">
+            {searchTerm && (
               <button
-                className="rounded-md p-2 hover:bg-blue-200 transition"
-                onClick={() => handleViewInforBook(book)}
+                onClick={() => setSearchTerm("")}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
               >
-                <img src={editIcon} style={{ width: 25, height: 25 }}></img>
+                Xóa từ khóa tìm kiếm
               </button>
-
-              {/* Button Delete */}
+            )}
+            {selectedCategoryId && (
               <button
-                onClick={handleConfirmDelete}
-                className="group relative flex h-12 w-12 flex-col items-center justify-center overflow-hidden rounded-xl border-2 bg-red-400 hover:bg-red-600"
+                onClick={() => setSelectedCategoryId("")}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
               >
-                <svg
-                  viewBox="0 0 1.625 1.625"
-                  className="absolute -top-7 fill-white delay-100 group-hover:top-6 group-hover:animate-[spin_1.4s] group-hover:duration-1000"
-                  height="15"
-                  width="15"
-                >
-                  <path d="M.471 1.024v-.52a.1.1 0 0 0-.098.098v.618c0 .054.044.098.098.098h.487a.1.1 0 0 0 .098-.099h-.39c-.107 0-.195 0-.195-.195"></path>
-                  <path d="M1.219.601h-.163A.1.1 0 0 1 .959.504V.341A.033.033 0 0 0 .926.309h-.26a.1.1 0 0 0-.098.098v.618c0 .054.044.098.098.098h.487a.1.1 0 0 0 .098-.099v-.39a.033.033 0 0 0-.032-.033"></path>
-                  <path d="m1.245.465-.15-.15a.02.02 0 0 0-.016-.006.023.023 0 0 0-.023.022v.108c0 .036.029.065.065.065h.107a.023.023 0 0 0 .023-.023.02.02 0 0 0-.007-.016"></path>
-                </svg>
-                <svg
-                  width="14"
-                  fill="none"
-                  viewBox="0 0 39 7"
-                  className="origin-right duration-500 group-hover:rotate-90"
-                >
-                  <line
-                    strokeWidth="4"
-                    stroke="white"
-                    y2="5"
-                    x2="39"
-                    y1="5"
-                  ></line>
-                  <line
-                    strokeWidth="3"
-                    stroke="white"
-                    y2="1.5"
-                    x2="26.0357"
-                    y1="1.5"
-                    x1="12"
-                  ></line>
-                </svg>
-                <svg width="16" fill="none" viewBox="0 0 33 39" className="">
-                  <mask fill="white" id="path-1-inside-1_8_19">
-                    <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
-                  </mask>
-                  <path
-                    mask="url(#path-1-inside-1_8_19)"
-                    fill="white"
-                    d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                  ></path>
-                  <path strokeWidth="4" stroke="white" d="M12 6L12 29"></path>
-                  <path strokeWidth="4" stroke="white" d="M21 6V29"></path>
-                </svg>
+                Xóa bộ lọc danh mục
               </button>
-            </div>
+            )}
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-7 h-full">
+          {selectdBooks.map((book) => (
+            <div
+              key={book.bookId}
+              className="flex h-full items-center p-3 border rounded-lg shadow-md bg-white relative"
+            >
+              {/* Ảnh sách */}
+              <img
+                src={book.image_url}
+                alt={book.name}
+                className="w-24 h-32 object-cover rounded-md mr-4"
+              />
+
+              {/* Thông tin sách */}
+              <div className="flex flex-col justify-between h-full space-y-2 w-3/5">
+                <h2 className="text-xl font-semibold text-blue-600">
+                  {book.title}
+                </h2>
+                <p className="text-gray-600 text-sm flex-grow">{book.author}</p>
+                <p className="text-gray-600 text-sm flex-grow">
+                  {/* Hiển thị tên category dựa trên categoryId */}
+                  {book.categories && Array.isArray(book.categories)
+                    ? book.categories
+                        .map((catId) => {
+                          const category = categorys.find(
+                            (c) => c.categoryId === catId
+                          );
+                          return category ? category.categoryName : catId;
+                        })
+                        .join(", ")
+                    : book.category && Array.isArray(book.category)
+                    ? book.category
+                        .map((catId) => {
+                          const category = categorys.find(
+                            (c) => c.categoryId === catId
+                          );
+                          return category ? category.categoryName : catId;
+                        })
+                        .join(", ")
+                    : book.category && typeof book.category === "number"
+                    ? categorys.find((c) => c.categoryId === book.category)
+                        ?.categoryName || book.category
+                    : book.category || ""}
+                </p>
+                <p className="text-gray-600 text-sm flex-grow">
+                  {book.language}
+                </p>
+                <p className="text-gray-600 text-sm truncate w-11/12 flex-grow">
+                  {book.description}
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-2 absolute bottom-3 right-3">
+                {/* Button Edit */}
+                <button
+                  className="rounded-md p-2 hover:bg-blue-200 transition"
+                  onClick={() => handleViewInforBook(book)}
+                >
+                  <img src={editIcon} style={{ width: 25, height: 25 }}></img>
+                </button>
+
+                {/* Button Delete */}
+                <button
+                  onClick={handleConfirmDelete}
+                  className="group relative flex h-12 w-12 flex-col items-center justify-center overflow-hidden rounded-xl border-2 bg-red-400 hover:bg-red-600"
+                >
+                  <svg
+                    viewBox="0 0 1.625 1.625"
+                    className="absolute -top-7 fill-white delay-100 group-hover:top-6 group-hover:animate-[spin_1.4s] group-hover:duration-1000"
+                    height="15"
+                    width="15"
+                  >
+                    <path d="M.471 1.024v-.52a.1.1 0 0 0-.098.098v.618c0 .054.044.098.098.098h.487a.1.1 0 0 0 .098-.099h-.39c-.107 0-.195 0-.195-.195"></path>
+                    <path d="M1.219.601h-.163A.1.1 0 0 1 .959.504V.341A.033.033 0 0 0 .926.309h-.26a.1.1 0 0 0-.098.098v.618c0 .054.044.098.098.098h.487a.1.1 0 0 0 .098-.099v-.39a.033.033 0 0 0-.032-.033"></path>
+                    <path d="m1.245.465-.15-.15a.02.02 0 0 0-.016-.006.023.023 0 0 0-.023.022v.108c0 .036.029.065.065.065h.107a.023.023 0 0 0 .023-.023.02.02 0 0 0-.007-.016"></path>
+                  </svg>
+                  <svg
+                    width="14"
+                    fill="none"
+                    viewBox="0 0 39 7"
+                    className="origin-right duration-500 group-hover:rotate-90"
+                  >
+                    <line
+                      strokeWidth="4"
+                      stroke="white"
+                      y2="5"
+                      x2="39"
+                      y1="5"
+                    ></line>
+                    <line
+                      strokeWidth="3"
+                      stroke="white"
+                      y2="1.5"
+                      x2="26.0357"
+                      y1="1.5"
+                      x1="12"
+                    ></line>
+                  </svg>
+                  <svg width="16" fill="none" viewBox="0 0 33 39" className="">
+                    <mask fill="white" id="path-1-inside-1_8_19">
+                      <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
+                    </mask>
+                    <path
+                      mask="url(#path-1-inside-1_8_19)"
+                      fill="white"
+                      d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                    ></path>
+                    <path strokeWidth="4" stroke="white" d="M12 6L12 29"></path>
+                    <path strokeWidth="4" stroke="white" d="M21 6V29"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Nút chuyển trang */}
       <div className="absolute text-base bottom-3 right-7">
@@ -516,16 +754,18 @@ const TabBooks = () => {
                   <div className="mt-1 flex flex-wrap gap-2">
                     {categorys.map((category) => (
                       <button
-                        key={category}
-                        onClick={() => handleGenreClick(category)}
+                        key={category.categoryId}
+                        onClick={() => handleGenreClick(category.categoryName)}
                         className={`px-2 py-1 rounded-md ${
-                          selectedCategories.includes(category)
+                          selectedCategories.includes(category.categoryName)
                             ? "bg-transparent cursor-not-allowed"
                             : "bg-blue-100 hover:bg-blue-300"
                         }`}
-                        disabled={selectedCategories.includes(category)}
+                        disabled={selectedCategories.includes(
+                          category.categoryName
+                        )}
                       >
-                        {category}
+                        {category.categoryName}
                       </button>
                     ))}
                   </div>
