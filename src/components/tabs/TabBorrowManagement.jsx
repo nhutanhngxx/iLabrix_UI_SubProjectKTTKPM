@@ -109,6 +109,53 @@ const TabBorrowManagement = () => {
   const [borrowers, setBorrowers] = useState(allBorrowers);
   const [searchKeyword, setSearchKeyword] = useState("");
 
+  // Thêm state và logic phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const borrowersPerPage = 10;
+  const totalPages = Math.ceil(borrowers.length / borrowersPerPage);
+  const startIndex = (currentPage - 1) * borrowersPerPage;
+  const selectedBorrowers = borrowers.slice(
+    startIndex,
+    startIndex + borrowersPerPage
+  );
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
+
+  const renderPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("...");
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(currentPage + 1, totalPages - 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return pages.map((page, index) =>
+      typeof page === "number" ? (
+        <button
+          key={index}
+          className={`px-3 py-1 mx-1 rounded ${
+            currentPage === page ? "font-bold underline" : "text-gray-700"
+          }`}
+          onClick={() => goToPage(page)}
+        >
+          {page}
+        </button>
+      ) : (
+        <span key={index} className="px-2 text-gray-500">
+          {page}
+        </span>
+      )
+    );
+  };
+
   const handleSearch = () => {
     const keyword = searchKeyword.trim().toLowerCase();
     if (keyword === "") {
@@ -224,8 +271,8 @@ const TabBorrowManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {borrowers.length > 0 ? (
-              borrowers.map((user, index) => (
+            {selectedBorrowers.length > 0 ? (
+              selectedBorrowers.map((user, index) => (
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="py-2 px-4">{index + 1}</td>
                   <td className="py-2 px-4">{user.name}</td>
@@ -260,6 +307,25 @@ const TabBorrowManagement = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Thêm phân trang ở cuối bảng */}
+      <div className="absolute text-base bottom-3 right-7">
+        <button
+          className="px-3 py-1"
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        {renderPageNumbers()}
+        <button
+          className="px-3 py-1"
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
       </div>
 
       {/* Modal hiển thị chi tiết */}
