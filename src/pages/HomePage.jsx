@@ -21,6 +21,7 @@ import managementIcon from "/icons/management.png";
 import { logout } from "../redux/slice/userSlice";
 
 import { mockUsers } from "../mock/mockData";
+import TabInventory from "../components/tabs/TabInventory";
 
 // Danh sách các tab
 const tabs = [
@@ -57,6 +58,13 @@ const tabs = [
     label: "Borrow Management",
     component: <TabBorrrowManagement />,
     path: "/management",
+    icon: managementIcon,
+  },
+  {
+    id: "tab6",
+    label: "Inventory",
+    component: <TabInventory />,
+    path: "/inventory",
     icon: managementIcon,
   },
 ];
@@ -192,7 +200,7 @@ const HomePage = () => {
                 onClick={() => setIsModalOpen(false)}
               >
                 <div
-                  className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg w-auto min-w-[12rem] max-w-sm min-h-[4rem] max-h-[15rem] p-4 overflow-y-auto transition-transform duration-300 scale-95 hover:scale-100"
+                  className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg w-auto min-w-[12rem] max-w-sm min-h-[4rem] max-h-[12rem] p-4 overflow-y-auto transition-transform duration-300 scale-95 hover:scale-100"
                   onClick={(e) => e.stopPropagation()} // Ngăn sự kiện click đóng modal khi bấm vào bên trong
                 >
                   <ul className="space-y-2">
@@ -213,11 +221,11 @@ const HomePage = () => {
                       </button>
                     </li>
                     <hr />
-                    <li>
+                    {/* <li>
                       <button className="text-red-500 font-medium hover:bg-gray-100 hover:backdrop-blur-md px-3 py-2 rounded-md transition-all duration-200">
                         Delete Account
                       </button>
-                    </li>
+                    </li> */}
                     <li>
                       <button
                         onClick={handleLogout}
