@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-// import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 
 import backgroundImg from "../assets/Background.png";
 import logoHorizontal from "../assets/iLibrary.png";
@@ -16,7 +17,6 @@ import bookIcon from "/icons/book.png";
 import usersIcon from "/icons/users.png";
 import dashboardIcon from "/icons/dashboard.png";
 import managementIcon from "/icons/management.png";
-import { useNavigate } from "react-router-dom";
 
 import { logout } from "../redux/slice/userSlice";
 
@@ -52,7 +52,6 @@ const tabs = [
     path: "/users",
     icon: usersIcon,
   },
-
   {
     id: "tab5",
     label: "Borrow Management",
@@ -91,11 +90,16 @@ const CurrentDateTime = () => {
 };
 
 const HomePage = () => {
-  const [activeTab, setActiveTab] = useState("tab1");
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const userStored = useSelector((state) => state.user);
+  console.log(userStored);
+
+  const [user, setUser] = useState(mockUsers[0]);
+  const [activeTab, setActiveTab] = useState("tab4");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [user, setUser] = useState();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -132,12 +136,6 @@ const HomePage = () => {
     setIsModalOpen(false);
   };
 
-  const navigate = useNavigate();
-  // const location = useLocation();
-  // const handleTabClick = (tabId, path) => {
-  //   setActiveTab(tabId);
-  //   navigate(path);
-  // };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUser((prevUser) => ({ ...prevUser, [name]: value }));
@@ -145,6 +143,11 @@ const HomePage = () => {
 
   const handleUserClick = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
   };
 
   return (
@@ -171,8 +174,12 @@ const HomePage = () => {
             className="flex items-center space-x-4 ml-auto flex-shrink-0 cursor-pointer"
           >
             <div className="flex flex-col items-end">
-              <span className="text-white font-medium">Nguyễn Nhựt Anh</span>
-              <span className="text-white opacity-75">Admin</span>
+              <span className="text-white font-medium">
+                {mockUsers[0]?.fullName}
+              </span>
+              <span className="text-white opacity-75">
+                {mockUsers[0]?.role}
+              </span>
             </div>
             <img
               src={avt}
@@ -213,7 +220,7 @@ const HomePage = () => {
                     </li>
                     <li>
                       <button
-                        onClick={() => navigate("/")}
+                        onClick={handleLogout}
                         className="text-red-500 font-medium hover:bg-red-100 px-3 py-2 rounded-md transition-all duration-200"
                       >
                         Logout
@@ -294,7 +301,8 @@ const HomePage = () => {
                   name="email"
                   id="email"
                   type="email"
-                  value={"nhutanhngxx@gmail.com"}
+                  value={user?.email}
+                  onChange={handleInputChange}
                 />
               </div>
 

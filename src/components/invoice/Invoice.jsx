@@ -62,7 +62,7 @@ const Invoice = ({ borrower }) => {
       {/* Librarian Info */}
       <div className="px-10 mt-10">
         <p>
-          <strong>Librarian:</strong> Nguyễn Văn A
+          <strong>Librarian:</strong> Nguyễn Nhựt Anh
         </p>
         <p>
           <strong>Position:</strong> Head Librarian
