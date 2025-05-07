@@ -53,6 +53,42 @@ const authService = {
       console.log("Có lỗi xảy ra khi đăng ký: ", error);
     }
   },
+  getUserInfo: async () => {},
+  updateProfile: async (updatedData) => {
+    const token = localStorage.getItem("accessToken");
+
+    const requestBody = {
+      userId: updatedData.userId,
+      username: updatedData.username || "",
+      email: updatedData.email || "",
+      fullName: updatedData.fullName || "",
+      role: updatedData.role || "",
+      passwordHash: updatedData.passwordHash || "",
+    };
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/user-service/users/${updatedData.userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Update failed: ${errorData}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Không thể cập nhật: ", error);
+    }
+  },
 };
 
 export default authService;

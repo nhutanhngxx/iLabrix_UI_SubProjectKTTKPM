@@ -19,8 +19,7 @@ import dashboardIcon from "/icons/dashboard.png";
 import managementIcon from "/icons/management.png";
 
 import { logout } from "../redux/slice/userSlice";
-
-import { mockUsers } from "../mock/mockData";
+import authService from "../services/authService";
 
 // Danh sách các tab
 const tabs = [
@@ -92,22 +91,25 @@ const CurrentDateTime = () => {
 const HomePage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const userStored = useSelector((state) => state.user);
-  console.log(userStored);
-
-  const [user, setUser] = useState(mockUsers[0]);
+  const userStore = useSelector((state) => state.user);
+  const [user, setUser] = useState(userStore);
   const [activeTab, setActiveTab] = useState("tab4");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem("accessToken");
-      const user_id = localStorage.getItem("user_id");
       try {
         const respone = await fetch(
-          "http://localhost:3001/users/profile/" + user_id,
+          `http://localhost:8080/api/v1/user-service/users/profile/${user.userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -125,12 +127,82 @@ const HomePage = () => {
       }
     };
     fetchProfile();
-  }, []);
+  }, [user.userId, user.accessToken]);
 
   const handleViewProfile = () => {
     setIsProfileModalOpen(true);
     setIsModalOpen(false);
   };
+
+  const handleUpdateProfile = async () => {
+    const updatedData = {
+      fullName: user.fullName,
+      email: user.email,
+      userId: user.userId,
+      username: user.username,
+      role: user.role,
+      passwordHash: passwordData.newPassword,
+    };
+
+    try {
+      const res = await authService.updateProfile(updatedData);
+      setUser((prev) => ({ ...prev, ...res }));
+      setIsProfileModalOpen(false);
+      if (!res) {
+        alert("Đã cập nhật thông tin người dùng thành công.");
+      } else {
+        alert("Không thể cập nhật thông tin người dùng.");
+      }
+    } catch (error) {
+      alert("Không thể cập nhật thông tin người dùng.");
+      console.log("Không thể cập nhật thông tin người dùng: ", error);
+    }
+  };
+
+  const handleInputPasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData({
+      ...passwordData,
+      [name]: value,
+    });
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+
+    // Kiểm tra mật khẩu mới và xác nhận mật khẩu
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("Mật khẩu mới và xác nhận mật khẩu không khớp");
+      return;
+    }
+
+    // Kiểm tra độ dài mật khẩu
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError("Mật khẩu mới phải có ít nhất 6 ký tự");
+      return;
+    }
+
+    try {
+      // Gọi API đổi mật khẩu
+      handleUpdateProfile();
+
+      // Xử lý thành công
+      alert("Đổi mật khẩu thành công");
+      setIsChangePWModalOpen(false);
+
+      // Reset form
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.error("Lỗi đổi mật khẩu:", error);
+      setPasswordError(error.message || "Không thể đổi mật khẩu");
+    }
+  };
+
   const handleChangePW = () => {
     setIsChangePWModalOpen(true);
     setIsModalOpen(false);
@@ -174,12 +246,8 @@ const HomePage = () => {
             className="flex items-center space-x-4 ml-auto flex-shrink-0 cursor-pointer"
           >
             <div className="flex flex-col items-end">
-              <span className="text-white font-medium">
-                {mockUsers[0]?.fullName}
-              </span>
-              <span className="text-white opacity-75">
-                {mockUsers[0]?.role}
-              </span>
+              <span className="text-white font-medium">{user.fullName}</span>
+              <span className="text-white opacity-75">{user.role}</span>
             </div>
             <img
               src={avt}
@@ -306,7 +374,7 @@ const HomePage = () => {
                 />
               </div>
 
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <label
                   className="block text-sm font-medium text-gray-600"
                   htmlFor="bio"
@@ -320,7 +388,7 @@ const HomePage = () => {
                   id="bio"
                   value={"Bio no yet"}
                 ></textarea>
-              </div>
+              </div> */}
 
               <div className="flex  justify-around">
                 <button
@@ -332,7 +400,8 @@ const HomePage = () => {
 
                 <button
                   className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-                  type="submit"
+                  type="button"
+                  onClick={handleUpdateProfile}
                 >
                   Update Profile
                 </button>
@@ -350,6 +419,13 @@ const HomePage = () => {
               Change Password
             </h2>
 
+            {passwordError && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 rounded">
+                <p className="font-medium">Lỗi</p>
+                <p>{passwordError}</p>
+              </div>
+            )}
+
             <form method="post" action="#">
               <div className="mb-4">
                 <label
@@ -361,39 +437,58 @@ const HomePage = () => {
                 <input
                   className="mt-1 p-2 w-full border rounded-md font-medium"
                   type="password"
+                  name="currentPassword"
+                  id="currentPW"
+                  value={passwordData.currentPassword}
+                  onChange={handleInputPasswordChange}
                 />
               </div>
 
               <div className="mb-4">
                 <label
                   className="block text-sm font-medium text-gray-600"
-                  htmlFor="email"
+                  htmlFor="newPW"
                 >
                   New Your password
                 </label>
                 <input
                   className="mt-1 p-2 w-full border rounded-md font-medium"
-                  name="newPW"
-                  id="newPW"
                   type="password"
+                  name="newPassword"
+                  id="newPW"
+                  value={passwordData.newPassword}
+                  onChange={handleInputPasswordChange}
                 />
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-600">
+                <label
+                  className="block text-sm font-medium text-gray-600 "
+                  htmlFor="confirmPW"
+                >
                   Re-enter new your password
                 </label>
                 <input
                   className="mt-1 p-2 w-full border rounded-md font-medium"
-                  name="rePW"
-                  id="rePW"
+                  name="confirmPassword"
+                  id="confirmPW"
                   type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={handleInputPasswordChange}
                 ></input>
               </div>
 
               <div className="flex  justify-around">
                 <button
-                  onClick={() => setIsChangePWModalOpen(false)}
+                  onClick={() => {
+                    setIsChangePWModalOpen(false);
+                    setPasswordError();
+                    setPasswordData({
+                      currentPassword: "",
+                      newPassword: "",
+                      confirmPassword: "",
+                    });
+                  }}
                   className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
                 >
                   Close
@@ -401,7 +496,8 @@ const HomePage = () => {
 
                 <button
                   className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-                  type="submit"
+                  type="button"
+                  onClick={handleChangePassword}
                 >
                   Change Passowrd
                 </button>

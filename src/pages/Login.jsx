@@ -4,6 +4,7 @@ import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/common/Button";
 import InputField from "../components/common/InputField";
 import Loading from "../components/common/Loading";
+import { jwtDecode } from "jwt-decode";
 
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -39,15 +40,29 @@ const Register = () => {
 
     try {
       const response = await authService.login({ username, password });
-      console.log("Login: ", response);
 
       if (!response) {
         throw new Error("Login failed");
       }
-      console.log(response);
+
+      let userId = null;
+      let role = "";
+      try {
+        const decodedToken = jwtDecode(response.accessToken);
+        userId = decodedToken.id;
+        role = decodedToken.role;
+      } catch (error) {
+        console.log("Không thể giải mã token: ", error);
+      }
 
       dispatch(
-        login({ email: response.email, accessToken: response.accessToken })
+        login({
+          email: response.email,
+          accessToken: response.accessToken,
+          fullName: response.fullName,
+          userId,
+          role,
+        })
       );
 
       navigate("/home-page");
