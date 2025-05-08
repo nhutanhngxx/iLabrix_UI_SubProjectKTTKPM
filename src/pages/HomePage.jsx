@@ -20,6 +20,7 @@ import managementIcon from "/icons/management.png";
 
 import { logout } from "../redux/slice/userSlice";
 import authService from "../services/authService";
+import TabBookLoan from "../components/tabs/TabBookLoan";
 
 // Danh sách các tab
 const tabs = [
@@ -56,6 +57,13 @@ const tabs = [
     label: "Borrow Management",
     component: <TabBorrrowManagement />,
     path: "/management",
+    icon: managementIcon,
+  },
+  {
+    id: "tab6",
+    label: "Book Loan",
+    component: <TabBookLoan />,
+    path: "/bookloan",
     icon: managementIcon,
   },
 ];

@@ -16,7 +16,7 @@ const Register = () => {
   const [rePassword, setRePassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  // const [role, setRole] = useState("");
   const [isDisable, setIsDisable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,14 +35,13 @@ const Register = () => {
       validatePassword(password) &&
       password === rePassword &&
       username &&
-      fullName &&
-      role
+      fullName
     ) {
       setIsDisable(false);
     } else {
       setIsDisable(true);
     }
-  }, [email, password, rePassword, role, fullName, username]);
+  }, [email, password, rePassword, fullName, username]);
 
   const handleRegister = async () => {
     if (isDisable) return;
@@ -52,7 +51,7 @@ const Register = () => {
     registerData.email = email;
     registerData.password = password;
     registerData.fullName = fullName;
-    registerData.role = role;
+    registerData.role = "USER";
     registerData.username = username;
     try {
       const response = await authService.register(registerData);
@@ -174,7 +173,7 @@ const Register = () => {
                   value={fullName}
                 />
 
-                <div className="px-2 mt-4 mb-4">
+                {/* <div className="px-2 mt-4 mb-4">
                   <div className="text-xl font-bold">Role</div>
                   <div className="border rounded-3xl p-3 pl-5 w-full mt-2">
                     <div className="flex items-center space-x-6">
@@ -214,7 +213,7 @@ const Register = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               <div className="mt-2 mb-2 flex justify-center">

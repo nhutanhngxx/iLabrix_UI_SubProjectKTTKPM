@@ -2,12 +2,15 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import iLabrixLogo from "../assets/iLibrary.png";
 import backgroundImg from "../assets/Background.png";
-import { mockBooks } from "../mock/mockData";
+import ModalBorrowBook from "../components/invoice/ModalBorrowBook";
+import borrowService from "../services/borrowService";
+import bookService from "../services/bookService";
 
 const UserPage = () => {
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
   // const [advancedFilter, setAdvancedFilter] = useState(false);
-  const [displayBooks, setDisplayBooks] = useState(mockBooks);
+  const [displayBooks, setDisplayBooks] = useState([]);
+  const [books, setBooks] = useState();
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState({
     author: "",
@@ -19,6 +22,74 @@ const UserPage = () => {
   });
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortBy, setSortBy] = useState("title");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(null);
+
+  // Lấy danh sách sách
+  const fetchBooks = async () => {
+    try {
+      const books = await bookService.getBooks();
+      setBooks(books);
+      setDisplayBooks(books);
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi lấy danh sách sách: ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  // Mở modal mượn sách
+  const handleOpenModalBorrowBook = (book) => {
+    if (book.availableCopies <= 0) {
+      alert("Sách này hiện đã hết, không thể mượn");
+      return;
+    }
+
+    setSelectedBook(book);
+    setShowModal(true);
+  };
+
+  const handleBorrow = async (borrowData) => {
+    try {
+      const borrowRequest = {
+        borrowingPeriod: borrowData.days,
+        borrowRequestDetails: [
+          {
+            bookId: selectedBook.id,
+          },
+        ],
+      };
+
+      console.log("Thông tin mượn sách:", {
+        sách: selectedBook.title,
+        ngàyMượn: borrowData.fromDate,
+        ngàyTrả: borrowData.toDate,
+        thờiGian: borrowData.days,
+        yêuCầu: borrowRequest,
+      });
+
+      const response = await borrowService.createBorrowRequest(borrowRequest);
+      if (response) {
+        alert("Mượn sách thành công");
+        setDisplayBooks((prevBooks) =>
+          prevBooks.map((book) =>
+            book.bookId === selectedBook.bookId
+              ? { ...book, availableCopies: book.availableCopies - 1 }
+              : book
+          )
+        );
+      } else {
+        alert("Mượn sách thất bại");
+      }
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi mượn sách: ", error);
+    }
+
+    setSelectedBook(null);
+    setShowModal(false);
+  };
 
   // Hàm giúp xử lý sự kiện thay đổi input trong filter
   const handleChangeInput = (e) => {
@@ -50,7 +121,7 @@ const UserPage = () => {
       const element = document.getElementById(id);
       if (element) element.value = "";
     });
-    setDisplayBooks(mockBooks);
+    setDisplayBooks(books);
   };
 
   // Hàm sắp xếp sách theo tiêu chí
@@ -91,7 +162,7 @@ const UserPage = () => {
 
   // Hàm tìm kiếm sách theo nhiều tiêu chí
   const handleSearch = () => {
-    const searchResults = mockBooks.filter((book) => {
+    const searchResults = books.filter((book) => {
       // Tìm kiếm theo từ khóa chung (title hoặc author)
       if (searchText) {
         const searchLower = searchText.trim().toLowerCase();
@@ -156,7 +227,7 @@ const UserPage = () => {
 
   // Lọc sách theo các điều kiện trong filter
   const handleFilter = () => {
-    const newListBooks = mockBooks.filter((book) => {
+    const newListBooks = books.filter((book) => {
       if (
         filter.title &&
         !book.title.toLowerCase().includes(filter.title.trim().toLowerCase())
@@ -446,7 +517,7 @@ const UserPage = () => {
                 />
                 <input
                   type="button"
-                  value="search"
+                  value="Search"
                   onClick={handleSearch}
                   className="bg-blue-500 px-2 rounded-tr-lg rounded-br-lg text-white font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
                 />
@@ -488,13 +559,13 @@ const UserPage = () => {
             <div className="grid grid-cols-3 gap-5 mt-5">
               {displayBooks.map((book) => (
                 <div
-                  key={book.bookId}
+                  key={book.id}
                   className="flex items-center p-4 border rounded-lg shadow-md bg-white relative"
                 >
                   {/* Ảnh sách */}
                   <img
-                    src={book.image}
-                    alt={book.name}
+                    // src={book.image}
+                    alt={book.title}
                     className="w-[100px] h-[125px] object-cover rounded-md mr-4"
                   />
 
@@ -503,10 +574,10 @@ const UserPage = () => {
                     <h2 className="text-lg font-semibold text-blue-600">
                       {book.title}
                     </h2>
-                    <p className="text-gray-600">Author: {book.author}</p>
-                    <p className="text-gray-600">Language: {book.language}</p>
+                    {/* <p className="text-gray-600">Author: {book.author}</p> */}
+                    {/* <p className="text-gray-600">Language: {book.language}</p> */}
                     <p className="text-gray-600">
-                      Published Date: {book.publishedDate}
+                      Published Year: {book.yearPublished}
                     </p>
                     <p className="text-gray-600">
                       Available Copies: {book.availableCopies}
@@ -515,7 +586,10 @@ const UserPage = () => {
 
                   {/* Buttons */}
                   <div className="flex gap-2 absolute -bottom-3 right-3">
-                    <button className="bg-[#CC9933] text-white px-3 py-1 rounded-[35px] font-medium text-sm">
+                    <button
+                      className="bg-[#CC9933] text-white px-3 py-1 rounded-[35px] font-medium text-sm"
+                      onClick={() => handleOpenModalBorrowBook(book)}
+                    >
                       Borrow
                     </button>
                   </div>
@@ -525,6 +599,18 @@ const UserPage = () => {
           )}
         </div>
       </div>
+
+      {showModal && (
+        <ModalBorrowBook
+          book={selectedBook}
+          isOpen={showModal}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedBook(null);
+          }}
+          onBorrow={handleBorrow}
+        />
+      )}
 
       {/* Scroll to Top Button */}
       {showScrollTopButton && (
