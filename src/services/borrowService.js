@@ -20,8 +20,6 @@ const borrowService = {
       }
 
       const data = await response.json();
-      console.log("Data in service: ", data);
-
       return data;
     } catch (error) {
       console.log("Có lỗi xảy ra khi tạo yêu cầu mượn sách: ", error);

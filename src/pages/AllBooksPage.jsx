@@ -566,7 +566,7 @@ const UserPage = () => {
                   <img
                     // src={book.image}
                     alt={book.title}
-                    className="w-[100px] h-[125px] object-cover rounded-md mr-4"
+                    className="w-[100px] h-[125px] object-cover rounded-md mr-4 border"
                   />
 
                   {/* Thông tin sách */}
