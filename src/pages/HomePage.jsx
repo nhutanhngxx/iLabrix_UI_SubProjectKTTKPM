@@ -164,7 +164,7 @@ const HomePage = () => {
       const res = await authService.updateProfile(updatedData);
       setUser((prev) => ({ ...prev, ...res }));
       setIsProfileModalOpen(false);
-      if (!res) {
+      if (res) {
         alert("Đã cập nhật thông tin người dùng thành công.");
       } else {
         alert("Không thể cập nhật thông tin người dùng.");
