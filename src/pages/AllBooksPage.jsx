@@ -62,14 +62,6 @@ const UserPage = () => {
         ],
       };
 
-      console.log("Thông tin mượn sách:", {
-        sách: selectedBook.title,
-        ngàyMượn: borrowData.fromDate,
-        ngàyTrả: borrowData.toDate,
-        thờiGian: borrowData.days,
-        yêuCầu: borrowRequest,
-      });
-
       const response = await borrowService.createBorrowRequest(borrowRequest);
       if (response) {
         alert("Mượn sách thành công");

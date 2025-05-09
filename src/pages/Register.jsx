@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-// import { Link } from "react-router-dom";
 import backgroundImg from "../assets/Background.png";
 import iLabrixLogo from "../assets/iLibrary.png";
 import Button from "../components/common/Button";
@@ -16,9 +15,14 @@ const Register = () => {
   const [rePassword, setRePassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  // const [role, setRole] = useState("");
   const [isDisable, setIsDisable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [errors, setErrors] = useState({
+    general: "", // Lỗi chung
+    email: "", // Lỗi email
+    username: "", // Lỗi username
+  });
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -47,12 +51,19 @@ const Register = () => {
     if (isDisable) return;
     setIsLoading(true);
 
+    setErrors({
+      general: "",
+      email: "",
+      username: "",
+    });
+
     let registerData = {};
     registerData.email = email;
     registerData.password = password;
     registerData.fullName = fullName;
     registerData.role = "USER";
     registerData.username = username;
+
     try {
       const response = await authService.register(registerData);
 
@@ -61,22 +72,44 @@ const Register = () => {
           state: { message: "Account registration successful!" },
         });
       } else if (response.errors) {
-        const errorMessages = [];
+        const newErrors = { general: "", email: "", username: "" };
+
         for (const key in response.errors) {
           if (Object.hasOwnProperty.call(response.errors, key)) {
-            errorMessages.push(response.errors[key]);
+            const errorMsg = response.errors[key];
+
+            // Phân loại lỗi dựa theo nội dung
+            if (
+              errorMsg.includes("Email") ||
+              errorMsg.toLowerCase().includes("email")
+            ) {
+              newErrors.email = errorMsg;
+            } else if (
+              errorMsg.includes("Username") ||
+              errorMsg.toLowerCase().includes("username")
+            ) {
+              newErrors.username = errorMsg;
+            } else {
+              // Lỗi chung hoặc không xác định
+              newErrors.general =
+                (newErrors.general ? newErrors.general + "\n" : "") + errorMsg;
+            }
           }
         }
-        if (errorMessages.length > 0) {
-          alert(errorMessages.join("\n"));
-        } else {
-          alert("Registration failed. Please try again.");
-        }
+
+        setErrors(newErrors);
       } else {
-        alert("Registration failed. Please try again.");
+        setErrors({
+          ...errors,
+          general: "Registration failed. Please try again.",
+        });
       }
     } catch (error) {
       console.log(error);
+      setErrors({
+        ...errors,
+        general: "An unexpected error occurred. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -108,33 +141,85 @@ const Register = () => {
             REGISTER
           </div>
 
+          {/* Hiển thị lỗi chung (nếu có) */}
+          {errors.general && (
+            <div className="mt-2 mb-2 text-red-500 text-sm text-center max-w-md">
+              {errors.general.split("\n").map((msg, index) => (
+                <div key={index} className="mb-1">
+                  • {msg}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Form */}
           {isLoading ? (
             <Loading />
           ) : (
-            <div className="w-11/12">
+            <div className="w-full px-5">
               <div className="flex justify-around ">
-                <InputField
-                  type="text"
-                  label="Username"
-                  placeholder="Enter your new username..."
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setUsername(value);
-                  }}
-                  value={username}
-                />
+                <div className="w-[45%]">
+                  <InputField
+                    type="text"
+                    label="Username"
+                    placeholder="Enter your new username..."
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setUsername(value);
+                    }}
+                    value={username}
+                  />
+                  {/* Hiển thị lỗi username */}
+                  {errors.username && (
+                    <div className="text-xs text-red-500 mt-1">
+                      ✗ {errors.username}
+                    </div>
+                  )}
+                </div>
 
-                <InputField
-                  type="email"
-                  label="Email"
-                  placeholder="Enter your email..."
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setEmail(value);
-                  }}
-                  value={email}
-                />
+                <div className="w-[45%]">
+                  <InputField
+                    type="email"
+                    label="Email"
+                    placeholder="Enter your email..."
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setEmail(value);
+                    }}
+                    value={email}
+                  />
+                  {/* Hiển thị lỗi email */}
+                  {errors.email && (
+                    <div className="text-xs text-red-500 mt-1">
+                      ✗ {errors.email}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Thêm kiểm tra email */}
+              <div className="flex justify-around w-full mb-3">
+                <div className="w-[45%]">
+                  {username && !errors.username && (
+                    <div className="text-xs text-green-500 mt-1">
+                      ✓ Username is valid
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-[45%]">
+                  {email && !errors.email && (
+                    <div className="text-xs mt-1">
+                      {validateEmail(email) ? (
+                        <span className="text-green-500">✓ Email is valid</span>
+                      ) : (
+                        <span className="text-red-500">
+                          ✗ Please enter a valid email
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-around ">
@@ -161,6 +246,41 @@ const Register = () => {
                 />
               </div>
 
+              {/* Phần kiểm tra password */}
+              <div className="flex justify-around w-full mb-3">
+                <div className="w-[45%]">
+                  {password && (
+                    <div className="text-xs mt-1">
+                      {validatePassword(password) ? (
+                        <span className="text-green-500">
+                          ✓ Password meets requirements
+                        </span>
+                      ) : (
+                        <span className="text-red-500">
+                          ✗ Password must be at least 6 characters
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-[45%]">
+                  {rePassword && (
+                    <div className="text-xs mt-1">
+                      {password === rePassword ? (
+                        <span className="text-green-500">
+                          ✓ Passwords match
+                        </span>
+                      ) : (
+                        <span className="text-red-500">
+                          ✗ Passwords do not match
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="flex justify-around ">
                 <InputField
                   type="text"
@@ -172,48 +292,6 @@ const Register = () => {
                   }}
                   value={fullName}
                 />
-
-                {/* <div className="px-2 mt-4 mb-4">
-                  <div className="text-xl font-bold">Role</div>
-                  <div className="border rounded-3xl p-3 pl-5 w-full mt-2">
-                    <div className="flex items-center space-x-6">
-                      <div className="flex items-center">
-                        <input
-                          id="USER-role"
-                          type="radio"
-                          name="role"
-                          value="USER"
-                          checked={role === "USER"}
-                          onChange={() => setRole("USER")}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
-                        />
-                        <label
-                          htmlFor="USER-role"
-                          className="ml-2 text-sm font-medium text-gray-700"
-                        >
-                          User
-                        </label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          id="ADMIN-role"
-                          type="radio"
-                          name="role"
-                          value="ADMIN"
-                          checked={role === "ADMIN"}
-                          onChange={() => setRole("ADMIN")}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
-                        />
-                        <label
-                          htmlFor="ADMIN-role"
-                          className="ml-2 text-sm font-medium text-gray-700"
-                        >
-                          Librarian
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div> */}
               </div>
 
               <div className="mt-2 mb-2 flex justify-center">

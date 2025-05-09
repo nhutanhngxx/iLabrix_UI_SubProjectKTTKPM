@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import iLabrixLogo from "../assets/iLibrary.png";
 import backgroundImg from "../assets/Background.png";
@@ -25,7 +25,6 @@ const books = [
 
 const IntroPage = () => {
   const userName = localStorage.getItem("fullName");
-  // const navigation = useNavigate();
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
   const [currentBookIndex, setCurrentBookIndex] = useState(0);
 

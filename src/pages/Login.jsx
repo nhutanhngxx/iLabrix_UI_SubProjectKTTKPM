@@ -74,10 +74,10 @@ const Register = () => {
     }
   };
 
-  const handleForgotPassword = (e) => {
-    e.preventDefault();
-    navigate("/forgot-password");
-  };
+  // const handleForgotPassword = (e) => {
+  //   e.preventDefault();
+  //   navigate("/forgot-password");
+  // };
 
   return (
     <div
@@ -139,12 +139,24 @@ const Register = () => {
               />
 
               <div className="mt-2 mb-2 font-bold">
-                <a
+                {/* <a
                   className="text-gray-600 hover:text-black cursor-pointer bg-transparent border-none"
                   onClick={handleForgotPassword}
                 >
                   Forgot Password?
-                </a>
+                </a> */}
+
+                <div className="mt-4 mb-4 flex justify-center">
+                  Do not have an account?
+                  <button
+                    type="button"
+                    className="text-orange-600 cursor-pointer bg-transparent border-none ml-1 mr-1 font-bold"
+                    onClick={() => navigate("/register")}
+                  >
+                    Sign up
+                  </button>
+                  now
+                </div>
               </div>
 
               {error && (
@@ -158,6 +170,7 @@ const Register = () => {
                   backgroundColor={isDisable ? "gray" : "#CC9933"}
                   textColor={"white"}
                   onClick={handleLogin}
+                  type="submit"
                   disable={isDisable}
                 >
                   Login
