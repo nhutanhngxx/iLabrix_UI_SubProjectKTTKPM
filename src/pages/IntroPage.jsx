@@ -4,6 +4,7 @@ import iLabrixLogo from "../assets/iLibrary.png";
 import backgroundImg from "../assets/Background.png";
 import book3 from "../assets/3.png";
 import book5 from "../assets/5.png";
+import icon1x1 from "../assets/icon1x1.png";
 
 const books = [
   {
@@ -23,7 +24,8 @@ const books = [
 ];
 
 const IntroPage = () => {
-  const navigate = useNavigate();
+  const userName = localStorage.getItem("fullName");
+  // const navigation = useNavigate();
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
   const [currentBookIndex, setCurrentBookIndex] = useState(0);
 
@@ -76,20 +78,32 @@ const IntroPage = () => {
           <div className="flex items-center text-white space-x-10">
             <img src={iLabrixLogo} alt="iLabrix Logo" style={{ height: 50 }} />
             <a href="#introduce">Introduce</a>
-            <a
-              onClick={() => navigate("/all-books")}
-              className="cursor-pointer"
-            >
-              All books
-            </a>
+            {/* <a href="#" onClick={() => navigation("/home-page")}>
+              Home Page
+            </a> */}
             <a href="#news-events">News - Events</a>
             <a href="#feature">Feature</a>
             <a href="#support">Support</a>
           </div>
-          <div className="flex items-center space-x-4 mr-5 ml-auto flex-shrink-0 text-white">
-            <Link to="/register">Sign Up</Link>
-            <Link to="/login">Log In</Link>
-          </div>
+          {userName ? (
+            // User is logged in - show user info
+            <div className="flex items-center space-x-4 mr-5">
+              <div className="flex flex-col items-end">
+                <span className="text-white font-medium">{userName}</span>
+              </div>
+              <img
+                src={icon1x1}
+                className="w-10 h-10 rounded-full border"
+                alt="User Avatar"
+              />
+            </div>
+          ) : (
+            // User not logged in - show auth links
+            <div className="flex items-center space-x-4 mr-5 ml-auto flex-shrink-0 text-white">
+              <Link to="/register">Sign Up</Link>
+              <Link to="/login">Log In</Link>
+            </div>
+          )}
         </div>
       </div>
 

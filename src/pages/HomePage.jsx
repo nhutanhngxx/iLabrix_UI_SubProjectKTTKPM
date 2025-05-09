@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -24,57 +24,6 @@ import TabBookLoan from "../components/tabs/TabBookLoan";
 import TabAllBooks from "../components/tabs/TabAllBooks";
 
 // Danh sách các tab
-const tabs = [
-  {
-    id: "tab1",
-    label: "Dashboard",
-    component: <TabDashboard />,
-    path: "/dashboard",
-    icon: dashboardIcon,
-  },
-  {
-    id: "tab2",
-    label: "Borrow Book",
-    component: <TabBorrow />,
-    path: "/check-in-out",
-    icon: checkInOutIcon,
-  },
-  {
-    id: "tab3",
-    label: "Books",
-    component: <TabBooks />,
-    path: "/books",
-    icon: bookIcon,
-  },
-  {
-    id: "tab4",
-    label: "Users",
-    component: <TabUsers />,
-    path: "/users",
-    icon: usersIcon,
-  },
-  {
-    id: "tab5",
-    label: "Borrow Management",
-    component: <TabBorrrowManagement />,
-    path: "/management",
-    icon: managementIcon,
-  },
-  {
-    id: "tab6",
-    label: "Book Loan",
-    component: <TabBookLoan />,
-    path: "/bookloan",
-    icon: managementIcon,
-  },
-  {
-    id: "tab7",
-    label: "All Books",
-    component: <TabAllBooks />,
-    path: "/allbooks",
-    icon: bookIcon,
-  },
-];
 
 // Component hiển thị thời gian hiện tại
 const CurrentDateTime = () => {
@@ -109,7 +58,7 @@ const HomePage = () => {
   const dispatch = useDispatch();
   const userStore = useSelector((state) => state.user);
   const [user, setUser] = useState(userStore);
-  const [activeTab, setActiveTab] = useState("tab4");
+  const [activeTab, setActiveTab] = useState("tab1");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -119,6 +68,68 @@ const HomePage = () => {
     confirmPassword: "",
   });
   const [passwordError, setPasswordError] = useState("");
+
+  // Tạo state cho các tab để phân quyền
+  const [tabs, setTabs] = useState([]);
+  const adminTabs = useMemo(
+    () => [
+      {
+        id: "tab1",
+        label: "Dashboard",
+        component: <TabDashboard />,
+        path: "/dashboard",
+        icon: dashboardIcon,
+      },
+      {
+        id: "tab2",
+        label: "Borrow Book",
+        component: <TabBorrow />,
+        path: "/check-in-out",
+        icon: checkInOutIcon,
+      },
+      {
+        id: "tab3",
+        label: "Books",
+        component: <TabBooks />,
+        path: "/books",
+        icon: bookIcon,
+      },
+      {
+        id: "tab4",
+        label: "Users",
+        component: <TabUsers />,
+        path: "/users",
+        icon: usersIcon,
+      },
+      {
+        id: "tab5",
+        label: "Borrow Management",
+        component: <TabBorrrowManagement />,
+        path: "/management",
+        icon: managementIcon,
+      },
+    ],
+    []
+  );
+  const userTabs = useMemo(
+    () => [
+      {
+        id: "tab1",
+        label: "Book Loan",
+        component: <TabBookLoan />,
+        path: "/bookloan",
+        icon: managementIcon,
+      },
+      {
+        id: "tab2",
+        label: "All Books",
+        component: <TabAllBooks />,
+        path: "/allbooks",
+        icon: bookIcon,
+      },
+    ],
+    []
+  );
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -135,6 +146,7 @@ const HomePage = () => {
         if (respone.ok) {
           const data = await respone.json();
           setUser(data);
+          setTabs(data.role === "ADMIN" ? adminTabs : userTabs);
         } else {
           console.log("Error fetching profile");
         }
@@ -143,7 +155,7 @@ const HomePage = () => {
       }
     };
     fetchProfile();
-  }, [user.userId, user.accessToken]);
+  }, [user.userId, user.accessToken, adminTabs, userTabs]);
 
   const handleViewProfile = () => {
     setIsProfileModalOpen(true);
