@@ -2,31 +2,13 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import iLabrixLogo from "../assets/iLibrary.png";
 import backgroundImg from "../assets/Background.png";
-import book3 from "../assets/3.png";
-import book5 from "../assets/5.png";
 import icon1x1 from "../assets/icon1x1.png";
-
-const books = [
-  {
-    title: "Dế mèn phiêu lưu ký",
-    author: "Tô Hoài",
-    description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe excepturi minus temporibus dicta, sed perspiciatis quisquam quibusdam sint neque explicabo laborum in esse voluptatem.",
-    image: book5,
-  },
-  {
-    title: "Chí Phèo",
-    author: "NAM CAO",
-    description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe excepturi minus temporibus dicta, sed perspiciatis quisquam quibusdam sint neque explicabo laborum in esse voluptatem.",
-    image: book3,
-  },
-];
 
 const IntroPage = () => {
   const userName = localStorage.getItem("fullName");
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
-  const [currentBookIndex, setCurrentBookIndex] = useState(0);
+  // const [currentBookIndex, setCurrentBookIndex] = useState(0);
+  // const books = [];
 
   // Cuộn màn hình lên
   const handleScroll = () => {
@@ -47,24 +29,24 @@ const IntroPage = () => {
   }, []);
 
   // Thay đổi banner sách mỗi 5s hoặc khi nhấn nút Previous/Next
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBookIndex((prevIndex) => (prevIndex + 1) % books.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setCurrentBookIndex((prevIndex) => (prevIndex + 1) % books.length);
+  //   }, 5000);
+  //   return () => clearInterval(interval);
+  // }, [books.length]);
 
-  const handleNextBook = () => {
-    setCurrentBookIndex((prevIndex) => (prevIndex + 1) % books.length);
-  };
+  // const handleNextBook = () => {
+  //   setCurrentBookIndex((prevIndex) => (prevIndex + 1) % books.length);
+  // };
 
-  const handlePrevBook = () => {
-    setCurrentBookIndex(
-      (prevIndex) => (prevIndex - 1 + books.length) % books.length
-    );
-  };
+  // const handlePrevBook = () => {
+  //   setCurrentBookIndex(
+  //     (prevIndex) => (prevIndex - 1 + books.length) % books.length
+  //   );
+  // };
 
-  const currentBook = books[currentBookIndex];
+  // const currentBook = books[currentBookIndex];
 
   return (
     <div
@@ -77,9 +59,7 @@ const IntroPage = () => {
           <div className="flex items-center text-white space-x-10">
             <img src={iLabrixLogo} alt="iLabrix Logo" style={{ height: 50 }} />
             <a href="#introduce">Introduce</a>
-            {/* <a href="#" onClick={() => navigation("/home-page")}>
-              Home Page
-            </a> */}
+            <a href="/home-page">Home Page</a>
             <a href="#news-events">News - Events</a>
             <a href="#feature">Feature</a>
             <a href="#support">Support</a>
@@ -109,11 +89,11 @@ const IntroPage = () => {
       {/* Container */}
       <div className="flex flex-col items-center justify-center mt-14">
         {/* Banner */}
-        <div
+        {/* <div
           id="banner"
           className="w-5/6 flex flex-row h-screen justify-center items-center relative"
         >
-          {/* Previous Button */}
+         
           <div className="w-1/12">
             <button
               className="cursor-pointer duration-200 hover:scale-125 active:scale-100"
@@ -136,15 +116,15 @@ const IntroPage = () => {
               </svg>
             </button>
           </div>
-          {/* Image */}
+
           <div className="w-3/5 flex items-center justify-center">
             <img
-              src={currentBook.image}
+              // src={currentBook.image}
               alt={currentBook.title}
               style={{ height: 400, width: 400 }}
             />
           </div>
-          {/* Text */}
+
           <div className="w-11/12">
             <div className="font-bold text-6xl text-white mb-5">
               {currentBook.title}
@@ -154,7 +134,7 @@ const IntroPage = () => {
             </div>
             <div className="text-xl text-white">{currentBook.description}</div>
           </div>
-          {/* Next Button */}
+
           <div className="w-1/12">
             <button
               className="cursor-pointer duration-200 hover:scale-125 active:scale-100"
@@ -177,7 +157,7 @@ const IntroPage = () => {
               </svg>
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* Introduce */}
         <div
