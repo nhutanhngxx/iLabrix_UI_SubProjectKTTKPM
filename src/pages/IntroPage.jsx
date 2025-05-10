@@ -3,12 +3,46 @@ import { useState, useEffect } from "react";
 import iLabrixLogo from "../assets/iLibrary.png";
 import backgroundImg from "../assets/Background.png";
 import icon1x1 from "../assets/icon1x1.png";
+import authService from "../services/authService";
 
 const IntroPage = () => {
-  const userName = localStorage.getItem("fullName");
+  const userLocal = localStorage.getItem("user");
+  const [user, setUser] = useState(userLocal ? JSON.parse(userLocal) : null);
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
   // const [currentBookIndex, setCurrentBookIndex] = useState(0);
   // const books = [];
+
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
+
+  const handleUpdateProfile = async () => {
+    const updatedData = {
+      fullName: user.fullName,
+      email: user.email,
+      userId: user.userId,
+      username: user.username,
+      role: user.role,
+      passwordHash: "",
+    };
+
+    try {
+      const res = await authService.updateProfile(updatedData);
+      setUser((prev) => ({ ...prev, ...res }));
+      setIsProfileModalOpen(false);
+      if (res) {
+        alert("Đã cập nhật thông tin người dùng thành công.");
+      } else {
+        alert("Không thể cập nhật thông tin người dùng.");
+      }
+    } catch (error) {
+      alert("Không thể cập nhật thông tin người dùng.");
+      console.log("Không thể cập nhật thông tin người dùng: ", error);
+    }
+  };
 
   // Cuộn màn hình lên
   const handleScroll = () => {
@@ -64,16 +98,17 @@ const IntroPage = () => {
             <a href="#feature">Feature</a>
             <a href="#support">Support</a>
           </div>
-          {userName ? (
+          {user ? (
             // User is logged in - show user info
             <div className="flex items-center space-x-4 mr-5">
               <div className="flex flex-col items-end">
-                <span className="text-white font-medium">{userName}</span>
+                <span className="text-white font-medium">{user.fullName}</span>
               </div>
               <img
                 src={icon1x1}
-                className="w-10 h-10 rounded-full border"
+                className="w-10 h-10 rounded-full border cursor-pointer"
                 alt="User Avatar"
+                onClick={() => setIsProfileModalOpen(true)}
               />
             </div>
           ) : (
@@ -295,6 +330,84 @@ const IntroPage = () => {
         >
           ↑
         </button>
+      )}
+
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="max-w-md w-full mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
+            <h2 className="text-2xl items-center text-sky-900 font-bold mb-6">
+              Your Profile
+            </h2>
+
+            <form method="post" action="#">
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-medium text-gray-600"
+                  htmlFor="name"
+                >
+                  Full Name
+                </label>
+                <input
+                  className="mt-1 p-2 w-full border rounded-md font-medium"
+                  type="text"
+                  name="fullName"
+                  value={user?.fullName}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-medium text-gray-600"
+                  htmlFor="email"
+                >
+                  Email Address
+                </label>
+                <input
+                  className="mt-1 p-2 w-full border rounded-md font-medium"
+                  name="email"
+                  id="email"
+                  type="email"
+                  value={user?.email}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              {/* <div className="mb-4">
+                <label
+                  className="block text-sm font-medium text-gray-600"
+                  htmlFor="bio"
+                >
+                  Bio
+                </label>
+                <textarea
+                  className="mt-1 p-2 w-full border rounded-md font-medium"
+                  rows="3"
+                  name="bio"
+                  id="bio"
+                  value={"Bio no yet"}
+                ></textarea>
+              </div> */}
+
+              <div className="flex  justify-around">
+                <button
+                  onClick={() => setIsProfileModalOpen(false)}
+                  className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                >
+                  Close
+                </button>
+
+                <button
+                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                  type="button"
+                  onClick={handleUpdateProfile}
+                >
+                  Update Profile
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

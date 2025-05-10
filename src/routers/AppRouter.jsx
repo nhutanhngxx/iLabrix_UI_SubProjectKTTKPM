@@ -2,7 +2,6 @@ import {
   BrowserRouter,
   Navigate,
   Outlet,
-  redirect,
   Route,
   Routes,
 } from "react-router-dom";

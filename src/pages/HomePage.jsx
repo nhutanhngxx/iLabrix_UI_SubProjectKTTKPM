@@ -57,7 +57,10 @@ const HomePage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const userStore = useSelector((state) => state.user);
-  const [user, setUser] = useState(userStore);
+  const userLocal = localStorage.getItem("user");
+  const [user, setUser] = useState(
+    userLocal ? JSON.parse(userLocal) : userStore
+  );
   const [activeTab, setActiveTab] = useState("tab1");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
