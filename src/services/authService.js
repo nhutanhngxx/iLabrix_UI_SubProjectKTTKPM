@@ -1,4 +1,24 @@
 const authService = {
+  isTokenValid: () => {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      return false;
+    }
+    try {
+      const payload = token.split(".")[1];
+      if (payload) {
+        const decodedPayload = JSON.parse(atob(payload));
+        // Kiểm tra thời hạn token
+        return decodedPayload.exp > Date.now() / 1000;
+      }
+      return true;
+    } catch (error) {
+      console.error("Lỗi kiểm tra token:", error);
+      return false;
+    }
+  },
+
   login: async ({ username, password }) => {
     try {
       const response = await fetch(

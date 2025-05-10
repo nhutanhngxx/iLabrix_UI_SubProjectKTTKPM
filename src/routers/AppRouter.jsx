@@ -16,12 +16,16 @@ import AllBooksPage from "../pages/AllBooksPage";
 import RegisterNewPassword from "../pages/RegisterNewPassword";
 import { useEffect, useState } from "react";
 import Loading from "../components/common/Loading";
+import authService from "../services/authService";
 
 // Component giúp bảo vệ route, kiểm tra xác thực người dùng
 const ProtectedRoute = () => {
   const isAuthenticated = localStorage.getItem("accessToken");
+  const isTokenValid = authService.isTokenValid();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !isTokenValid) {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
     return <Navigate to={"/login"} replace />;
   }
 
