@@ -20,7 +20,7 @@ export const userSlice = createSlice({
       state.role = action.payload.role;
       state.username = action.payload.username;
       localStorage.setItem("accessToken", action.payload.accessToken);
-      localStorage.setItem("fullName", action.payload.fullName);
+      localStorage.setItem("user", JSON.stringify(action.payload));
     },
     logout: (state) => {
       state.email = null;
@@ -30,7 +30,7 @@ export const userSlice = createSlice({
       state.userId = null;
       state.username = null;
       localStorage.removeItem("accessToken");
-      localStorage.removeItem("fullName");
+      localStorage.removeItem("user");
     },
   },
 });
