@@ -175,21 +175,11 @@ const TabAllBooks = () => {
     } else {
       setFilterBooks(
         allBooks.filter(
-          (user) =>
-            user.name.toLowerCase().includes(keyword) ||
-            user.book.toLowerCase().includes(keyword)
+          (item) =>
+            item.title.toLowerCase().includes(keyword) ||
+            item.title.toLowerCase().includes(keyword)
         )
       );
-    }
-  };
-
-  // Khi chọn trạng thái, cập nhật danh sách borrowers
-  const handleFilterChange = (e) => {
-    const selectedStatus = e.target.value;
-    if (selectedStatus === "") {
-      setFilterBooks(allBooks);
-    } else {
-      setFilterBooks(allBooks.filter((user) => user.status === selectedStatus));
     }
   };
 
@@ -199,21 +189,6 @@ const TabAllBooks = () => {
         <h2 className="text-3xl items-center text-sky-900 font-bold">
           All Books
         </h2>
-        {/* Bộ lọc trạng thái */}
-        <div className="w-[200px]">
-          <label className="block text-xs mb-1 font-medium text-gray-600">
-            Filter by Status
-          </label>
-          <select
-            className="w-full border p-1 rounded-lg"
-            onChange={handleFilterChange}
-          >
-            <option value="">All</option>
-            <option value="Borrowing">Borrowing</option>
-            <option value="Returned">Returned</option>
-            <option value="Overdue">Overdue</option>
-          </select>
-        </div>
 
         {/* Search */}
         <div>
@@ -244,7 +219,7 @@ const TabAllBooks = () => {
                   type="button"
                   value="Search"
                   onClick={handleSearch}
-                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg"
+                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg cursor-pointer"
                 ></input>
               </div>
             </div>

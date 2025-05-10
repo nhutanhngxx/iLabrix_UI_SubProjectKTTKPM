@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import borrowService from "../../services/borrowService";
 
 const TabBookLoan = () => {
-  const [selectedBorrower, setSelectedBorrower] = useState(null);
   const [borrowers, setBorrowers] = useState([]);
   const [allBorrowers, setAllBorrowers] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -90,9 +89,9 @@ const TabBookLoan = () => {
     } else {
       setBorrowers(
         allBorrowers.filter(
-          (user) =>
-            user.name.toLowerCase().includes(keyword) ||
-            user.book.toLowerCase().includes(keyword)
+          (item) =>
+            item.name.toLowerCase().includes(keyword) ||
+            item.book.toLowerCase().includes(keyword)
         )
       );
     }
@@ -105,7 +104,7 @@ const TabBookLoan = () => {
       setBorrowers(allBorrowers);
     } else {
       setBorrowers(
-        allBorrowers.filter((user) => user.status === selectedStatus)
+        allBorrowers.filter((item) => item.status === selectedStatus)
       );
     }
   };
@@ -126,9 +125,11 @@ const TabBookLoan = () => {
             onChange={handleFilterChange}
           >
             <option value="">All</option>
-            <option value="Borrowing">Borrowing</option>
-            <option value="Returned">Returned</option>
-            <option value="Overdue">Overdue</option>
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="BORROWED">Borrowing</option>
+            <option value="RETURNED">Returned</option>
+            <option value="OVERDUE">Overdue</option>
           </select>
         </div>
 
@@ -161,7 +162,7 @@ const TabBookLoan = () => {
                   type="button"
                   value="Search"
                   onClick={handleSearch}
-                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg"
+                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg cursor-pointer"
                 ></input>
               </div>
             </div>
@@ -185,29 +186,27 @@ const TabBookLoan = () => {
           </thead>
           <tbody>
             {selectedBorrowers.length > 0 ? (
-              selectedBorrowers.map((user, index) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+              selectedBorrowers.map((item, index) => (
+                <tr key={item.id} className="hover:bg-gray-50">
                   <td className="py-2 px-4">{index + 1}</td>
-                  <td className="py-2 px-4">{user.book}</td>
-                  <td className="py-2 px-4">{formatDate(user.dateBorrowed)}</td>
-                  <td className="py-2 px-4">{formatDate(user.returnDate)}</td>
-                  <td className="py-2 px-4">{formatDate(user.dateReturned)}</td>
+                  <td className="py-2 px-4">{item.book}</td>
+                  <td className="py-2 px-4">{formatDate(item.dateBorrowed)}</td>
+                  <td className="py-2 px-4">{formatDate(item.returnDate)}</td>
+                  <td className="py-2 px-4">{formatDate(item.dateReturned)}</td>
                   <td className="py-2 px-4 text-left">
                     <span
                       className={`font-bold
-                        ${user.status === "PENDING" ? "text-orange-500" : ""}
-                          ${user.status === "Borrowing" ? "text-blue-500" : ""}
-                          ${user.status === "Returned" ? "text-green-500" : ""}
-                          ${user.status === "Overdue" ? "text-red-500" : ""}`}
+                        ${item.status === "PENDING" ? "text-orange-500" : ""}
+                          ${item.status === "APPROVED" ? "text-blue-500" : ""}
+                          ${item.status === "BORROWED" ? "text-green-500" : ""}
+                          ${item.status === "RETURNED" ? "text-gray-500" : ""}
+                          ${item.status === "OVERDUE" ? "text-red-500" : ""}`}
                     >
-                      {user.status}
+                      {item.status}
                     </span>
                   </td>
 
-                  <td
-                    className="py-2 px-4 text-left text-blue-600 cursor-pointer"
-                    onClick={() => setSelectedBorrower(user)}
-                  >
+                  <td className="py-2 px-4 text-left text-blue-600 cursor-pointer">
                     More
                   </td>
                 </tr>
@@ -241,136 +240,6 @@ const TabBookLoan = () => {
           Next
         </button>
       </div>
-
-      {/* Modal hiển thị chi tiết */}
-      {selectedBorrower && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 rounded-lg">
-          <div className="w-2/3 mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
-            <h2 className="text-3xl items-center text-sky-900 font-bold mb-6">
-              Edit Borrower Details
-            </h2>
-
-            <div className="flex w-full gap-5">
-              {/* Input Name */}
-              <div className="mb-4 w-1/2">
-                <label className="block text-sm font-medium text-gray-600">
-                  Borrower name
-                </label>
-                <input
-                  type="text"
-                  value={selectedBorrower.name}
-                  onChange={(e) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      name: e.target.value,
-                    }))
-                  }
-                  className="border p-2 rounded mt-1 w-full"
-                />
-              </div>
-
-              {/* Input Book */}
-              <div className="mb-4 w-1/2">
-                <label className="block text-sm font-medium text-gray-600">
-                  Borrowed books
-                </label>
-                <input
-                  type="text"
-                  value={selectedBorrower.book}
-                  onChange={(e) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      book: e.target.value,
-                    }))
-                  }
-                  className="w-full border p-2 rounded mt-1"
-                />
-              </div>
-            </div>
-
-            <div className="flex w-full gap-5">
-              {/* Borrow Date */}
-              <div className="mb-4 w-1/3">
-                <label className="block text-sm font-medium text-gray-600">
-                  Borrowed date
-                </label>
-                <input
-                  type="date"
-                  value={selectedBorrower.borrowDate}
-                  onChange={(e) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      borrowDate: e.target.value,
-                    }))
-                  }
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-
-              {/* Due Date */}
-              <div className="mb-4 w-1/3">
-                <label className="block text-sm font-medium text-gray-600">
-                  Duo date
-                </label>
-                <input
-                  type="date"
-                  value={selectedBorrower.dueDate}
-                  onChange={(e) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      dueDate: e.target.value,
-                    }))
-                  }
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-              {/* Select Status */}
-              <div className="mb-4 w-1/3">
-                <label className="block text-sm font-medium text-gray-600">
-                  Status
-                </label>
-                <select
-                  value={selectedBorrower.status}
-                  onChange={(e) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      status: e.target.value,
-                    }))
-                  }
-                  className="w-full border p-2 rounded"
-                >
-                  <option value="Borrowing">Borrowing</option>
-                  <option value="Returned">Returned</option>
-                  <option value="Overdue">Overdue</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end space-x-4">
-              <button
-                className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-                onClick={() => setSelectedBorrower(null)}
-              >
-                Close
-              </button>
-              <button
-                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-                onClick={() => {
-                  setBorrowers((prev) =>
-                    prev.map((user) =>
-                      user.id === selectedBorrower.id ? selectedBorrower : user
-                    )
-                  );
-                  setSelectedBorrower(null);
-                }}
-              >
-                Update
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
