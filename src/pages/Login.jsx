@@ -8,60 +8,47 @@ import Loading from "../components/common/Loading";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "../redux/slice/userSlice";
+import authService from "../services/authService";
 
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isDisable, setIsDisable] = useState(true);
-
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-  };
 
   const validatePassword = (password) => {
     return password.length >= 6;
   };
 
   useEffect(() => {
-    if (validateEmail(email) && validatePassword(password)) {
+    if (validatePassword(password)) {
       setIsDisable(false);
     } else {
       setIsDisable(true);
     }
-  }, [email, password]);
+  }, [password]);
 
   // Sau khi lấy được user xong, lưu userId, và username vào redux/session
   const handleLogin = async () => {
-    let registerData = {
-      email,
-      password,
-    };
-
     setIsLoading(true);
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(registerData),
-      });
+      const response = await authService.login({ username, password });
+      console.log("Login: ", response);
 
-      if (!response.ok) {
-        throw new Error(response.message || "Something went wrong");
+      if (!response) {
+        throw new Error("Login failed");
       }
+      console.log(response);
 
-      const result = response.json();
-
-      dispatch(login(result.user, result.token));
+      dispatch(
+        login({ email: response.email, accessToken: response.accessToken })
+      );
 
       navigate("/home-page");
     } catch (err) {
@@ -115,14 +102,14 @@ const Register = () => {
               }}
             >
               <InputField
-                type="email"
-                label="Email"
-                placeholder="Enter your email..."
+                type="text"
+                label="Username"
+                placeholder="Enter your username..."
                 onChange={(e) => {
                   const value = e.target.value;
-                  setEmail(value);
+                  setUsername(value);
                 }}
-                value={email}
+                value={username}
               />
 
               <InputField
