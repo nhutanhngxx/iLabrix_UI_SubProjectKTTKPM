@@ -1,40 +1,80 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import editIcon from "/icons/edit.png";
-import { mockCategories } from "../../mock/mockData";
 
 const TabInventory = () => {
-  // State for inventory data
   const [inventory, setInventory] = useState([]);
   const [filteredInventory, setFilteredInventory] = useState([]);
-  const [categorys, setCategories] = useState(mockCategories);
-  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] =
     useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [expandedRows, setExpandedRows] = useState([]); // Track expanded rows
 
-  const api_fake = "https://67cedd26823da0212a807409.mockapi.io/iLabrix/books";
+  const api_inventory =
+    "http://localhost:8080/api/v1/inventory-service/inventories";
+  const api_books = "http://localhost:8080/api/v1/book-service/books";
 
   const itemsPerPage = 6;
 
   useEffect(() => {
-    const fetchInventory = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(api_fake);
-        if (!response.ok) {
-          throw new Error("Lỗi khi lấy dữ liệu");
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          throw new Error("No authentication token found");
         }
-        const data = await response.json();
-        setInventory(data);
-        setFilteredInventory(data);
+
+        // Fetch Inventory
+        const inventoryResponse = await fetch(api_inventory, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (!inventoryResponse.ok) {
+          throw new Error("Lỗi khi lấy dữ liệu inventory");
+        }
+        const inventoryData = await inventoryResponse.json();
+
+        // Fetch Books
+        const booksResponse = await fetch(api_books, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (!booksResponse.ok) {
+          throw new Error("Lỗi khi lấy dữ liệu books");
+        }
+        const booksData = await booksResponse.json();
+        setBooks(booksData);
+
+        // Map book titles to inventory
+        const enrichedInventory = inventoryData.map((item) => {
+          const book = booksData.find((book) => book.id === item.bookId);
+          return {
+            ...item,
+            title: book ? book.title : "Unknown",
+          };
+        });
+
+        setInventory(enrichedInventory);
+        setFilteredInventory(enrichedInventory);
       } catch (error) {
         console.error("Lỗi API:", error);
       }
     };
-    fetchInventory();
+    fetchData();
   }, []);
+
+  const toggleRowExpansion = (id) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
 
   const totalPages = Math.ceil(filteredInventory.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -78,21 +118,22 @@ const TabInventory = () => {
   };
 
   const handleSearch = () => {
-    if (searchTerm.trim() === "" && selectedCategoryId === "") {
+    if (searchTerm.trim() === "") {
       setFilteredInventory(inventory);
     } else {
       const filtered = inventory.filter((item) => {
-        const matchesSearch =
-          searchTerm.trim() === "" ||
-          item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.bookId.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesCategory =
-          selectedCategoryId === "" ||
-          (item.categoryId &&
-            item.categoryId.toString() === selectedCategoryId);
-
-        return matchesSearch && matchesCategory;
+        const matchesBookId = item.bookId
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const matchesTitle = item.title
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const matchesCopy = item.bookCopies.some(
+          (copy) =>
+            copy.copyCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            copy.location.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        return matchesBookId || matchesTitle || matchesCopy;
       });
       setFilteredInventory(filtered);
     }
@@ -104,10 +145,12 @@ const TabInventory = () => {
       item || {
         bookId: "",
         title: "",
-        stockQuantity: 0,
-        location: "",
-        status: "In Stock",
-        lastUpdated: new Date().toISOString().split("T")[0],
+        totalQuantity: 0,
+        available: 0,
+        borrowed: 0,
+        lost: 0,
+        damaged: 0,
+        bookCopies: [],
       }
     );
     setIsModalOpen(true);
@@ -120,7 +163,7 @@ const TabInventory = () => {
 
   const handleSaveItem = () => {
     if (!selectedItem.bookId || !selectedItem.title) {
-      alert("Vui lòng nhập đầy đủ thông tin!");
+      alert("Vui lòng nhập Book ID và Title!");
       return;
     }
 
@@ -137,10 +180,10 @@ const TabInventory = () => {
         )
       );
     } else {
+      // Add new item
       const newItem = {
         ...selectedItem,
-        id: inventory.length + 1,
-        lastUpdated: new Date().toISOString().split("T")[0],
+        id: crypto.randomUUID(),
       };
       setInventory([...inventory, newItem]);
       setFilteredInventory([...filteredInventory, newItem]);
@@ -162,95 +205,50 @@ const TabInventory = () => {
     setSelectedItem(null);
   };
 
+  const getStatus = (item) => {
+    if (item.available === 0) return "Out of Stock";
+    if (item.available < 5) return "Low Stock";
+    return "In Stock";
+  };
+
   return (
     <div className="text-lg p-2">
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-5">
-        {/* Filters */}
-        <div className="flex items-center gap-5 font-light">
-          {/* Category filter */}
-          <div className="flex items-center gap-3 h-[40px]">
-            <label className="block text-sm font-medium text-gray-600">
-              Category
-            </label>
-            <select
-              className="w-44 px-2 py-2 rounded-md text-sm font-medium"
-              value={selectedCategoryId}
-              onChange={(e) => {
-                setSelectedCategoryId(e.target.value);
-                handleSearch();
-              }}
-            >
-              <option value="">All Categories</option>
-              {categorys.map((category) => (
-                <option key={category.categoryId} value={category.categoryId}>
-                  {category.categoryName}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Status filter */}
-          <div className="flex items-center gap-3 h-[40px]">
-            <label className="block text-sm font-medium text-gray-600">
-              Status
-            </label>
-            <select
-              className="w-44 px-2 py-2 rounded-md text-sm font-medium"
-              onChange={(e) => {
-                const status = e.target.value;
-                if (status === "") {
-                  setFilteredInventory(inventory);
-                } else {
-                  setFilteredInventory(
-                    inventory.filter((item) => item.status === status)
-                  );
-                }
-                setCurrentPage(1);
-              }}
-            >
-              <option value="">All Status</option>
-              <option value="In Stock">In Stock</option>
-              <option value="Low Stock">Low Stock</option>
-              <option value="Out of Stock">Out of Stock</option>
-            </select>
-          </div>
-
-          {/* Search */}
-          <div className="flex items-center gap-3 h-[40px]">
-            <div className="flex items-center justify-center">
-              <div className="rounded-lg bg-gray-200">
-                <div className="flex">
-                  <div className="flex w-10 items-center justify-center rounded-tl-lg rounded-bl-lg border-r border-gray-200 bg-white">
-                    <svg
-                      viewBox="0 0 20 20"
-                      aria-hidden="true"
-                      className="pointer-events-none absolute w-5 fill-gray-500 transition"
-                    >
-                      <path d="M16.72 17.78a.75.75 0 1 0 1.06-1.06l-1.06 1.06ZM9 14.5A5.5 5.5 0 0 1 3.5 9H2a7 7 0 0 0 7 7v-1.5ZM3.5 9A5.5 5.5 0 0 1 9 3.5V2a7 7 0 0 0-7 7h1.5ZM9 3.5A5.5 5.5 0 0 1 14.5 9H16a7 7 0 0 0-7-7v1.5Zm3.89 10.45 3.83 3.83 1.06-1.06-3.83-3.83-1.06 1.06ZM14.5 9a5.48 5.48 0 0 1-1.61 3.89l1.06 1.06A6.98 6.98 0 0 0 16 9h-1.5Zm-1.61 3.89A5.48 5.48 0 0 1 9 14.5V16a6.98 6.98 0 0 0 4.95-2.05l-1.06-1.06Z"></path>
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
-                    placeholder="Tìm kiếm sách..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  />
-                  <input
-                    type="button"
-                    value="Search"
-                    onClick={handleSearch}
-                    className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg cursor-pointer"
-                  />
+        {/* Search */}
+        <div className="flex items-center gap-3 h-[40px]">
+          <div className="flex items-center justify-center">
+            <div className="rounded-lg bg-gray-200">
+              <div className="flex">
+                <div className="flex w-10 items-center justify-center rounded-tl-lg rounded-bl-lg border-r border-gray-200 bg-white">
+                  <svg
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    className="pointer-events-none absolute w-5 fill-gray-500 transition"
+                  >
+                    <path d="M16.72 17.78a.75.75 0 1 0 1.06-1.06l-1.06 1.06ZM9 14.5A5.5 5.5 0 0 1 3.5 9H2a7 7 0 0 0 7 7v-1.5ZM3.5 9A5.5 5.5 0 0 1 9 3.5V2a7 7 0 0 0-7 7h1.5ZM9 3.5A5.5 5.5 0 0 1 14.5 9H16a7 7 0 0 0-7-7v1.5Zm3.89 10.45 3.83 3.83 1.06-1.06-3.83-3.83-1.06 1.06ZM14.5 9a5.48 5.48 0 0 1-1.61 3.89l1.06 1.06A6.98 6.98 0 0 0 16 9h-1.5Zm-1.61 3.89A5.48 5.48 0 0 1 9 14.5V16a6.98 6.98 0 0 0 4.95-2.05l-1.06-1.06Z"></path>
+                  </svg>
                 </div>
+                <input
+                  type="text"
+                  className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
+                  placeholder="Tìm kiếm sách..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                />
+                <input
+                  type="button"
+                  value="Search"
+                  onClick={handleSearch}
+                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-tr-lg rounded-br-lg cursor-pointer"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Nút thêm kho sách */}
+        {/* Add inventory button */}
         <button
           onClick={() => openModal()}
           className="group cursor-pointer outline-none hover:rotate-90 duration-300"
@@ -272,7 +270,7 @@ const TabInventory = () => {
         </button>
       </div>
 
-      {/* Danh sách kho sách */}
+      {/* Inventory list */}
       {filteredInventory.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-10 mt-5 bg-white rounded-lg shadow-md">
           <svg
@@ -294,118 +292,187 @@ const TabInventory = () => {
           </h3>
           <p className="text-gray-500 text-center">
             {searchTerm ? (
-              <>No items match the search term &quot;{searchTerm}&quot;.</>
-            ) : selectedCategoryId ? (
-              <>No items in the selected category.</>
+              <>No items match the search term "{searchTerm}".</>
             ) : (
               <>No inventory items available.</>
             )}
           </p>
-          <div className="flex gap-3 mt-4">
-            {searchTerm && (
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  handleSearch();
-                }}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                Clear search
-              </button>
-            )}
-            {selectedCategoryId && (
-              <button
-                onClick={() => {
-                  setSelectedCategoryId("");
-                  handleSearch();
-                }}
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                Clear category filter
-              </button>
-            )}
-          </div>
+          {searchTerm && (
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                handleSearch();
+              }}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors mt-4"
+            >
+              Clear search
+            </button>
+          )}
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg overflow-hidden shadow-md">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
-                <th className="py-3 px-4 text-left">Book ID</th>
+                {/* <th className="py-3 px-4 text-left">Book ID</th> */}
                 <th className="py-3 px-4 text-left">Title</th>
-                <th className="py-3 px-4 text-left">Stock Quantity</th>
-                <th className="py-3 px-4 text-left">Location</th>
+                <th className="py-3 px-4 text-left">Total Quantity</th>
+                <th className="py-3 px-4 text-left">Available</th>
+                <th className="py-3 px-4 text-left">Borrowed</th>
+                <th className="py-3 px-4 text-left">Lost</th>
+                <th className="py-3 px-4 text-left">Damaged</th>
+                {/* <th className="py-3 px-4 text-left">Copies</th> */}
                 <th className="py-3 px-4 text-left">Status</th>
-                <th className="py-3 px-4 text-left">Last Updated</th>
                 <th className="py-3 px-4 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
               {selectedItems.map((item) => (
-                <tr key={item.id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-4">{item.id}</td>
-                  <td className="py-3 px-4">{item.title}</td>
-                  <td className="py-3 px-4">{item.stockQuantity}</td>
-                  <td className="py-3 px-4">{item.location}</td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.status === "In Stock"
-                          ? "bg-green-100 text-green-800"
-                          : item.status === "Low Stock"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">{item.lastUpdated}</td>
-                  <td className="py-3 px-4">
-                    <div className="flex gap-2">
-                      <button
-                        className="rounded-md p-2 hover:bg-blue-200 transition"
-                        onClick={() => openModal(item)}
+                <React.Fragment key={item.id}>
+                  <tr className="border-b hover:bg-gray-50">
+                    {/* <td className="py-3 px-4">{item.bookId}</td> */}
+                    <td className="py-3 px-4">{item.title}</td>
+                    <td className="py-3 px-4">{item.totalQuantity}</td>
+                    <td className="py-3 px-4">{item.available}</td>
+                    <td className="py-3 px-4">{item.borrowed}</td>
+                    <td className="py-3 px-4">{item.lost}</td>
+                    <td className="py-3 px-4">{item.damaged}</td>
+                    {/* <td className="py-3 px-4">
+                      {item.bookCopies.length}{" "}
+                      {item.bookCopies.length === 1 ? "copy" : "copies"}
+                    </td> */}
+                    <td className="py-3 px-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          getStatus(item) === "In Stock"
+                            ? "bg-green-100 text-green-800"
+                            : getStatus(item) === "Low Stock"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
                       >
-                        <img
-                          src={editIcon}
-                          style={{ width: 20, height: 20 }}
-                          alt="Edit"
-                        />
-                      </button>
-                      <button
-                        className="rounded-md p-2 hover:bg-red-200 transition"
-                        onClick={() => handleDeleteClick(item)}
-                      >
-                        <svg
-                          width="20px"
-                          height="20px"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                        {getStatus(item)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex gap-2">
+                        <button
+                          className="rounded-md p-2 hover:bg-gray-200 transition"
+                          onClick={() => toggleRowExpansion(item.id)}
+                          title={
+                            expandedRows.includes(item.id)
+                              ? "Collapse"
+                              : "Expand"
+                          }
                         >
-                          <path
-                            d="M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H5M6 7H8M18 7H19M18 7H16M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16M10 12V16M14 12V16"
-                            stroke="#ff0000"
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                            className={
+                              expandedRows.includes(item.id) ? "rotate-180" : ""
+                            }
+                          >
+                            <path d="M6 9l6 6 6-6" />
+                          </svg>
+                        </button>
+                        <button
+                          className="rounded-md p-2 hover:bg-blue-200 transition"
+                          onClick={() => openModal(item)}
+                        >
+                          <img
+                            src={editIcon}
+                            style={{ width: 20, height: 20 }}
+                            alt="Edit"
                           />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                        </button>
+                        <button
+                          className="rounded-md p-2 hover:bg-red-200 transition"
+                          onClick={() => handleDeleteClick(item)}
+                        >
+                          <svg
+                            width="20px"
+                            height="20px"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H5M6 7H8M18 7H19M18 7H16M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16M10 12V16M14 12V16"
+                              stroke="#ff0000"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {expandedRows.includes(item.id) &&
+                    item.bookCopies.length > 0 && (
+                      <tr className="bg-gray-50">
+                        <td colSpan="10" className="p-0">
+                          <div className="p-4">
+                            <table className="w-full bg-white rounded-lg shadow-sm">
+                              <thead className="bg-gray-200 text-gray-700">
+                                <tr>
+                                  <th className="py-2 px-4 text-left">
+                                    Copy Code
+                                  </th>
+                                  <th className="py-2 px-4 text-left">
+                                    Location
+                                  </th>
+                                  <th className="py-2 px-4 text-left">
+                                    Status
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {item.bookCopies.map((copy) => (
+                                  <tr key={copy.id} className="border-b">
+                                    <td className="py-2 px-4">
+                                      {copy.copyCode}
+                                    </td>
+                                    <td className="py-2 px-4">
+                                      {copy.location}
+                                    </td>
+                                    <td className="py-2 px-4">
+                                      <span
+                                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                          copy.status === "AVAILABLE"
+                                            ? "bg-green-100 text-green-800"
+                                            : "bg-red-100 text-red-800"
+                                        }`}
+                                      >
+                                        {copy.status}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
         </div>
       )}
 
-      {/* Nút chuyển trang */}
+      {/* Pagination */}
       <div className="absolute text-base bottom-3 right-7">
         <button
-          className="px-3 py-1 "
+          className="px-3 py-1"
           onClick={() => goToPage(currentPage - 1)}
           disabled={currentPage === 1}
         >
@@ -413,7 +480,7 @@ const TabInventory = () => {
         </button>
         {renderPageNumbers()}
         <button
-          className="px-3 py-1 "
+          className="px-3 py-1"
           onClick={() => goToPage(currentPage + 1)}
           disabled={currentPage === totalPages}
         >
@@ -456,7 +523,6 @@ const TabInventory = () => {
                       }
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-600">
                       Title
@@ -474,98 +540,122 @@ const TabInventory = () => {
                       }
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-600">
-                      Stock Quantity
+                      Total Quantity
                     </label>
                     <input
                       type="number"
-                      placeholder="Enter Quantity"
+                      placeholder="Enter Total Quantity"
                       className="mt-1 p-2 w-full border rounded-md"
-                      value={selectedItem.stockQuantity || 0}
-                      onChange={(e) => {
-                        const quantity = parseInt(e.target.value);
-                        let status = "In Stock";
-                        if (quantity <= 0) status = "Out of Stock";
-                        else if (quantity < 5) status = "Low Stock";
-
+                      value={selectedItem.totalQuantity || 0}
+                      onChange={(e) =>
                         setSelectedItem({
                           ...selectedItem,
-                          stockQuantity: quantity,
-                          status: status,
-                        });
-                      }}
+                          totalQuantity: parseInt(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">
+                      Available
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Enter Available Quantity"
+                      className="mt-1 p-2 w-full border rounded-md"
+                      value={selectedItem.available || 0}
+                      onChange={(e) =>
+                        setSelectedItem({
+                          ...selectedItem,
+                          available: parseInt(e.target.value) || 0,
+                        })
+                      }
                     />
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-600">
-                      Location
+                      Borrowed
                     </label>
                     <input
-                      type="text"
-                      placeholder="Enter Storage Location"
+                      type="number"
+                      placeholder="Enter Borrowed Quantity"
                       className="mt-1 p-2 w-full border rounded-md"
-                      value={selectedItem.location || ""}
+                      value={selectedItem.borrowed || 0}
                       onChange={(e) =>
                         setSelectedItem({
                           ...selectedItem,
-                          location: e.target.value,
+                          borrowed: parseInt(e.target.value) || 0,
                         })
                       }
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-600">
-                      Status
+                      Lost
                     </label>
-                    <select
+                    <input
+                      type="number"
+                      placeholder="Enter Lost Quantity"
                       className="mt-1 p-2 w-full border rounded-md"
-                      value={selectedItem.status || "In Stock"}
+                      value={selectedItem.lost || 0}
                       onChange={(e) =>
                         setSelectedItem({
                           ...selectedItem,
-                          status: e.target.value,
+                          lost: parseInt(e.target.value) || 0,
                         })
                       }
-                    >
-                      <option value="In Stock">In Stock</option>
-                      <option value="Low Stock">Low Stock</option>
-                      <option value="Out of Stock">Out of Stock</option>
-                    </select>
+                    />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-600">
-                      Category
+                      Damaged
                     </label>
-                    <select
+                    <input
+                      type="number"
+                      placeholder="Enter Damaged Quantity"
                       className="mt-1 p-2 w-full border rounded-md"
-                      value={selectedItem.categoryId || ""}
+                      value={selectedItem.damaged || 0}
                       onChange={(e) =>
                         setSelectedItem({
                           ...selectedItem,
-                          categoryId: e.target.value,
+                          damaged: parseInt(e.target.value) || 0,
                         })
                       }
-                    >
-                      <option value="">Select Category</option>
-                      {categorys.map((category) => (
-                        <option
-                          key={category.categoryId}
-                          value={category.categoryId}
-                        >
-                          {category.categoryName}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                 </div>
               </div>
+              {selectedItem.bookCopies.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    Book Copies
+                  </h3>
+                  <div className="max-h-40 overflow-y-auto">
+                    <table className="w-full bg-gray-50 rounded-lg">
+                      <thead className="bg-gray-200 text-gray-700">
+                        <tr>
+                          <th className="py-2 px-4 text-left">Copy Code</th>
+                          <th className="py-2 px-4 text-left">Location</th>
+                          <th className="py-2 px-4 text-left">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedItem.bookCopies.map((copy) => (
+                          <tr key={copy.id} className="border-b">
+                            <td className="py-2 px-4">{copy.copyCode}</td>
+                            <td className="py-2 px-4">{copy.location}</td>
+                            <td className="py-2 px-4">{copy.status}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </form>
 
             <div className="flex gap-5 absolute bottom-5 right-5">
@@ -592,8 +682,9 @@ const TabInventory = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Confirm Delete</h3>
             <p className="mb-6">
-              Are you sure you want to delete the inventory item for "
-              {selectedItem.title}"? This action cannot be undone.
+              Are you sure you want to delete the inventory item with Book ID "
+              {selectedItem.bookId}" and Title "{selectedItem.title}"? This
+              action cannot be undone.
             </p>
             <div className="flex justify-end gap-4">
               <button
