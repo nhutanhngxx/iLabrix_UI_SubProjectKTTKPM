@@ -11,6 +11,9 @@ import TabBorrow from "../components/tabs/TabBorrow";
 import TabDashboard from "../components/tabs/TabDashboard";
 import TabBorrrowManagement from "../components/tabs/TabBorrowManagement";
 import TabUsers from "../components/tabs/TabUsers";
+import TabInventory from "../components/tabs/TabInventory";
+import TabBookLoan from "../components/tabs/TabBookLoan";
+import TabAllBooks from "../components/tabs/TabAllBooks";
 
 import checkInOutIcon from "/icons/check-in-out.png";
 import bookIcon from "/icons/book.png";
@@ -20,8 +23,6 @@ import managementIcon from "/icons/management.png";
 
 import { logout } from "../redux/slice/userSlice";
 import authService from "../services/authService";
-import TabBookLoan from "../components/tabs/TabBookLoan";
-import TabAllBooks from "../components/tabs/TabAllBooks";
 
 // Component hiển thị thời gian hiện tại
 const CurrentDateTime = () => {
@@ -107,6 +108,13 @@ const HomePage = () => {
         label: "Borrow Management",
         component: <TabBorrrowManagement />,
         path: "/management",
+        icon: managementIcon,
+      },
+      {
+        id: "tab6",
+        label: "Inventory",
+        component: <TabInventory />,
+        path: "/inventory",
         icon: managementIcon,
       },
     ],
