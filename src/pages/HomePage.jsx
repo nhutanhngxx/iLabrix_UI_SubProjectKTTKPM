@@ -263,7 +263,12 @@ const HomePage = () => {
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center space-x-10">
             {/* Logo */}
-            <img src={logoHorizontal} className="w-1/5" alt="iLabrix Logo" />
+            <img
+              src={logoHorizontal}
+              className="w-1/5 cursor-pointer"
+              alt="iLabrix Logo"
+              onClick={() => navigate("/")}
+            />
 
             {/* Thời gian */}
             <div className="text-lg font-semibold text-white">

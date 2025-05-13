@@ -1,22 +1,69 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import iLabrixLogo from "../assets/iLibrary.png";
 import backgroundImg from "../assets/Background.png";
 import icon1x1 from "../assets/icon1x1.png";
+import imamgePlaceholder from "../assets/No-Image-Placeholder.png";
 import authService from "../services/authService";
+import bookService from "../services/bookService";
+import { useDispatch } from "react-redux";
+import { logout } from "../redux/slice/userSlice";
+import Loading from "../components/common/Loading";
 
 const IntroPage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const userLocal = localStorage.getItem("user");
   const [user, setUser] = useState(userLocal ? JSON.parse(userLocal) : null);
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
-  // const [currentBookIndex, setCurrentBookIndex] = useState(0);
-  // const books = [];
+  const [books, setBooks] = useState([]);
+  const [currentBookIndex, setCurrentBookIndex] = useState(0);
+  const currentBook = books[currentBookIndex];
 
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordError, setPasswordError] = useState("");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isChangePWModalOpen, setIsChangePWModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  const fetchBooks = async () => {
+    try {
+      const response = await bookService.getBooks();
+      if (!response) {
+        throw new Error("Lỗi khi lấy dữ liệu");
+      }
+      setBooks(response);
+      setCurrentBookIndex(0);
+    } catch (error) {
+      console.error("Lỗi API:", error);
+    }
+  };
+  useEffect(() => {
+    fetchBooks();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
+
+  const handleInputPasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData({
+      ...passwordData,
+      [name]: value,
+    });
+  };
+
+  const handleViewProfile = () => {
+    setIsProfileModalOpen(true);
+    setIsModalOpen(false);
   };
 
   const handleUpdateProfile = async () => {
@@ -44,6 +91,55 @@ const IntroPage = () => {
     }
   };
 
+  // Mở modal đổi mật khẩu
+  const handleChangePW = () => {
+    setIsChangePWModalOpen(true);
+    setIsModalOpen(false);
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+
+    // Kiểm tra mật khẩu mới và xác nhận mật khẩu
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("Mật khẩu mới và xác nhận mật khẩu không khớp");
+      return;
+    }
+
+    // Kiểm tra độ dài mật khẩu
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError("Mật khẩu mới phải có ít nhất 6 ký tự");
+      return;
+    }
+
+    try {
+      // Gọi API đổi mật khẩu
+      handleUpdateProfile();
+
+      // Xử lý thành công
+      alert("Đổi mật khẩu thành công");
+      setIsChangePWModalOpen(false);
+
+      // Reset form
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.error("Lỗi đổi mật khẩu:", error);
+      setPasswordError(error.message || "Không thể đổi mật khẩu");
+    }
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    setUser(null);
+    setIsModalOpen(false);
+    navigate("/");
+  };
+
   // Cuộn màn hình lên
   const handleScroll = () => {
     if (window.scrollY > window.innerHeight) {
@@ -63,24 +159,27 @@ const IntroPage = () => {
   }, []);
 
   // Thay đổi banner sách mỗi 5s hoặc khi nhấn nút Previous/Next
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setCurrentBookIndex((prevIndex) => (prevIndex + 1) % books.length);
-  //   }, 5000);
-  //   return () => clearInterval(interval);
-  // }, [books.length]);
+  useEffect(() => {
+    if (books.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentBookIndex((prevIndex) => (prevIndex + 1) % books.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [books.length]);
+  const handleNextBook = () => {
+    if (books.length > 0) {
+      setCurrentBookIndex((prevIndex) => (prevIndex + 1) % books.length);
+    }
+  };
 
-  // const handleNextBook = () => {
-  //   setCurrentBookIndex((prevIndex) => (prevIndex + 1) % books.length);
-  // };
-
-  // const handlePrevBook = () => {
-  //   setCurrentBookIndex(
-  //     (prevIndex) => (prevIndex - 1 + books.length) % books.length
-  //   );
-  // };
-
-  // const currentBook = books[currentBookIndex];
+  const handlePrevBook = () => {
+    if (books.length > 0) {
+      setCurrentBookIndex(
+        (prevIndex) => (prevIndex - 1 + books.length) % books.length
+      );
+    }
+  };
 
   return (
     <div
@@ -108,7 +207,7 @@ const IntroPage = () => {
                 src={icon1x1}
                 className="w-10 h-10 rounded-full border cursor-pointer"
                 alt="User Avatar"
-                onClick={() => setIsProfileModalOpen(true)}
+                onClick={() => setIsModalOpen(true)}
               />
             </div>
           ) : (
@@ -124,11 +223,10 @@ const IntroPage = () => {
       {/* Container */}
       <div className="flex flex-col items-center justify-center mt-14">
         {/* Banner */}
-        {/* <div
+        <div
           id="banner"
           className="w-5/6 flex flex-row h-screen justify-center items-center relative"
         >
-         
           <div className="w-1/12">
             <button
               className="cursor-pointer duration-200 hover:scale-125 active:scale-100"
@@ -153,21 +251,32 @@ const IntroPage = () => {
           </div>
 
           <div className="w-3/5 flex items-center justify-center">
-            <img
-              // src={currentBook.image}
-              alt={currentBook.title}
-              style={{ height: 400, width: 400 }}
-            />
+            {currentBook ? (
+              <img
+                src={currentBook.image_url || imamgePlaceholder}
+                alt={currentBook.title || "Book cover"}
+                style={{
+                  height: 400,
+                  width: 400,
+                  borderWidth: 2,
+                  borderColor: "white",
+                  borderRadius: "20px",
+                }}
+              />
+            ) : (
+              <Loading />
+            )}
           </div>
 
           <div className="w-11/12">
             <div className="font-bold text-6xl text-white mb-5">
-              {currentBook.title}
+              {currentBook?.title}
             </div>
             <div className="font-medium text-3xl text-white">
-              {currentBook.author}
+              {Array.isArray(currentBook?.author)
+                ? currentBook.author.join(", ")
+                : currentBook?.author}
             </div>
-            <div className="text-xl text-white">{currentBook.description}</div>
           </div>
 
           <div className="w-1/12">
@@ -192,7 +301,7 @@ const IntroPage = () => {
               </svg>
             </button>
           </div>
-        </div> */}
+        </div>
 
         {/* Introduce */}
         <div
@@ -332,6 +441,7 @@ const IntroPage = () => {
         </button>
       )}
 
+      {/* Modal View profile */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="max-w-md w-full mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
@@ -406,6 +516,149 @@ const IntroPage = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Change password */}
+      {isChangePWModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="max-w-md w-full mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
+            <h2 className="text-2xl items-center text-sky-900 font-bold mb-6">
+              Change Password
+            </h2>
+
+            {passwordError && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 rounded">
+                <p className="font-medium">Lỗi</p>
+                <p>{passwordError}</p>
+              </div>
+            )}
+
+            <form method="post" action="#">
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-medium text-gray-600"
+                  htmlFor="currentPW"
+                >
+                  Current Password
+                </label>
+                <input
+                  className="mt-1 p-2 w-full border rounded-md font-medium"
+                  type="password"
+                  name="currentPassword"
+                  id="currentPW"
+                  value={passwordData.currentPassword}
+                  onChange={handleInputPasswordChange}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-medium text-gray-600"
+                  htmlFor="newPW"
+                >
+                  New Your password
+                </label>
+                <input
+                  className="mt-1 p-2 w-full border rounded-md font-medium"
+                  type="password"
+                  name="newPassword"
+                  id="newPW"
+                  value={passwordData.newPassword}
+                  onChange={handleInputPasswordChange}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-medium text-gray-600 "
+                  htmlFor="confirmPW"
+                >
+                  Re-enter new your password
+                </label>
+                <input
+                  className="mt-1 p-2 w-full border rounded-md font-medium"
+                  name="confirmPassword"
+                  id="confirmPW"
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={handleInputPasswordChange}
+                ></input>
+              </div>
+
+              <div className="flex  justify-around">
+                <button
+                  onClick={() => {
+                    setIsChangePWModalOpen(false);
+                    setPasswordError();
+                    setPasswordData({
+                      currentPassword: "",
+                      newPassword: "",
+                      confirmPassword: "",
+                    });
+                  }}
+                  className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                >
+                  Close
+                </button>
+
+                <button
+                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                  type="button"
+                  onClick={handleChangePassword}
+                >
+                  Change Passowrd
+                </button>
+              </div>
+            </form>
+          </div>
+          {/* Modal Change password */}
+        </div>
+      )}
+
+      {/* Modal User */}
+      {isModalOpen && (
+        <div
+          className="fixed -inset-5 bg-black bg-opacity-30 backdrop-blur-sm z-50 flex justify-end pr-10 pt-24 transition-opacity duration-300"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div
+            className="flex flex-col items-center justify-center bg-white shadow-lg rounded-lg w-auto min-w-[12rem] max-w-sm min-h-[4rem] max-h-[15rem] p-4 overflow-y-auto transition-transform duration-300 scale-95 hover:scale-100"
+            onClick={(e) => e.stopPropagation()} // Ngăn sự kiện click đóng modal khi bấm vào bên trong
+          >
+            <ul className="space-y-2">
+              <li>
+                <button
+                  onClick={handleViewProfile}
+                  className="text-blue-500 hover:bg-gray-100 hover:backdrop-blur-md px-3 py-2 rounded-md transition-all duration-200"
+                >
+                  View Profile
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={handleChangePW}
+                  className="text-blue-500 hover:bg-gray-100 hover:backdrop-blur-md px-3 py-2 rounded-md transition-all duration-200"
+                >
+                  Change Password
+                </button>
+              </li>
+              <hr />
+              <li>
+                <button className="text-red-500 font-medium hover:bg-gray-100 hover:backdrop-blur-md px-3 py-2 rounded-md transition-all duration-200">
+                  Delete Account
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="text-red-500 font-medium hover:bg-red-100 px-3 py-2 rounded-md transition-all duration-200"
+                >
+                  Logout
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
       )}

@@ -3,7 +3,6 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   userId: null,
   username: null,
-  password: null,
   fullName: null,
   email: null,
   role: null,
@@ -25,7 +24,6 @@ export const userSlice = createSlice({
     logout: (state) => {
       state.email = null;
       state.fullName = null;
-      state.password = null;
       state.role = null;
       state.userId = null;
       state.username = null;
