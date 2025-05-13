@@ -1,111 +1,19 @@
-import { useState, useRef } from "react";
-import { useReactToPrint } from "react-to-print";
+import { useState, useRef, useEffect } from "react";
+// import { useReactToPrint } from "react-to-print";
 import html2pdf from "html2pdf.js";
 import Invoice from "../invoice/Invoice";
-
-const allBorrowers = [
-  {
-    id: 1,
-    name: "Nguyễn Văn A",
-    book: "Clean Code",
-    status: "Borrowing",
-    borrowDate: "2025-02-25",
-    dueDate: "2025-03-10",
-  },
-  {
-    id: 2,
-    name: "Trần Thị B",
-    book: "The Pragmatic Programmer",
-    status: "Returned",
-    borrowDate: "2025-02-10",
-    dueDate: "2025-02-20",
-  },
-  {
-    id: 3,
-    name: "Lê Văn C",
-    book: "JavaScript: The Good Parts",
-    status: "Borrowing",
-    borrowDate: "2025-03-01",
-    dueDate: "2025-03-15",
-  },
-  {
-    id: 4,
-    name: "Nguyễn Văn A",
-    book: "Clean Code",
-    status: "Borrowing",
-    borrowDate: "2025-02-25",
-    dueDate: "2025-03-10",
-  },
-  {
-    id: 5,
-    name: "Trần Thị B",
-    book: "The Pragmatic Programmer",
-    status: "Returned",
-    borrowDate: "2025-02-10",
-    dueDate: "2025-02-20",
-  },
-  {
-    id: 6,
-    name: "Lê Văn C",
-    book: "JavaScript: The Good Parts",
-    status: "Borrowing",
-    borrowDate: "2025-03-01",
-    dueDate: "2025-03-15",
-  },
-  {
-    id: 7,
-    name: "Nguyễn Văn A",
-    book: "Clean Code",
-    status: "Borrowing",
-    borrowDate: "2025-02-25",
-    dueDate: "2025-03-10",
-  },
-  {
-    id: 8,
-    name: "Trần Thị B",
-    book: "The Pragmatic Programmer",
-    status: "Returned",
-    borrowDate: "2025-02-10",
-    dueDate: "2025-02-20",
-  },
-  {
-    id: 9,
-    name: "Lê Văn C",
-    book: "JavaScript: The Good Parts",
-    status: "Borrowing",
-    borrowDate: "2025-03-01",
-    dueDate: "2025-03-15",
-  },
-  {
-    id: 10,
-    name: "Nguyễn Văn A",
-    book: "Clean Code",
-    status: "Borrowing",
-    borrowDate: "2025-02-25",
-    dueDate: "2025-03-10",
-  },
-  {
-    id: 11,
-    name: "Trần Thị B",
-    book: "The Pragmatic Programmer",
-    status: "Returned",
-    borrowDate: "2025-02-10",
-    dueDate: "2025-02-20",
-  },
-  {
-    id: 12,
-    name: "Lê Văn C",
-    book: "JavaScript: The Good Parts",
-    status: "Borrowing",
-    borrowDate: "2025-03-01",
-    dueDate: "2025-03-15",
-  },
-];
+import borrowService from "../../services/borrowService";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const TabBorrowManagement = () => {
   const componentRef = useRef();
-  const [statusUpdates, setStatusUpdates] = useState({});
+  const [allBorrowers, setAllBorrowers] = useState([]);
+
+  // const [statusUpdates, setStatusUpdates] = useState({});
   const [selectedBorrower, setSelectedBorrower] = useState(null);
+  console.log("Selected: ", selectedBorrower);
+
   const [borrowers, setBorrowers] = useState(allBorrowers);
   const [searchKeyword, setSearchKeyword] = useState("");
 
@@ -156,6 +64,36 @@ const TabBorrowManagement = () => {
     );
   };
 
+  // Format lại ngày dd/mm/yyyy
+  const formatDate = (dateString) => {
+    if (dateString) {
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+    return "";
+  };
+
+  // Lấy danh sách phiếu mượn
+  const fetchBorrowers = async () => {
+    try {
+      const response = await borrowService.getBorrowRequests();
+      if (!response) {
+        throw new Error("Lỗi khi lấy dữ liệu");
+      }
+      setBorrowers(response);
+      setAllBorrowers(response);
+      console.log(response);
+    } catch (error) {
+      console.error("Lỗi API:", error);
+    }
+  };
+  useEffect(() => {
+    fetchBorrowers();
+  }, []);
+
   const handleSearch = () => {
     const keyword = searchKeyword.trim().toLowerCase();
     if (keyword === "") {
@@ -197,6 +135,22 @@ const TabBorrowManagement = () => {
     }
   };
 
+  // Hàm cập nhật phiếu mượn
+  const handleUpdateBorrower = async (borrower) => {
+    const borrowRequest = {
+      borrowRequestId: borrower.id,
+      status: borrower.status,
+    };
+    const response = await borrowService.approveBorrowRequest(borrowRequest);
+    if (response) {
+      alert("Cập nhật phiếu mượn thành công");
+      fetchBorrowers();
+    } else {
+      alert("Cập nhật phiếu mượn thất bại");
+    }
+    setSelectedBorrower(null);
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center pb-4">
@@ -213,7 +167,9 @@ const TabBorrowManagement = () => {
             onChange={handleFilterChange}
           >
             <option value="">All</option>
-            <option value="Borrowing">Borrowing</option>
+            <option value="Borrowing">Pending</option>
+            {/* <option value="Borrowing">Approved</option> */}
+            <option value="Borrowing">Borrowed</option>
             <option value="Returned">Returned</option>
             <option value="Overdue">Overdue</option>
           </select>
@@ -265,6 +221,7 @@ const TabBorrowManagement = () => {
               <th className="py-2 px-4 text-left">Borrower name</th>
               <th className="py-2 px-4 text-left">Borrowed books</th>
               <th className="py-2 px-4 text-left">Borrowed date</th>
+              <th className="py-2 px-4 text-left">Due date</th>
               <th className="py-2 px-4 text-left">Refund date</th>
               <th className="py-2 px-4 text-left">Status</th>
               <th className="py-2 px-4 text-left"></th>
@@ -272,27 +229,34 @@ const TabBorrowManagement = () => {
           </thead>
           <tbody>
             {selectedBorrowers.length > 0 ? (
-              selectedBorrowers.map((user, index) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+              selectedBorrowers.map((item, index) => (
+                <tr key={item.id} className="hover:bg-gray-50">
                   <td className="py-2 px-4">{index + 1}</td>
-                  <td className="py-2 px-4">{user.name}</td>
-                  <td className="py-2 px-4">{user.book}</td>
-                  <td className="py-2 px-4">{user.borrowDate}</td>
-                  <td className="py-2 px-4">{user.dueDate}</td>
+                  <td className="py-2 px-4">{item.name}</td>
+                  <td className="py-2 px-4">{item.book}</td>
+                  <td className="py-2 px-4">
+                    {formatDate(item.dateBorrowed || item.createdAt)}
+                  </td>
+                  <td className="py-2 px-4">{formatDate(item.returnDate)}</td>
+                  <td className="py-2 px-4">{formatDate(item.dateReturned)}</td>
                   <td className="py-2 px-4 text-left">
                     <span
                       className={`font-bold
-                          ${user.status === "Borrowing" ? "text-blue-500" : ""}
-                          ${user.status === "Returned" ? "text-green-500" : ""}
-                          ${user.status === "Overdue" ? "text-red-500" : ""}`}
+                        ${item.status === "PENDING" ? "text-orange-500" : ""} 
+                        // ${
+                          item.status === "APPROVED" ? "text-orange-500" : ""
+                        } 
+                        ${item.status === "BORROWED" ? "text-blue-500" : ""}
+                        ${item.status === "RETURNED" ? "text-green-500" : ""}
+                        ${item.status === "OVERDUE" ? "text-red-500" : ""}`}
                     >
-                      {user.status}
+                      {item.status}
                     </span>
                   </td>
 
                   <td
                     className="py-2 px-4 text-left text-blue-600 cursor-pointer"
-                    onClick={() => setSelectedBorrower(user)}
+                    onClick={() => setSelectedBorrower(item)}
                   >
                     More
                   </td>
@@ -380,15 +344,18 @@ const TabBorrowManagement = () => {
                 <label className="block text-sm font-medium text-gray-600">
                   Borrowed date
                 </label>
-                <input
-                  type="date"
-                  value={selectedBorrower.borrowDate}
-                  onChange={(e) =>
+                <DatePicker
+                  selected={
+                    selectedBorrower.dateBorrowed || selectedBorrower.createdAt
+                  }
+                  minDate={new Date()}
+                  onChange={(date) =>
                     setSelectedBorrower((prev) => ({
                       ...prev,
-                      borrowDate: e.target.value,
+                      dateBorrowed: date,
                     }))
                   }
+                  dateFormat={"dd/MM/yyyy"}
                   className="w-full border p-2 rounded"
                 />
               </div>
@@ -398,15 +365,16 @@ const TabBorrowManagement = () => {
                 <label className="block text-sm font-medium text-gray-600">
                   Refund date
                 </label>
-                <input
-                  type="date"
-                  value={selectedBorrower.dueDate}
-                  onChange={(e) =>
+                <DatePicker
+                  selected={selectedBorrower.returnDate}
+                  minDate={new Date()}
+                  onChange={(date) =>
                     setSelectedBorrower((prev) => ({
                       ...prev,
-                      dueDate: e.target.value,
+                      returnDate: date,
                     }))
                   }
+                  dateFormat={"dd/MM/yyyy"}
                   className="w-full border p-2 rounded"
                 />
               </div>
@@ -425,9 +393,11 @@ const TabBorrowManagement = () => {
                   }
                   className="w-full border p-2 rounded"
                 >
-                  <option value="Borrowing">Borrowing</option>
-                  <option value="Returned">Returned</option>
-                  <option value="Overdue">Overdue</option>
+                  <option value="PENDING">Pending</option>
+                  {/* <option value="APPROVED">Approved</option> */}
+                  <option value="BORROWED">Borrowed</option>
+                  <option value="RETURNED">Returned</option>
+                  {/* <option value="Overdue">Overdue</option> */}
                 </select>
               </div>
             </div>
@@ -443,12 +413,7 @@ const TabBorrowManagement = () => {
               <button
                 className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
                 onClick={() => {
-                  setBorrowers((prev) =>
-                    prev.map((user) =>
-                      user.id === selectedBorrower.id ? selectedBorrower : user
-                    )
-                  );
-                  setSelectedBorrower(null);
+                  handleUpdateBorrower(selectedBorrower);
                 }}
               >
                 Update

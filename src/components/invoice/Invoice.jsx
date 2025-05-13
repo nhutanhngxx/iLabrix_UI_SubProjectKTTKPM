@@ -1,4 +1,5 @@
 import logo from "../../../src/assets/iLibrary.png";
+import PropTypes from "prop-types";
 
 const Invoice = ({ borrower }) => {
   const currentDate = new Date().toLocaleString();
@@ -82,6 +83,16 @@ const Invoice = ({ borrower }) => {
       </div>
     </div>
   );
+};
+
+Invoice.propTypes = {
+  borrower: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    book: PropTypes.string.isRequired,
+    borrowDate: PropTypes.string.isRequired,
+    dueDate: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default Invoice;
