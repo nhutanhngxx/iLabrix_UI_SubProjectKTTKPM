@@ -79,7 +79,7 @@ const TabBorrowManagement = () => {
   // Lấy danh sách phiếu mượn
   const fetchBorrowers = async () => {
     try {
-      const response = await borrowService.getBorrowRequests();
+      const response = await borrowService.getAllBorrowRequests();
       if (!response) {
         throw new Error("Lỗi khi lấy dữ liệu");
       }
@@ -93,6 +93,14 @@ const TabBorrowManagement = () => {
   useEffect(() => {
     fetchBorrowers();
   }, []);
+
+  // Hàm hiển thị danh sách sách được mượn
+  const getListBookInBorrowRequest = (borrower) => {
+    const borrowedBooks = borrower.readerRequestDetails.map(
+      (detail) => detail.bookCopy.book.title
+    );
+    return borrowedBooks.join(", ");
+  };
 
   const handleSearch = () => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -247,7 +255,23 @@ const TabBorrowManagement = () => {
                 <tr key={item.id} className="hover:bg-gray-50">
                   <td className="py-2 px-4">{index + 1}</td>
                   <td className="py-2 px-4">{item.name}</td>
-                  <td className="py-2 px-4">{item.book}</td>
+                  <td className="py-2 px-4 max-w-[250px]">
+                    <div className="overflow-hidden text-ellipsis">
+                      <div
+                        className="truncate font-medium"
+                        title={getListBookInBorrowRequest(item)}
+                      >
+                        {getListBookInBorrowRequest(item)}
+                      </div>
+                      {item.readerRequestDetails &&
+                        item.readerRequestDetails.length > 1 && (
+                          <div className="text-xs text-gray-500">
+                            {item.readerRequestDetails.length} books in this
+                            request
+                          </div>
+                        )}
+                    </div>
+                  </td>
                   <td className="py-2 px-4">
                     {formatDate(item.dateBorrowed || item.createdAt)}
                   </td>

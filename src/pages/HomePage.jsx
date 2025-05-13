@@ -248,9 +248,14 @@ const HomePage = () => {
     setIsModalOpen(!isModalOpen);
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      dispatch(logout());
+      navigate("/");
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi đăng xuất: ", error);
+    }
   };
 
   return (

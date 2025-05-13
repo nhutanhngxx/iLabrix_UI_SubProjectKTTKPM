@@ -41,9 +41,33 @@ const authService = {
       console.log("Có lỗi xảy ra khi đăng nhập: ", error);
     }
   },
+
+  logout: async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(
+        "http://localhost:8080/api/v1/user-service/users/logout",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Đăng xuất thất bại");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi đăng xuất: ", error);
+    }
+  },
+
   register: async (registerData) => {
     try {
-      console.log("Register: ", registerData);
       const response = await fetch(
         "http://localhost:8080/api/v1/user-service/users/register",
         {

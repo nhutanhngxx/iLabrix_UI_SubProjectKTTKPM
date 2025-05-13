@@ -23,7 +23,7 @@ const borrowService = {
       console.log("Có lỗi xảy ra khi tạo yêu cầu mượn sách: ", error);
     }
   },
-  getBorrowRequests: async () => {
+  getBorrowRequestsByUser: async () => {
     const token = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
@@ -40,26 +40,30 @@ const borrowService = {
         throw new Error("Get borrow requests failed");
       }
       const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi lấy danh sách yêu cầu mượn sách: ", error);
+      return [];
+    }
+  },
+  getAllBorrowRequests: async () => {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/v1/borrowing-service/borrow-requests",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          Authorization: `Bearer ${token}`,
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Get borrow requests failed");
+      }
 
-      // Lấy danh sách sách để lấy được tên sách
-      // const books = await bookService.getBooks();
-
-      // const borrowRequests = data.map((borrowRequest) => {
-      //   const newBorrowRequest = { ...borrowRequest };
-      //   newBorrowRequest.readerRequestDetails =
-      //     borrowRequest.readerRequestDetails.map((detail) => {
-      //       const book = books.find((book) => book.id === detail.bookCopyId);
-
-      //       return {
-      //         ...detail,
-      //         title: book.title,
-      //       };
-      //     });
-
-      //   return newBorrowRequest;
-      // });
-
-      // return borrowRequests;
+      const data = await response.json();
       return data;
     } catch (error) {
       console.log("Có lỗi xảy ra khi lấy danh sách yêu cầu mượn sách: ", error);
