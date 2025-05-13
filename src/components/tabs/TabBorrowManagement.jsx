@@ -106,8 +106,8 @@ const TabBorrowManagement = () => {
   // Hàm hiển thị tên của người mượn
   const getFullNameBorrower = async (borrower) => {
     const user = await authService.getUserInfo(borrower.readerId);
-    console.log("user: ", user);
-    setSelectedBorrower(user);
+    console.log(user);
+    return user.fullName;
   };
 
   const handleSearch = () => {
@@ -300,8 +300,7 @@ const TabBorrowManagement = () => {
 
                   <td
                     className="py-2 px-4 text-left text-blue-600 cursor-pointer"
-                    // onClick={() => setSelectedBorrower(item)}
-                    onClick={() => getFullNameBorrower(item)}
+                    onClick={() => setSelectedBorrower(item)}
                   >
                     More
                   </td>
