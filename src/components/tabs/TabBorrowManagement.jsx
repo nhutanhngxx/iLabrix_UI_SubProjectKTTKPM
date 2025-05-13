@@ -104,11 +104,11 @@ const TabBorrowManagement = () => {
   };
 
   // Hàm hiển thị tên của người mượn
-  const getFullNameBorrower = async (borrower) => {
-    const user = await authService.getUserInfo(borrower.readerId);
-    console.log(user);
-    return user.fullName;
-  };
+  // const getFullNameBorrower = async (borrower) => {
+  //   const user = await authService.getUserInfo(borrower.readerId);
+  //   console.log(user);
+  //   return user.fullName;
+  // };
 
   const handleSearch = () => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -494,11 +494,19 @@ const TabBorrowManagement = () => {
               </button>
               <button
                 className={`${
-                  selectedBorrower.status === "OVERDUE"
+                  selectedBorrower.status === "OVERDUE" ||
+                  selectedBorrower.status === "BORROWED" ||
+                  selectedBorrower.status === "RETURNED"
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-[#af40ff] hover:bg-[#5b42f3]"
                 } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
-                disabled={selectedBorrower.status === "OVERDUE" ? true : false}
+                disabled={
+                  selectedBorrower.status === "OVERDUE" ||
+                  selectedBorrower.status === "BORROWED" ||
+                  selectedBorrower.status === "RETURNED"
+                    ? true
+                    : false
+                }
                 onClick={() => {
                   handleApproveBorrower(selectedBorrower);
                 }}
