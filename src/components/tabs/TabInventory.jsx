@@ -249,7 +249,7 @@ const TabInventory = () => {
         </div>
 
         {/* Add inventory button */}
-        <button
+        {/* <button
           onClick={() => openModal()}
           className="group cursor-pointer outline-none hover:rotate-90 duration-300"
         >
@@ -267,7 +267,7 @@ const TabInventory = () => {
             <path d="M8 12H16" strokeWidth="1.5"></path>
             <path d="M12 16V8" strokeWidth="1.5"></path>
           </svg>
-        </button>
+        </button> */}
       </div>
 
       {/* Inventory list */}
@@ -314,14 +314,12 @@ const TabInventory = () => {
           <table className="min-w-full bg-white rounded-lg overflow-hidden shadow-md">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
-                {/* <th className="py-3 px-4 text-left">Book ID</th> */}
                 <th className="py-3 px-4 text-left">Title</th>
                 <th className="py-3 px-4 text-left">Total Quantity</th>
                 <th className="py-3 px-4 text-left">Available</th>
                 <th className="py-3 px-4 text-left">Borrowed</th>
                 <th className="py-3 px-4 text-left">Lost</th>
                 <th className="py-3 px-4 text-left">Damaged</th>
-                {/* <th className="py-3 px-4 text-left">Copies</th> */}
                 <th className="py-3 px-4 text-left">Status</th>
                 <th className="py-3 px-4 text-left">Actions</th>
               </tr>
@@ -330,17 +328,12 @@ const TabInventory = () => {
               {selectedItems.map((item) => (
                 <React.Fragment key={item.id}>
                   <tr className="border-b hover:bg-gray-50">
-                    {/* <td className="py-3 px-4">{item.bookId}</td> */}
                     <td className="py-3 px-4">{item.title}</td>
                     <td className="py-3 px-4">{item.totalQuantity}</td>
                     <td className="py-3 px-4">{item.available}</td>
                     <td className="py-3 px-4">{item.borrowed}</td>
                     <td className="py-3 px-4">{item.lost}</td>
                     <td className="py-3 px-4">{item.damaged}</td>
-                    {/* <td className="py-3 px-4">
-                      {item.bookCopies.length}{" "}
-                      {item.bookCopies.length === 1 ? "copy" : "copies"}
-                    </td> */}
                     <td className="py-3 px-4">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -495,42 +488,25 @@ const TabInventory = () => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-2/3 mx-auto relative overflow-hidden z-10 bg-white p-5 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12"
+            className="w-1/2 mx-auto relative overflow-hidden z-10 bg-white p-4 rounded-lg shadow-md before:w-20 before:h-20 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-24 after:h-24 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-16 after:-right-8"
           >
-            <h2 className="text-3xl text-center font-bold mb-4 text-sky-900">
+            <h2 className="text-2xl text-center font-bold mb-3 text-sky-900">
               {selectedItem.id
                 ? "Edit Inventory Item"
                 : "Add New Inventory Item"}
             </h2>
 
-            <form method="post" action="#" className="mb-10">
-              <div className="grid grid-cols-2 gap-10">
-                <div className="space-y-4">
+            <form method="post" action="#" className="mb-6">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">
-                      Book ID
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter Book ID"
-                      className="mt-1 p-2 w-full border rounded-md"
-                      value={selectedItem.bookId || ""}
-                      onChange={(e) =>
-                        setSelectedItem({
-                          ...selectedItem,
-                          bookId: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">
+                    <label className="block text-xs font-medium text-gray-600">
                       Title
                     </label>
                     <input
                       type="text"
-                      placeholder="Enter Book Title"
-                      className="mt-1 p-2 w-full border rounded-md"
+                      placeholder="Book Title"
+                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.title || ""}
                       onChange={(e) =>
                         setSelectedItem({
@@ -541,13 +517,13 @@ const TabInventory = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">
+                    <label className="block text-xs font-medium text-gray-600">
                       Total Quantity
                     </label>
                     <input
                       type="number"
-                      placeholder="Enter Total Quantity"
-                      className="mt-1 p-2 w-full border rounded-md"
+                      placeholder="Total"
+                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.totalQuantity || 0}
                       onChange={(e) =>
                         setSelectedItem({
@@ -557,14 +533,16 @@ const TabInventory = () => {
                       }
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">
+                    <label className="block text-xs font-medium text-gray-600">
                       Available
                     </label>
                     <input
                       type="number"
-                      placeholder="Enter Available Quantity"
-                      className="mt-1 p-2 w-full border rounded-md"
+                      placeholder="Available"
+                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.available || 0}
                       onChange={(e) =>
                         setSelectedItem({
@@ -574,16 +552,14 @@ const TabInventory = () => {
                       }
                     />
                   </div>
-                </div>
-                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">
+                    <label className="block text-xs font-medium text-gray-600">
                       Borrowed
                     </label>
                     <input
                       type="number"
-                      placeholder="Enter Borrowed Quantity"
-                      className="mt-1 p-2 w-full border rounded-md"
+                      placeholder="Borrowed"
+                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.borrowed || 0}
                       onChange={(e) =>
                         setSelectedItem({
@@ -593,14 +569,16 @@ const TabInventory = () => {
                       }
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">
+                    <label className="block text-xs font-medium text-gray-600">
                       Lost
                     </label>
                     <input
                       type="number"
-                      placeholder="Enter Lost Quantity"
-                      className="mt-1 p-2 w-full border rounded-md"
+                      placeholder="Lost"
+                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.lost || 0}
                       onChange={(e) =>
                         setSelectedItem({
@@ -611,13 +589,13 @@ const TabInventory = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600">
+                    <label className="block text-xs font-medium text-gray-600">
                       Damaged
                     </label>
                     <input
                       type="number"
-                      placeholder="Enter Damaged Quantity"
-                      className="mt-1 p-2 w-full border rounded-md"
+                      placeholder="Damaged"
+                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.damaged || 0}
                       onChange={(e) =>
                         setSelectedItem({
@@ -630,25 +608,38 @@ const TabInventory = () => {
                 </div>
               </div>
               {selectedItem.bookCopies.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    Book Copies
+                <div className="mt-4">
+                  <h3 className="text-base font-semibold text-gray-700 mb-1">
+                    Book Copies ({selectedItem.bookCopies.length})
                   </h3>
-                  <div className="max-h-40 overflow-y-auto">
-                    <table className="w-full bg-gray-50 rounded-lg">
+                  <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md">
+                    <table className="w-full bg-gray-50 text-sm">
                       <thead className="bg-gray-200 text-gray-700">
                         <tr>
-                          <th className="py-2 px-4 text-left">Copy Code</th>
-                          <th className="py-2 px-4 text-left">Location</th>
-                          <th className="py-2 px-4 text-left">Status</th>
+                          <th className="py-1.5 px-3 text-left">Copy Code</th>
+                          <th className="py-1.5 px-3 text-left">Location</th>
+                          <th className="py-1.5 px-3 text-left">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {selectedItem.bookCopies.map((copy) => (
-                          <tr key={copy.id} className="border-b">
-                            <td className="py-2 px-4">{copy.copyCode}</td>
-                            <td className="py-2 px-4">{copy.location}</td>
-                            <td className="py-2 px-4">{copy.status}</td>
+                          <tr
+                            key={copy.id}
+                            className="border-b border-gray-200"
+                          >
+                            <td className="py-1.5 px-3">{copy.copyCode}</td>
+                            <td className="py-1.5 px-3">{copy.location}</td>
+                            <td className="py-1.5 px-3">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  copy.status === "AVAILABLE"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {copy.status}
+                              </span>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -658,16 +649,16 @@ const TabInventory = () => {
               )}
             </form>
 
-            <div className="flex gap-5 absolute bottom-5 right-5">
+            <div className="flex gap-3 absolute bottom-3 right-3">
               <button
                 onClick={closeModal}
-                className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-3 py-1.5 font-bold rounded-md hover:opacity-80 text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveItem}
-                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-3 py-1.5 font-bold rounded-md hover:opacity-80 text-sm"
                 type="submit"
               >
                 {selectedItem.id ? "Update" : "Add"}

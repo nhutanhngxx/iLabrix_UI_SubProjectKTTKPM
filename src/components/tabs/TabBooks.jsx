@@ -125,12 +125,6 @@ const TabBooks = () => {
     }
   };
 
-  const handleGenreClick = (category) => {
-    if (!selectedCategories.includes(category)) {
-      setSelectedCategories([...selectedCategories, category]);
-    }
-  };
-
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
@@ -154,9 +148,8 @@ const TabBooks = () => {
       if (!response.ok) {
         throw new Error("Failed to create category");
       }
-      const createdCategory = await response.json(); // { id, name }
+      const createdCategory = await response.json();
       setCategories([...categorys, createdCategory]);
-      setSelectedCategories([...selectedCategories, createdCategory.name]);
       setNewCategoryName("");
       setIsCategoryModalOpen(false);
     } catch (error) {
@@ -230,20 +223,6 @@ const TabBooks = () => {
   });
 
   const openModal = () => setIsModalOpen(true);
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setNewBook({
-      bookCode: "",
-      title: "",
-      topic: "",
-      description: "",
-      note: "",
-      yearPublished: "",
-      publisher: "",
-      category: null,
-    });
-    setSelectedCategories([]);
-  };
 
   const handleAddBook = async () => {
     if (!newBook.title || !newBook.publisher || !newBook.categoryId) {
@@ -300,9 +279,105 @@ const TabBooks = () => {
 
   const [selectedBook, setSelectedBook] = useState(null);
   const [isInforBookModalOpen, setIsInforBookModalOpen] = useState(false);
+
   const handleViewInforBook = (book) => {
+    console.log("Selected book:", book);
     setSelectedBook(book);
     setIsInforBookModalOpen(true);
+  };
+
+  const handleUpdateBook = async (selectedBook) => {
+    if (!selectedBook) {
+      alert("No book selected for update.");
+      return;
+    }
+
+    if (!selectedBook.title || !selectedBook.publisher) {
+      alert("Please fill in all required fields (Title, Publisher).");
+      return;
+    }
+
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      alert("No access token found. Please log in again.");
+      return;
+    }
+
+    const updatedBook = {
+      bookCode: selectedBook.bookCode || "",
+      title: selectedBook.title,
+      topic: selectedBook.topic || "",
+      description: selectedBook.description || "",
+      note: selectedBook.note || "",
+      yearPublished: selectedBook.yearPublished || "",
+      publisher: selectedBook.publisher,
+      categoryId: selectedBook.category ? selectedBook.category.id : "",
+    };
+
+    try {
+      const response = await fetch(`${api_books_iLabrix}/${selectedBook.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedBook),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update book: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Book updated successfully:", data);
+
+      // setAllBooks((prevBooks) =>
+      //   prevBooks.map((book) => (book.id === selectedBook.id ? data : book))
+      // );
+      // setFilteredBooks((prevBooks) =>
+      //   prevBooks.map((book) => (book.id === selectedBook.id ? data : book))
+      // );
+
+      setSelectedBook(null);
+      setIsInforBookModalOpen(false);
+      alert("Book updated successfully!");
+    } catch (error) {
+      console.error("Error updating book:", error);
+      alert("Failed to update book. Please try again.");
+    }
+  };
+
+  const handleDeleteBook = async (bookId) => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      alert("No access token found. Please log in again.");
+      return;
+    }
+    try {
+      const response = await fetch(`${api_books_iLabrix}/${bookId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to delete book: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log("Book deleted successfully:", data);
+      setAllBooks((prevBooks) =>
+        prevBooks.filter((book) => book.id !== bookId)
+      );
+      setFilteredBooks((prevBooks) =>
+        prevBooks.filter((book) => book.id !== bookId)
+      );
+      setIsConfirmDeleteModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting book:", error);
+      alert("Failed to delete book. Please try again.");
+    }
   };
 
   const handleConfirmDelete = () => {
@@ -616,32 +691,6 @@ const TabBooks = () => {
                     }
                   />
 
-                  {/* <div className="mt-1 flex flex-wrap gap-2">
-                    {categorys.map((category) => (
-                      <button
-                        key={category.id}
-                        onClick={() => handleGenreClick(category.name)}
-                        className={`px-2 py-1 rounded-md ${
-                          selectedCategories.includes(category.name)
-                            ? "bg-transparent cursor-not-allowed"
-                            : "bg-blue-100 hover:bg-blue-300"
-                        }`}
-                        disabled={selectedCategories.includes(category.name)}
-                      >
-                        {category.name}
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => {
-                        console.log("Opening category modal");
-                        setIsCategoryModalOpen(true);
-                      }}
-                      className="ml-2 bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600"
-                    >
-                      Create new Category
-                    </button>
-                  </div> */}
-
                   <div className="flex flex-wrap gap-2 min-h-[40px]">
                     {selectedCategories.map((category) => (
                       <span
@@ -772,10 +821,10 @@ const TabBooks = () => {
             <h2 className="text-2xl items-center text-sky-900 font-bold mb-6">
               Information of Book
             </h2>
-            <form method="post" action="#">
+            <form>
               <div className="flex gap-5">
                 <div className="w-1/5 flex flex-col items-center">
-                  <div className="bg-slate-200 w-4/5 h-4/5 rounded-lg overflow-hidden flex justify-center items-center">
+                  <div className="w-4/5 h-4/5 rounded-lg overflow-hidden flex justify-center items-center">
                     <img
                       src={preview}
                       alt="Profile"
@@ -787,11 +836,11 @@ const TabBooks = () => {
                     ref={fileInputRef}
                     className="hidden"
                     accept="image/*"
-                    onChange={handleFileChange}
+                    // onChange={handleFileChange}
                   />
                   <button
                     type="button"
-                    onClick={handleButtonClick}
+                    // onClick={handleButtonClick}
                     className="mt-5 px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
                   >
                     Change Picture
@@ -867,21 +916,19 @@ const TabBooks = () => {
                     </div>
                   </div>
                   <div className="flex gap-5">
-                    <div className="mb-4 w-1/3">
+                    <div className="mb-4 w-1/4">
                       <label className="block text-sm font-medium text-gray-600">
                         Category
                       </label>
                       <select
                         className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
                         value={
-                          selectedBook.category
-                            ? selectedBook.category.name
-                            : "Null"
+                          selectedBook.category ? selectedBook.category.id : ""
                         }
                         onChange={(e) => {
                           const selectedCategoryId = e.target.value;
                           const selectedCategory = categorys.find(
-                            (cat) => cat.categoryId === selectedCategoryId
+                            (cat) => cat.id === selectedCategoryId
                           );
                           setSelectedBook({
                             ...selectedBook,
@@ -889,9 +936,7 @@ const TabBooks = () => {
                           });
                         }}
                       >
-                        <option value="" disabled>
-                          Chọn thể loại
-                        </option>
+                        <option value="">Select Category</option>
                         {categorys.map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.name}
@@ -899,7 +944,7 @@ const TabBooks = () => {
                         ))}
                       </select>
                     </div>
-                    <div className="mb-4 w-1/3">
+                    <div className="mb-4 w-1/4">
                       <label className="block text-sm font-medium text-gray-600">
                         Year published
                       </label>
@@ -907,11 +952,15 @@ const TabBooks = () => {
                         className="mt-1 p-2 w-full border rounded-md font mockCategories={categorys} -medium text-gray-800"
                         type="number"
                         value={selectedBook.yearPublished}
+                        onChange={(e) =>
+                          setSelectedBook({
+                            ...selectedBook,
+                            yearPublished: e.target.value,
+                          })
+                        }
                       />
                     </div>
-                  </div>
-                  <div className="flex gap-5">
-                    <div className="mb-4 w-full">
+                    <div className="mb-4 w-1/4">
                       <label className="block text-sm font-medium text-gray-600">
                         Notes
                       </label>
@@ -919,9 +968,48 @@ const TabBooks = () => {
                         className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
                         type="text"
                         value={selectedBook.note}
+                        onChange={(e) =>
+                          setSelectedBook({
+                            ...selectedBook,
+                            note: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="mb-4 w-1/4">
+                      <label className="block text-sm font-medium text-gray-600">
+                        Topic
+                      </label>
+                      <input
+                        className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                        type="text"
+                        value={selectedBook.topic}
+                        onChange={(e) =>
+                          setSelectedBook({
+                            ...selectedBook,
+                            topic: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
+                  {/* <div className="">
+                    <label className="block text-sm font-medium text-gray-600">
+                      Description
+                    </label>
+                    <textarea
+                      className="mt-1 p-2 w-full border rounded-md font-medium text-gray-800"
+                      rows="2"
+                      placeholder="Description"
+                      value={selectedBook.description || ""}
+                      onChange={(e) =>
+                        setSelectedBook({
+                          ...selectedBook,
+                          description: e.target.value,
+                        })
+                      }
+                    />
+                  </div> */}
                 </div>
               </div>
               <div className="flex gap-5 absolute bottom-5 right-5">
@@ -932,8 +1020,9 @@ const TabBooks = () => {
                   Close
                 </button>
                 <button
+                  onClick={() => handleUpdateBook(selectedBook)}
                   className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-                  type="submit"
+                  // type="submit"
                 >
                   Update Book
                 </button>
