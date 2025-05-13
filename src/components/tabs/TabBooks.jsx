@@ -281,7 +281,6 @@ const TabBooks = () => {
   const [isInforBookModalOpen, setIsInforBookModalOpen] = useState(false);
 
   const handleViewInforBook = (book) => {
-    console.log("Selected book:", book);
     setSelectedBook(book);
     setIsInforBookModalOpen(true);
   };
@@ -384,6 +383,11 @@ const TabBooks = () => {
   return (
     <div className="text-lg p-2">
       <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="text-3xl items-center text-sky-900 font-bold">
+            Manage books
+          </h2>
+        </div>
         <div className="flex items-center gap-5 font-light">
           <div className="flex items-center gap-3 h-[40px]">
             <label className="block text-sm font-medium text-gray-600">
@@ -431,26 +435,26 @@ const TabBooks = () => {
               </div>
             </div>
           </div>
-        </div>
-        <button
-          onClick={openModal}
-          className="group cursor-pointer outline-none hover:rotate-90 duration-300"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="50px"
-            height="50px"
-            viewBox="0 0 24 24"
-            className="stroke-indigo-400 fill-none group-hover:fill-indigo-100 group-active:stroke-indigo-200 group-active:fill-indigo-600 group-active:duration-0 duration-300"
+          <button
+            onClick={openModal}
+            className="group cursor-pointer outline-none hover:rotate-90 duration-300"
           >
-            <path
-              d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z"
-              strokeWidth="1.5"
-            ></path>
-            <path d="M8 12H16" strokeWidth="1.5"></path>
-            <path d="M12 16V8" strokeWidth="1.5"></path>
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="50px"
+              height="50px"
+              viewBox="0 0 24 24"
+              className="stroke-indigo-400 fill-none group-hover:fill-indigo-100 group-active:stroke-indigo-200 group-active:fill-indigo-600 group-active:duration-0 duration-300"
+            >
+              <path
+                d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z"
+                strokeWidth="1.5"
+              ></path>
+              <path d="M8 12H16" strokeWidth="1.5"></path>
+              <path d="M12 16V8" strokeWidth="1.5"></path>
+            </svg>
+          </button>
+        </div>
       </div>
 
       {filteredBooks.length === 0 ? (
@@ -481,8 +485,7 @@ const TabBooks = () => {
             ) : selectedCategoryId ? (
               <>
                 There are no books in the category &quot;
-                {categorys.find((c) => c.categoryId === selectedCategoryId)
-                  ?.categoryName || ""}
+                {categorys.find((c) => c.id === selectedCategoryId)?.name || ""}
                 &quot;.
               </>
             ) : (
@@ -629,7 +632,7 @@ const TabBooks = () => {
               </h2>
             </div>
             <form onSubmit={(e) => e.preventDefault()}>
-              <div className="grid grid-cols-2 gap-20">
+              <div className="grid grid-cols-2 gap-20 mb-14">
                 <div className="space-y-2">
                   <input
                     type="text"
@@ -723,7 +726,7 @@ const TabBooks = () => {
                           console.log("Opening category modal");
                           setIsCategoryModalOpen(true);
                         }}
-                        className="ml-2 bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600"
+                        className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-2 py-1 font-bold text-sm rounded-md hover:opacity-80"
                       >
                         Create new Category
                       </button>

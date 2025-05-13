@@ -11,7 +11,14 @@ const TabInventory = () => {
     useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [expandedRows, setExpandedRows] = useState([]); // Track expanded rows
+  const [expandedRows, setExpandedRows] = useState([]);
+
+  // State selected book copies
+  const [selectedBookCopies, setSelectedBookCopies] = useState([]);
+
+  // State modal edit book copies
+  const [isEditBookCopiesModalOpen, setIsEditBookCopiesModalOpen] =
+    useState(false);
 
   const api_inventory =
     "http://localhost:8080/api/v1/inventory-service/inventories";
@@ -156,6 +163,17 @@ const TabInventory = () => {
     setIsModalOpen(true);
   };
 
+  const openModalEditBookCopies = (item, copy) => {
+    setSelectedItem(item);
+    setSelectedBookCopies({
+      id: copy.id,
+      copyCode: copy.copyCode,
+      location: copy.location,
+      status: copy.status,
+    });
+    setIsEditBookCopiesModalOpen(true);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedItem(null);
@@ -215,6 +233,11 @@ const TabInventory = () => {
     <div className="text-lg p-2">
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="text-3xl items-center text-sky-900 font-bold">
+            Manage Inventory
+          </h2>
+        </div>
         {/* Search */}
         <div className="flex items-center gap-3 h-[40px]">
           <div className="flex items-center justify-center">
@@ -247,27 +270,15 @@ const TabInventory = () => {
             </div>
           </div>
         </div>
-
-        {/* Add inventory button */}
-        {/* <button
-          onClick={() => openModal()}
-          className="group cursor-pointer outline-none hover:rotate-90 duration-300"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="50px"
-            height="50px"
-            viewBox="0 0 24 24"
-            className="stroke-indigo-400 fill-none group-hover:fill-indigo-100 group-active:stroke-indigo-200 group-active:fill-indigo-600 group-active:duration-0 duration-300"
+        {/* Add new item */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => openModal()}
+            className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-lg"
           >
-            <path
-              d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z"
-              strokeWidth="1.5"
-            ></path>
-            <path d="M8 12H16" strokeWidth="1.5"></path>
-            <path d="M12 16V8" strokeWidth="1.5"></path>
-          </svg>
-        </button> */}
+            Add New Item
+          </button>
+        </div>
       </div>
 
       {/* Inventory list */}
@@ -425,6 +436,7 @@ const TabInventory = () => {
                                   <th className="py-2 px-4 text-left">
                                     Status
                                   </th>
+                                  <th className="py-2 px-4 text-left">Edit</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -446,6 +458,20 @@ const TabInventory = () => {
                                       >
                                         {copy.status}
                                       </span>
+                                    </td>
+                                    <td className="py-2 px-4">
+                                      <button
+                                        className="rounded-md p-2 hover:bg-blue-200 transition"
+                                        onClick={() =>
+                                          openModalEditBookCopies(item, copy)
+                                        }
+                                      >
+                                        <img
+                                          src={editIcon}
+                                          style={{ width: 20, height: 20 }}
+                                          alt="Edit"
+                                        />
+                                      </button>
                                     </td>
                                   </tr>
                                 ))}
@@ -496,7 +522,7 @@ const TabInventory = () => {
                 : "Add New Inventory Item"}
             </h2>
 
-            <form method="post" action="#" className="mb-6">
+            <form className="mb-10">
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <div>
@@ -508,12 +534,13 @@ const TabInventory = () => {
                       placeholder="Book Title"
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.title || ""}
-                      onChange={(e) =>
-                        setSelectedItem({
-                          ...selectedItem,
-                          title: e.target.value,
-                        })
-                      }
+                      readOnly
+                      // onChange={(e) =>
+                      //   setSelectedItem({
+                      //     ...selectedItem,
+                      //     title: e.target.value,
+                      //   })
+                      // }
                     />
                   </div>
                   <div>
@@ -525,12 +552,13 @@ const TabInventory = () => {
                       placeholder="Total"
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.totalQuantity || 0}
-                      onChange={(e) =>
-                        setSelectedItem({
-                          ...selectedItem,
-                          totalQuantity: parseInt(e.target.value) || 0,
-                        })
-                      }
+                      readOnly
+                      // onChange={(e) =>
+                      //   setSelectedItem({
+                      //     ...selectedItem,
+                      //     totalQuantity: parseInt(e.target.value) || 0,
+                      //   })
+                      // }
                     />
                   </div>
                 </div>
@@ -544,12 +572,13 @@ const TabInventory = () => {
                       placeholder="Available"
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.available || 0}
-                      onChange={(e) =>
-                        setSelectedItem({
-                          ...selectedItem,
-                          available: parseInt(e.target.value) || 0,
-                        })
-                      }
+                      readOnly
+                      // onChange={(e) =>
+                      //   setSelectedItem({
+                      //     ...selectedItem,
+                      //     available: parseInt(e.target.value) || 0,
+                      //   })
+                      // }
                     />
                   </div>
                   <div>
@@ -561,12 +590,13 @@ const TabInventory = () => {
                       placeholder="Borrowed"
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.borrowed || 0}
-                      onChange={(e) =>
-                        setSelectedItem({
-                          ...selectedItem,
-                          borrowed: parseInt(e.target.value) || 0,
-                        })
-                      }
+                      readOnly
+                      // onChange={(e) =>
+                      //   setSelectedItem({
+                      //     ...selectedItem,
+                      //     borrowed: parseInt(e.target.value) || 0,
+                      //   })
+                      // }
                     />
                   </div>
                 </div>
@@ -580,12 +610,13 @@ const TabInventory = () => {
                       placeholder="Lost"
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.lost || 0}
-                      onChange={(e) =>
-                        setSelectedItem({
-                          ...selectedItem,
-                          lost: parseInt(e.target.value) || 0,
-                        })
-                      }
+                      readOnly
+                      // onChange={(e) =>
+                      //   setSelectedItem({
+                      //     ...selectedItem,
+                      //     lost: parseInt(e.target.value) || 0,
+                      //   })
+                      // }
                     />
                   </div>
                   <div>
@@ -597,12 +628,13 @@ const TabInventory = () => {
                       placeholder="Damaged"
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.damaged || 0}
-                      onChange={(e) =>
-                        setSelectedItem({
-                          ...selectedItem,
-                          damaged: parseInt(e.target.value) || 0,
-                        })
-                      }
+                      readOnly
+                      // onChange={(e) =>
+                      //   setSelectedItem({
+                      //     ...selectedItem,
+                      //     damaged: parseInt(e.target.value) || 0,
+                      //   })
+                      // }
                     />
                   </div>
                 </div>
@@ -619,6 +651,7 @@ const TabInventory = () => {
                           <th className="py-1.5 px-3 text-left">Copy Code</th>
                           <th className="py-1.5 px-3 text-left">Location</th>
                           <th className="py-1.5 px-3 text-left">Status</th>
+                          <th className="py-1.5 px-3 text-left">Edit</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -691,6 +724,96 @@ const TabInventory = () => {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isEditBookCopiesModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 bg-opacity-50 z-50">
+          <div className="mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Edit Book Copies</h3>
+            <form>
+              {/* Copy Code */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Copy Code
+                </label>
+                <input
+                  type="text"
+                  name="copyId"
+                  value={selectedBookCopies.copyCode || ""}
+                  readOnly
+                  className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2"
+                />
+              </div>
+
+              {/* Status */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={selectedBookCopies.status || ""}
+                  onChange={(e) =>
+                    setSelectedBookCopies({
+                      ...selectedBookCopies,
+                      status: e.target.value,
+                    })
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 p-2 focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                  <option value="AVAILABLE" disabled>
+                    Available
+                  </option>
+                  <option value="BORROWED" disabled>
+                    Borrowed
+                  </option>
+                  <option value="DAMAGED">Damaged</option>
+                  <option value="LOST">Lost</option>
+                </select>
+              </div>
+
+              {/* Location */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  value={selectedBookCopies.location || ""}
+                  onChange={(e) =>
+                    setSelectedBookCopies({
+                      ...selectedBookCopies,
+                      location: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., Shelf A1"
+                  className="mt-1 block w-full rounded-md border-gray-300 p-2 focus:border-indigo-500 focus:ring-indigo-500"
+                />
+              </div>
+
+              {/* Hiển thị lỗi */}
+              {/* {error && <p className="text-red-500 text-sm mb-4">{error}</p>} */}
+
+              {/* Nút hành động */}
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditBookCopiesModalOpen(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                >
+                  Update
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
