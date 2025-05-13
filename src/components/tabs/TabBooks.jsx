@@ -324,26 +324,23 @@ const TabBooks = () => {
         body: JSON.stringify(updatedBook),
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to update book: ${response.statusText}`);
-      }
-
       const data = await response.json();
       console.log("Book updated successfully:", data);
 
-      // setAllBooks((prevBooks) =>
-      //   prevBooks.map((book) => (book.id === selectedBook.id ? data : book))
-      // );
-      // setFilteredBooks((prevBooks) =>
-      //   prevBooks.map((book) => (book.id === selectedBook.id ? data : book))
-      // );
+      setAllBooks((prevBooks) =>
+        prevBooks.map((book) => (book.id === selectedBook.id ? data : book))
+      );
+
+      setFilteredBooks((prevBooks) =>
+        prevBooks.map((book) => (book.id === selectedBook.id ? data : book))
+      );
 
       setSelectedBook(null);
       setIsInforBookModalOpen(false);
       alert("Book updated successfully!");
     } catch (error) {
       console.error("Error updating book:", error);
-      alert("Failed to update book. Please try again.");
+      // alert("Failed to update book. Please try again.");
     }
   };
 
