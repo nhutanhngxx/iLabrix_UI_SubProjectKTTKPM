@@ -165,7 +165,7 @@ const TabBooks = () => {
   };
 
   const [currentPage, setCurrentPage] = useState(1);
-  const booksPerPage = 4;
+  const booksPerPage = 6;
   const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
   const startIndex = (currentPage - 1) * booksPerPage;
   const selectdBooks = filteredBooks.slice(
@@ -336,7 +336,7 @@ const TabBooks = () => {
       );
 
       setSelectedBook(null);
-      setIsInforBookModalOpen(false);
+      // setIsInforBookModalOpen(false);
       alert("Book updated successfully!");
     } catch (error) {
       console.error("Error updating book:", error);
