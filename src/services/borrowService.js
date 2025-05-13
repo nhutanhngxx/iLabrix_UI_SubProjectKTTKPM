@@ -55,14 +55,14 @@ const borrowService = {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-          Authorization: `Bearer ${token}`,
         }
       );
+
       if (!response.ok) {
         throw new Error("Get borrow requests failed");
       }
-
       const data = await response.json();
       return data;
     } catch (error) {

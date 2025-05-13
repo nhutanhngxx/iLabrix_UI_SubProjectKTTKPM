@@ -5,6 +5,7 @@ import Invoice from "../invoice/Invoice";
 import borrowService from "../../services/borrowService";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import authService from "../../services/authService";
 
 const TabBorrowManagement = () => {
   const componentRef = useRef();
@@ -100,6 +101,13 @@ const TabBorrowManagement = () => {
       (detail) => detail.bookCopy.book.title
     );
     return borrowedBooks.join(", ");
+  };
+
+  // Hàm hiển thị tên của người mượn
+  const getFullNameBorrower = async (borrower) => {
+    const user = await authService.getUserInfo(borrower.readerId);
+    console.log("user: ", user);
+    setSelectedBorrower(user);
   };
 
   const handleSearch = () => {
@@ -292,7 +300,8 @@ const TabBorrowManagement = () => {
 
                   <td
                     className="py-2 px-4 text-left text-blue-600 cursor-pointer"
-                    onClick={() => setSelectedBorrower(item)}
+                    // onClick={() => setSelectedBorrower(item)}
+                    onClick={() => getFullNameBorrower(item)}
                   >
                     More
                   </td>
