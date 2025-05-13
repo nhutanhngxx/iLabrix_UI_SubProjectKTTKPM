@@ -1,5 +1,3 @@
-import bookService from "./bookService";
-
 const borrowService = {
   createBorrowRequest: async (borrowRequest) => {
     const token = localStorage.getItem("accessToken");
@@ -72,7 +70,7 @@ const borrowService = {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/status`,
+        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/borrow`,
         {
           method: "PUT",
           headers: {
@@ -92,6 +90,29 @@ const borrowService = {
       return data;
     } catch (error) {
       console.log("Có lỗi xảy ra khi duyệt yêu cầu mượn sách: ", error);
+    }
+  },
+  returnBook: async (borrowRequest) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(
+        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/return`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Return book failed");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi trả sách: ", error);
     }
   },
 };

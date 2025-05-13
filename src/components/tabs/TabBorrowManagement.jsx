@@ -136,10 +136,9 @@ const TabBorrowManagement = () => {
   };
 
   // Hàm cập nhật phiếu mượn
-  const handleUpdateBorrower = async (borrower) => {
+  const handleApproveBorrower = async (borrower) => {
     const borrowRequest = {
       borrowRequestId: borrower.id,
-      status: borrower.status,
     };
     const response = await borrowService.approveBorrowRequest(borrowRequest);
     if (response) {
@@ -147,6 +146,21 @@ const TabBorrowManagement = () => {
       fetchBorrowers();
     } else {
       alert("Cập nhật phiếu mượn thất bại");
+    }
+    setSelectedBorrower(null);
+  };
+
+  // Hàm trả sách
+  const handleReturnBook = async (borrower) => {
+    const borrowRequest = {
+      borrowRequestId: borrower.id,
+    };
+    const response = await borrowService.returnBook(borrowRequest);
+    if (response) {
+      alert("Trả sách thành công");
+      fetchBorrowers();
+    } else {
+      alert("Trả sách thất bại");
     }
     setSelectedBorrower(null);
   };
@@ -243,14 +257,12 @@ const TabBorrowManagement = () => {
                     <span
                       className={`font-bold
                         ${item.status === "PENDING" ? "text-orange-500" : ""} 
-                        // ${
-                          item.status === "APPROVED" ? "text-orange-500" : ""
-                        } 
                         ${item.status === "BORROWED" ? "text-blue-500" : ""}
                         ${item.status === "RETURNED" ? "text-green-500" : ""}
                         ${item.status === "OVERDUE" ? "text-red-500" : ""}`}
                     >
                       {item.status}
+                      {/* {item.status === "APPROVED" ? "text-orange-500" : ""} */}
                     </span>
                   </td>
 
@@ -383,7 +395,32 @@ const TabBorrowManagement = () => {
                 <label className="block text-sm font-medium text-gray-600">
                   Status
                 </label>
-                <select
+                <div
+                  className={`w-full border p-2 rounded font-bold
+                  ${
+                    selectedBorrower.status === "PENDING"
+                      ? "text-orange-500 bg-orange-50 border-orange-200"
+                      : ""
+                  } 
+                  ${
+                    selectedBorrower.status === "BORROWED"
+                      ? "text-blue-500 bg-blue-50 border-blue-200"
+                      : ""
+                  }
+                  ${
+                    selectedBorrower.status === "RETURNED"
+                      ? "text-green-500 bg-green-50 border-green-200"
+                      : ""
+                  }
+                  ${
+                    selectedBorrower.status === "OVERDUE"
+                      ? "text-red-500 bg-red-50 border-red-200"
+                      : ""
+                  }`}
+                >
+                  {selectedBorrower.status}
+                </div>
+                {/* <select
                   value={selectedBorrower.status}
                   onChange={(e) =>
                     setSelectedBorrower((prev) => ({
@@ -391,14 +428,15 @@ const TabBorrowManagement = () => {
                       status: e.target.value,
                     }))
                   }
+                  disabled
                   className="w-full border p-2 rounded"
                 >
                   <option value="PENDING">Pending</option>
-                  {/* <option value="APPROVED">Approved</option> */}
+                  <option value="APPROVED">Approved</option>
                   <option value="BORROWED">Borrowed</option>
                   <option value="RETURNED">Returned</option>
-                  {/* <option value="Overdue">Overdue</option> */}
-                </select>
+                  <option value="Overdue">Overdue</option>
+                </select> */}
               </div>
             </div>
 
@@ -411,12 +449,29 @@ const TabBorrowManagement = () => {
                 Close
               </button>
               <button
-                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                // className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                className={`${
+                  selectedBorrower.status === "BORROWED"
+                    ? "bg-[#af40ff] hover:bg-[#5b42f3]"
+                    : "bg-gray-400 cursor-not-allowed"
+                } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
+                onClick={() => handleReturnBook(selectedBorrower)}
+                disabled={selectedBorrower.status === "BORROWED" ? false : true}
+              >
+                Return
+              </button>
+              <button
+                className={`${
+                  selectedBorrower.status === "OVERDUE"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#af40ff] hover:bg-[#5b42f3]"
+                } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
+                disabled={selectedBorrower.status === "OVERDUE" ? true : false}
                 onClick={() => {
-                  handleUpdateBorrower(selectedBorrower);
+                  handleApproveBorrower(selectedBorrower);
                 }}
               >
-                Update
+                Borrowed
               </button>
               <button
                 onClick={handlePrint}
