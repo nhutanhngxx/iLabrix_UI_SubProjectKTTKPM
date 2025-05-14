@@ -1,4 +1,5 @@
 const borrowService = {
+  // Tạo phiếu mượn
   createBorrowRequest: async (borrowRequest) => {
     const token = localStorage.getItem("accessToken");
     try {
@@ -23,6 +24,8 @@ const borrowService = {
       console.log("Có lỗi xảy ra khi tạo yêu cầu mượn sách: ", error);
     }
   },
+
+  // Lấy danh sách phiếu mượn của người dùng
   getBorrowRequestsByUser: async () => {
     const token = localStorage.getItem("accessToken");
     try {
@@ -46,6 +49,8 @@ const borrowService = {
       return [];
     }
   },
+
+  // Lấy danh sách phiếu mượn của tất cả người dùng
   getAllBorrowRequests: async () => {
     const token = localStorage.getItem("accessToken");
     try {
@@ -70,6 +75,8 @@ const borrowService = {
       return [];
     }
   },
+
+  // Chấp nhận phiếu mượn
   approveBorrowRequest: async (borrowRequest) => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -96,6 +103,8 @@ const borrowService = {
       console.log("Có lỗi xảy ra khi duyệt yêu cầu mượn sách: ", error);
     }
   },
+
+  // Trả sách
   returnBook: async (borrowRequest) => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -120,6 +129,7 @@ const borrowService = {
     }
   },
 
+  // Hủy phiếu mượn
   cancelBorrowRequest: async (borrowRequest) => {
     try {
       console.log("borrowRequest: ", borrowRequest);
@@ -142,6 +152,32 @@ const borrowService = {
       return data;
     } catch (error) {
       console.log("Có lỗi xảy ra khi hủy yêu cầu mượn sách: ", error);
+    }
+  },
+
+  // Thống kê phiếu mượn theo status
+  getBorrowRequestsStatistics: async () => {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/statistics`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Get borrow requests failed");
+      }
+      const data = await response.json();
+      console.log("data: ", data);
+      return data;
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi lấy danh sách yêu cầu mượn sách: ", error);
+      return [];
     }
   },
 };
