@@ -119,6 +119,31 @@ const borrowService = {
       console.log("Có lỗi xảy ra khi trả sách: ", error);
     }
   },
+
+  cancelBorrowRequest: async (borrowRequest) => {
+    try {
+      console.log("borrowRequest: ", borrowRequest);
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(
+        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/canceled`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Cancel borrow request failed");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi hủy yêu cầu mượn sách: ", error);
+    }
+  },
 };
 
 export default borrowService;

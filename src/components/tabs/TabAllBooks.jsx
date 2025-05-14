@@ -416,7 +416,9 @@ const TabAllBooks = () => {
                       <tr key={book.id} className="hover:bg-gray-50">
                         <td className="py-2 px-4">{index + 1}</td>
                         <td className="py-2 px-4">{book.title}</td>
-                        <td className="py-2 px-4">{getAuthors(book)}</td>
+                        <td className="py-2 px-4 max-w-[250px]">
+                          {getAuthors(book)}
+                        </td>
                         <td className="py-2 px-4">{book.yearPublished}</td>
                         <td className="py-2 px-4">{book.publisher}</td>
                         <td className="py-2 px-4">

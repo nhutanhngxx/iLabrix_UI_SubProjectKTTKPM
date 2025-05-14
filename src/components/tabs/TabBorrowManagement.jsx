@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 // import { useReactToPrint } from "react-to-print";
-import html2pdf from "html2pdf.js";
+// import html2pdf from "html2pdf.js";
 import Invoice from "../invoice/Invoice";
 import borrowService from "../../services/borrowService";
 import DatePicker from "react-datepicker";
@@ -127,7 +127,7 @@ const TabBorrowManagement = () => {
     if (borrowers.length > 0) {
       fetchBorrowerNames();
     }
-  }, [borrowerNames, borrowers]);
+  }, [borrowers]);
 
   const handleSearch = () => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -144,19 +144,19 @@ const TabBorrowManagement = () => {
     }
   };
 
-  const handlePrint = () => {
-    const element = componentRef.current;
+  // const handlePrint = () => {
+  //   const element = componentRef.current;
 
-    const opt = {
-      margin: 0.5,
-      filename: `invoice_${selectedBorrower.name || "borrower"}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-    };
+  //   const opt = {
+  //     margin: 0.5,
+  //     filename: `invoice_${selectedBorrower.name || "borrower"}.pdf`,
+  //     image: { type: "jpeg", quality: 0.98 },
+  //     html2canvas: { scale: 2 },
+  //     jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+  //   };
 
-    html2pdf().set(opt).from(element).save();
-  };
+  //   html2pdf().set(opt).from(element).save();
+  // };
 
   // Khi chọn trạng thái, cập nhật danh sách borrowers
   const handleFilterChange = (e) => {
@@ -196,6 +196,21 @@ const TabBorrowManagement = () => {
       fetchBorrowers();
     } else {
       alert("Trả sách thất bại");
+    }
+    setSelectedBorrower(null);
+  };
+
+  // Hàm hủy phiếu mượn
+  const handleCancelBorrowRequest = async (borrower) => {
+    const borrowRequest = {
+      borrowRequestId: borrower.id,
+    };
+    const response = await borrowService.cancelBorrowRequest(borrowRequest);
+    if (response) {
+      alert("Hủy phiếu mượn thành công");
+      fetchBorrowers();
+    } else {
+      alert("Hủy phiếu mượn thất bại");
     }
     setSelectedBorrower(null);
   };
@@ -279,26 +294,27 @@ const TabBorrowManagement = () => {
           <tbody>
             {selectedBorrowers.length > 0 ? (
               selectedBorrowers.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
+                <tr
+                  key={item.id}
+                  className="hover:bg-gray-50 border-b border-gray-400"
+                >
                   <td className="py-2 px-4">{startIndex + index + 1}</td>
                   <td className="py-2 px-4">
                     {borrowerNames[item.readerId] || "Loading..."}
                   </td>
                   <td className="py-2 px-4 max-w-[250px]">
-                    <div className="overflow-hidden text-ellipsis">
-                      <div
-                        className="truncate font-medium"
-                        title={getListBookInBorrowRequest(item)}
-                      >
-                        {getListBookInBorrowRequest(item)}
-                      </div>
-                      {item.readerRequestDetails &&
-                        item.readerRequestDetails.length > 1 && (
-                          <div className="text-xs text-gray-500">
-                            {item.readerRequestDetails.length} books in this
-                            request
-                          </div>
-                        )}
+                    <div>
+                      {item.readerRequestDetails.map((detail) => (
+                        <div key={detail.id} className="font-medium">
+                          {detail.bookCopy.book.title}
+                        </div>
+                      ))}
+                      {item.readerRequestDetails.length > 1 && (
+                        <div className="text-xs text-gray-500">
+                          {item.readerRequestDetails.length} books in this
+                          request
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="py-2 px-4">
@@ -373,7 +389,7 @@ const TabBorrowManagement = () => {
                 </label>
                 <input
                   type="text"
-                  value={selectedBorrower.name}
+                  value={borrowerNames[selectedBorrower.readerId] || ""}
                   onChange={(e) =>
                     setSelectedBorrower((prev) => ({
                       ...prev,
@@ -381,6 +397,7 @@ const TabBorrowManagement = () => {
                     }))
                   }
                   className="border p-2 rounded mt-1 w-full"
+                  disabled
                 />
               </div>
 
@@ -389,9 +406,10 @@ const TabBorrowManagement = () => {
                 <label className="block text-sm font-medium text-gray-600">
                   Borrowed books
                 </label>
-                <input
-                  type="text"
-                  value={selectedBorrower.book}
+                <textarea
+                  value={getListBookInBorrowRequest(selectedBorrower)
+                    .split(", ")
+                    .join("\n")}
                   onChange={(e) =>
                     setSelectedBorrower((prev) => ({
                       ...prev,
@@ -399,6 +417,8 @@ const TabBorrowManagement = () => {
                     }))
                   }
                   className="w-full border p-2 rounded mt-1"
+                  rows={selectedBorrower.readerRequestDetails.length}
+                  disabled
                 />
               </div>
             </div>
@@ -498,19 +518,11 @@ const TabBorrowManagement = () => {
               </button>
               <button
                 className={`${
-                  selectedBorrower.status === "OVERDUE" ||
-                  selectedBorrower.status === "BORROWED" ||
-                  selectedBorrower.status === "RETURNED"
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-[#af40ff] hover:bg-[#5b42f3]"
+                  selectedBorrower.status === "PENDING"
+                    ? "bg-[#af40ff] hover:bg-[#5b42f3]"
+                    : "bg-gray-400 cursor-not-allowed"
                 } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
-                disabled={
-                  selectedBorrower.status === "OVERDUE" ||
-                  selectedBorrower.status === "BORROWED" ||
-                  selectedBorrower.status === "RETURNED"
-                    ? true
-                    : false
-                }
+                disabled={selectedBorrower.status !== "PENDING" ? true : false}
                 onClick={() => {
                   handleApproveBorrower(selectedBorrower);
                 }}
@@ -518,11 +530,24 @@ const TabBorrowManagement = () => {
                 Borrowed
               </button>
               <button
+                className={`${
+                  selectedBorrower.status === "PENDING"
+                    ? "bg-[#ff4040] hover:bg-[#f35a42]"
+                    : "bg-gray-400 cursor-not-allowed"
+                } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
+                disabled={selectedBorrower.status !== "PENDING" ? true : false}
+                onClick={() => {
+                  handleCancelBorrowRequest(selectedBorrower);
+                }}
+              >
+                Cancel
+              </button>
+              {/* <button
                 onClick={handlePrint}
                 className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
               >
                 Print
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

@@ -82,12 +82,18 @@ const TabBookLoan = () => {
     fetchBorrowers();
   }, []);
 
-  // Hàm hiển thị danh sách sách được mượn
-  const getListBookInBorrowRequest = (borrower) => {
-    const borrowedBooks = borrower.readerRequestDetails.map(
-      (detail) => detail.bookCopy.book.title
-    );
-    return borrowedBooks.join(", ");
+  // Hàm xử lý hủy phiếu mượn
+  const handleCancelBorrowRequest = async (borrower) => {
+    const borrowRequest = {
+      borrowRequestId: borrower.id,
+    };
+    const response = await borrowService.cancelBorrowRequest(borrowRequest);
+    if (response) {
+      alert("Hủy phiếu mượn thành công");
+      fetchBorrowers();
+    } else {
+      alert("Hủy phiếu mượn thất bại");
+    }
   };
 
   const handleSearch = () => {
@@ -195,23 +201,24 @@ const TabBookLoan = () => {
           <tbody>
             {selectedBorrowers.length > 0 ? (
               selectedBorrowers.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
+                <tr
+                  key={item.id}
+                  className="hover:bg-gray-50 border-b border-gray-400"
+                >
                   <td className="py-2 px-4">{index + 1}</td>
                   <td className="py-2 px-4 max-w-[250px]">
                     <div className="overflow-hidden text-ellipsis">
-                      <div
-                        className="truncate font-medium"
-                        title={getListBookInBorrowRequest(item)}
-                      >
-                        {getListBookInBorrowRequest(item)}
-                      </div>
-                      {item.readerRequestDetails &&
-                        item.readerRequestDetails.length > 1 && (
-                          <div className="text-xs text-gray-500">
-                            {item.readerRequestDetails.length} books in this
-                            request
-                          </div>
-                        )}
+                      {item.readerRequestDetails.map((detail) => (
+                        <div key={detail.id} className="font-medium">
+                          {detail.bookCopy.book.title}
+                        </div>
+                      ))}
+                      {item.readerRequestDetails.length > 1 && (
+                        <div className="text-xs text-gray-500">
+                          {item.readerRequestDetails.length} books in this
+                          request
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="py-2 px-4">
@@ -231,12 +238,14 @@ const TabBookLoan = () => {
                     </span>
                   </td>
 
-                  <td
-                    className="py-2 px-4 text-left text-blue-600 cursor-pointer"
-                    onClick={() => getListBookInBorrowRequest(item)}
-                  >
-                    More
-                  </td>
+                  {item.status === "PENDING" && (
+                    <td
+                      className="py-2 px-4 text-left text-red-500 cursor-pointer font-bold"
+                      onClick={() => handleCancelBorrowRequest(item)}
+                    >
+                      Cancel
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
