@@ -13,9 +13,9 @@ const TabBorrowManagement = () => {
 
   // const [statusUpdates, setStatusUpdates] = useState({});
   const [selectedBorrower, setSelectedBorrower] = useState(null);
-  console.log("Selected: ", selectedBorrower);
 
   const [borrowers, setBorrowers] = useState(allBorrowers);
+  const [borrowerNames, setBorrowerNames] = useState({});
   const [searchKeyword, setSearchKeyword] = useState("");
 
   // Thêm state và logic phân trang
@@ -86,7 +86,6 @@ const TabBorrowManagement = () => {
       }
       setBorrowers(response);
       setAllBorrowers(response);
-      console.log(response);
     } catch (error) {
       console.error("Lỗi API:", error);
     }
@@ -104,11 +103,31 @@ const TabBorrowManagement = () => {
   };
 
   // Hàm hiển thị tên của người mượn
-  // const getFullNameBorrower = async (borrower) => {
-  //   const user = await authService.getUserInfo(borrower.readerId);
-  //   console.log(user);
-  //   return user.fullName;
-  // };
+  useEffect(() => {
+    const fetchBorrowerNames = async () => {
+      const namesMap = {};
+
+      for (const borrower of borrowers) {
+        try {
+          // Kiểm tra xem đã có tên trong state chưa để tránh gọi API lại
+          if (!borrowerNames[borrower.readerId]) {
+            const user = await authService.getUserInfoById(borrower.readerId);
+            namesMap[borrower.readerId] = user.fullName;
+          }
+        } catch (error) {
+          console.error(`Error fetching user info:`, error);
+          namesMap[borrower.readerId] = "Unknown";
+        }
+      }
+
+      // Cập nhật state với tên mới và giữ lại tên cũ
+      setBorrowerNames((prev) => ({ ...prev, ...namesMap }));
+    };
+
+    if (borrowers.length > 0) {
+      fetchBorrowerNames();
+    }
+  }, [borrowerNames, borrowers]);
 
   const handleSearch = () => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -197,11 +216,11 @@ const TabBorrowManagement = () => {
             onChange={handleFilterChange}
           >
             <option value="">All</option>
-            <option value="Borrowing">Pending</option>
+            <option value="PENDING">Pending</option>
             {/* <option value="Borrowing">Approved</option> */}
-            <option value="Borrowing">Borrowed</option>
-            <option value="Returned">Returned</option>
-            <option value="Overdue">Overdue</option>
+            <option value="BORROWED">Borrowed</option>
+            <option value="RETURNED">Returned</option>
+            <option value="OVERDUE">Overdue</option>
           </select>
         </div>
 
@@ -261,8 +280,10 @@ const TabBorrowManagement = () => {
             {selectedBorrowers.length > 0 ? (
               selectedBorrowers.map((item, index) => (
                 <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="py-2 px-4">{index + 1}</td>
-                  <td className="py-2 px-4">{item.name}</td>
+                  <td className="py-2 px-4">{startIndex + index + 1}</td>
+                  <td className="py-2 px-4">
+                    {borrowerNames[item.readerId] || "Loading..."}
+                  </td>
                   <td className="py-2 px-4 max-w-[250px]">
                     <div className="overflow-hidden text-ellipsis">
                       <div
@@ -452,23 +473,6 @@ const TabBorrowManagement = () => {
                 >
                   {selectedBorrower.status}
                 </div>
-                {/* <select
-                  value={selectedBorrower.status}
-                  onChange={(e) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      status: e.target.value,
-                    }))
-                  }
-                  disabled
-                  className="w-full border p-2 rounded"
-                >
-                  <option value="PENDING">Pending</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="BORROWED">Borrowed</option>
-                  <option value="RETURNED">Returned</option>
-                  <option value="Overdue">Overdue</option>
-                </select> */}
               </div>
             </div>
 

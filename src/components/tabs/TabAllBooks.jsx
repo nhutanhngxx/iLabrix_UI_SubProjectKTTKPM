@@ -125,6 +125,11 @@ const TabAllBooks = () => {
     fetchBooks();
   }, []);
 
+  // Lấy danh sách tác giả của cuốn sách
+  const getAuthors = (book) => {
+    return book.authors.map((author) => author.name).join(", ");
+  };
+
   //   Hàm xử lý mở modal mượn sách - 1 cuốn
   const handleBorrowClick = (bookId) => {
     if (!selectedBookIds.includes(bookId)) {
@@ -256,8 +261,10 @@ const TabAllBooks = () => {
                   </td>
                   <td className="py-2 px-4">{startIndex + index + 1}</td>
                   <td className="py-2 px-4">{book.title}</td>
-                  <td className="py-2 px-4">{book.authors}</td>
-                  <td className="py-2 px-4">{book.category[0]}</td>
+                  <td className="py-2 px-4 max-w-[250px]">
+                    {getAuthors(book)}
+                  </td>
+                  <td className="py-2 px-4">{book.category.name}</td>
                   <td className="py-2 px-4">{book.yearPublished}</td>
                   <td className="py-2 px-4">{book.publisher}</td>
 
@@ -409,7 +416,7 @@ const TabAllBooks = () => {
                       <tr key={book.id} className="hover:bg-gray-50">
                         <td className="py-2 px-4">{index + 1}</td>
                         <td className="py-2 px-4">{book.title}</td>
-                        <td className="py-2 px-4">{book.authors}</td>
+                        <td className="py-2 px-4">{getAuthors(book)}</td>
                         <td className="py-2 px-4">{book.yearPublished}</td>
                         <td className="py-2 px-4">{book.publisher}</td>
                         <td className="py-2 px-4">

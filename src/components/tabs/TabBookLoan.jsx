@@ -222,10 +222,10 @@ const TabBookLoan = () => {
                   <td className="py-2 px-4 text-left">
                     <span
                       className={`font-bold
-                        ${item.status === "PENDING" ? "text-orange-500" : ""}
-                          ${item.status === "BORROWED" ? "text-green-500" : ""}
-                          ${item.status === "RETURNED" ? "text-gray-500" : ""}
-                          ${item.status === "OVERDUE" ? "text-red-500" : ""}`}
+                        ${item.status === "PENDING" ? "text-orange-500" : ""} 
+                        ${item.status === "BORROWED" ? "text-blue-500" : ""}
+                        ${item.status === "RETURNED" ? "text-green-500" : ""}
+                        ${item.status === "OVERDUE" ? "text-red-500" : ""}`}
                     >
                       {item.status}
                     </span>

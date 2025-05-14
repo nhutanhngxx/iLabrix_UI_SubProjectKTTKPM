@@ -119,6 +119,31 @@ const authService = {
       console.log("Có lỗi xảy ra khi lấy thông tin người dùng: ", error);
     }
   },
+
+  // Lấy thông tin người dùng thông qua ID
+  getUserInfoById: async (userId) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(
+        `http://localhost:8080/api/v1/user-service/users/${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Get user info failed");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi lấy thông tin người dùng: ", error);
+    }
+  },
+
   updateProfile: async (updatedData) => {
     const token = localStorage.getItem("accessToken");
 
