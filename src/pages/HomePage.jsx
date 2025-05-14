@@ -14,7 +14,7 @@ import TabUsers from "../components/tabs/TabUsers";
 import TabInventory from "../components/tabs/TabInventory";
 import TabBookLoan from "../components/tabs/TabBookLoan";
 import TabAllBooks from "../components/tabs/TabAllBooks";
-
+import ChatBox from "../chatbox/ChatBox";
 import checkInOutIcon from "/icons/check-in-out.png";
 import bookIcon from "/icons/book.png";
 import usersIcon from "/icons/users.png";
@@ -554,6 +554,7 @@ const HomePage = () => {
           {/* Modal Change password */}
         </div>
       )}
+      <ChatBox />
     </div>
   );
 };
