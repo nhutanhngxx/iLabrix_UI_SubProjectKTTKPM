@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 // import { useReactToPrint } from "react-to-print";
-// import html2pdf from "html2pdf.js";
+import html2pdf from "html2pdf.js";
 import Invoice from "../invoice/Invoice";
 import borrowService from "../../services/borrowService";
 import DatePicker from "react-datepicker";
@@ -161,19 +161,19 @@ const TabBorrowManagement = () => {
     handleSearch();
   }, [handleSearch]);
 
-  // const handlePrint = () => {
-  //   const element = componentRef.current;
+  const handlePrint = () => {
+    const element = componentRef.current;
 
-  //   const opt = {
-  //     margin: 0.5,
-  //     filename: `invoice_${selectedBorrower.name || "borrower"}.pdf`,
-  //     image: { type: "jpeg", quality: 0.98 },
-  //     html2canvas: { scale: 2 },
-  //     jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-  //   };
+    const opt = {
+      margin: 0.5,
+      filename: `invoice_${selectedBorrower.name || "borrower"}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    };
 
-  //   html2pdf().set(opt).from(element).save();
-  // };
+    html2pdf().set(opt).from(element).save();
+  };
 
   // Khi chọn trạng thái, cập nhật danh sách borrowers
   const handleFilterChange = (e) => {
@@ -368,10 +368,10 @@ const TabBorrowManagement = () => {
                         ${item.status === "BORROWED" ? "text-blue-500" : ""}
                         ${item.status === "RETURNED" ? "text-green-500" : ""}
                         ${item.status === "OVERDUE" ? "text-red-500" : ""}
+                        ${item.status === "CANCELED" ? "text-gray-500" : ""}
                         `}
                     >
                       {item.status}
-                      {/* {item.status === "APPROVED" ? "text-orange-500" : ""} */}
                     </span>
                   </td>
 
@@ -417,9 +417,17 @@ const TabBorrowManagement = () => {
       {selectedBorrower && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 rounded-lg">
           <div className="w-2/3 mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
-            <h2 className="text-3xl items-center text-sky-900 font-bold mb-6">
-              Edit Borrower Details
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl text-sky-900 font-bold ">
+                Edit Borrower Details
+              </h2>
+              <button
+                onClick={handlePrint}
+                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+              >
+                Print
+              </button>
+            </div>
 
             <div className="flex w-full gap-5">
               {/* Input Name */}
@@ -545,29 +553,26 @@ const TabBorrowManagement = () => {
                 Close
               </button>
               <button
-                // className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-                className={`${
-                  selectedBorrower.status === "BORROWED"
-                    ? "bg-[#af40ff] hover:bg-[#5b42f3]"
-                    : "bg-gray-400 cursor-not-allowed"
-                } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
-                onClick={() => handleReturnBook(selectedBorrower)}
-                disabled={selectedBorrower.status === "BORROWED" ? false : true}
-              >
-                Return
-              </button>
-              <button
                 className={`${
                   selectedBorrower.status === "PENDING"
                     ? "bg-[#af40ff] hover:bg-[#5b42f3]"
+                    : selectedBorrower.status === "BORROWED"
+                    ? "bg-[#af40ff] hover:bg-[#5b42f3]"
                     : "bg-gray-400 cursor-not-allowed"
                 } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
-                disabled={selectedBorrower.status !== "PENDING" ? true : false}
                 onClick={() => {
-                  handleApproveBorrower(selectedBorrower);
+                  if (selectedBorrower.status === "BORROWED") {
+                    handleReturnBook(selectedBorrower);
+                  } else if (selectedBorrower.status === "PENDING") {
+                    handleApproveBorrower(selectedBorrower);
+                  }
                 }}
+                disabled={
+                  selectedBorrower.status !== "PENDING" &&
+                  selectedBorrower.status !== "BORROWED"
+                }
               >
-                Borrowed
+                {selectedBorrower.status === "BORROWED" ? "Return" : "Borrowed"}
               </button>
               <button
                 className={`${
@@ -582,12 +587,6 @@ const TabBorrowManagement = () => {
               >
                 Cancel
               </button>
-              {/* <button
-                onClick={handlePrint}
-                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-              >
-                Print
-              </button> */}
             </div>
           </div>
         </div>
