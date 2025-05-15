@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import borrowService from "../../services/borrowService";
 
 const TabBookLoan = () => {
@@ -96,7 +96,7 @@ const TabBookLoan = () => {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     const keyword = searchKeyword.trim().toLowerCase();
     if (keyword === "") {
       setBorrowers(allBorrowers);
@@ -109,7 +109,10 @@ const TabBookLoan = () => {
         )
       );
     }
-  };
+  }, [searchKeyword, allBorrowers]);
+  useEffect(() => {
+    handleSearch();
+  }, [handleSearch]);
 
   // Khi chọn trạng thái, cập nhật danh sách borrowers
   const handleFilterChange = (e) => {
@@ -139,12 +142,21 @@ const TabBookLoan = () => {
             onChange={handleFilterChange}
           >
             <option value="">All</option>
-            <option value="PENDING">Pending</option>
-            <option value="APPROVED">Approved</option>
-            <option value="BORROWED">Borrowing</option>
-            <option value="RETURNED">Returned</option>
-            <option value="OVERDUE">Overdue</option>
-            <option value="CANCELED">Canceled</option>
+            <option value="PENDING" className="text-orange-500">
+              Pending
+            </option>
+            <option value="BORROWED" className="text-blue-500">
+              Borrowed
+            </option>
+            <option value="RETURNED" className="text-green-500">
+              Returned
+            </option>
+            <option value="OVERDUE" className="text-red-500">
+              Overdue
+            </option>
+            <option value="CANCELED" className="text-gray-500">
+              Canceled
+            </option>
           </select>
         </div>
 
@@ -246,7 +258,8 @@ const TabBookLoan = () => {
                         ${item.status === "PENDING" ? "text-orange-500" : ""} 
                         ${item.status === "BORROWED" ? "text-blue-500" : ""}
                         ${item.status === "RETURNED" ? "text-green-500" : ""}
-                        ${item.status === "OVERDUE" ? "text-red-500" : ""}`}
+                        ${item.status === "OVERDUE" ? "text-red-500" : ""}
+                        ${item.status === "CANCELED" ? "text-gray-500" : ""}`}
                     >
                       {item.status}
                     </span>

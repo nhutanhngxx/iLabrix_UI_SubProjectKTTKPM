@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 // import { useReactToPrint } from "react-to-print";
 // import html2pdf from "html2pdf.js";
 import Invoice from "../invoice/Invoice";
@@ -17,6 +17,7 @@ const TabBorrowManagement = () => {
   const [borrowers, setBorrowers] = useState(allBorrowers);
   const [borrowerNames, setBorrowerNames] = useState({});
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   // Thêm state và logic phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -129,21 +130,36 @@ const TabBorrowManagement = () => {
     }
   }, [borrowers]);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     const keyword = searchKeyword.trim().toLowerCase();
-    if (!keyword) {
-      setBorrowers(allBorrowers);
-      return;
+    let filteredBorrowers = allBorrowers;
+
+    // Lọc theo status nếu có
+    if (selectedStatus) {
+      filteredBorrowers = filteredBorrowers.filter(
+        (item) => item.status === selectedStatus
+      );
     }
-    const filteredBorrowers = allBorrowers.filter(
-      (item) =>
-        (borrowerNames[item.readerId] || "").toLowerCase().includes(keyword) ||
-        item.readerRequestDetails.some((detail) =>
-          detail.bookCopy.book.title.toLowerCase().includes(keyword)
-        )
-    );
+
+    // Lọc theo từ khóa tìm kiếm nếu có
+    if (keyword) {
+      filteredBorrowers = filteredBorrowers.filter(
+        (item) =>
+          (borrowerNames[item.readerId] || "")
+            .toLowerCase()
+            .includes(keyword) ||
+          item.readerRequestDetails.some((detail) =>
+            detail.bookCopy.book.title.toLowerCase().includes(keyword)
+          )
+      );
+    }
+
     setBorrowers(filteredBorrowers);
-  };
+    setCurrentPage(1);
+  }, [searchKeyword, allBorrowers, borrowerNames, selectedStatus]);
+  useEffect(() => {
+    handleSearch();
+  }, [handleSearch]);
 
   // const handlePrint = () => {
   //   const element = componentRef.current;
@@ -161,14 +177,8 @@ const TabBorrowManagement = () => {
 
   // Khi chọn trạng thái, cập nhật danh sách borrowers
   const handleFilterChange = (e) => {
-    const selectedStatus = e.target.value;
-    if (selectedStatus === "") {
-      setBorrowers(allBorrowers);
-    } else {
-      setBorrowers(
-        allBorrowers.filter((user) => user.status === selectedStatus)
-      );
-    }
+    const status = e.target.value;
+    setSelectedStatus(status);
   };
 
   // Hàm cập nhật phiếu mượn
@@ -230,14 +240,24 @@ const TabBorrowManagement = () => {
           <select
             className="w-full border p-1 rounded-lg"
             onChange={handleFilterChange}
+            value={selectedStatus}
           >
             <option value="">All</option>
-            <option value="PENDING">Pending</option>
-            {/* <option value="Borrowing">Approved</option> */}
-            <option value="BORROWED">Borrowed</option>
-            <option value="RETURNED">Returned</option>
-            <option value="OVERDUE">Overdue</option>
-            <option value="CANCELED">Canceled</option>
+            <option value="PENDING" className="text-orange-500">
+              Pending
+            </option>
+            <option value="BORROWED" className="text-blue-500">
+              Borrowed
+            </option>
+            <option value="RETURNED" className="text-green-500">
+              Returned
+            </option>
+            <option value="OVERDUE" className="text-red-500">
+              Overdue
+            </option>
+            <option value="CANCELED" className="text-gray-500">
+              Canceled
+            </option>
           </select>
         </div>
 
@@ -273,7 +293,11 @@ const TabBorrowManagement = () => {
                 ></input>
                 {searchKeyword && (
                   <button
-                    onClick={() => setSearchKeyword("")}
+                    onClick={() => {
+                      setSearchKeyword("");
+                      // Khi xóa từ khóa tìm kiếm, vẫn giữ lại bộ lọc theo status
+                      setTimeout(() => handleSearch(), 0);
+                    }}
                     className="ml-2 mr-2 text-gray-500 hover:text-gray-700 "
                   >
                     X
@@ -318,7 +342,7 @@ const TabBorrowManagement = () => {
                     {borrowerNames[item.readerId] || "Loading..."}
                   </td>
                   <td className="py-2 px-4 max-w-[250px]">
-                    <div>
+                    <div key={item.id}>
                       {item.readerRequestDetails.map((detail) => (
                         <div key={detail.id} className="font-medium">
                           {detail.bookCopy.book.title}
@@ -340,7 +364,7 @@ const TabBorrowManagement = () => {
                   <td className="py-2 px-4 text-left">
                     <span
                       className={`font-bold
-                        ${item.status === "PENDING" ? "text-orange-500" : ""} 
+                        ${item.status === "PENDING" ? "text-orange-500" : ""}
                         ${item.status === "BORROWED" ? "text-blue-500" : ""}
                         ${item.status === "RETURNED" ? "text-green-500" : ""}
                         ${item.status === "OVERDUE" ? "text-red-500" : ""}
@@ -490,7 +514,7 @@ const TabBorrowManagement = () => {
                     selectedBorrower.status === "PENDING"
                       ? "text-orange-500 bg-orange-50 border-orange-200"
                       : ""
-                  } 
+                  }
                   ${
                     selectedBorrower.status === "BORROWED"
                       ? "text-blue-500 bg-blue-50 border-blue-200"
