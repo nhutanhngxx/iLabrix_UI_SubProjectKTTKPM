@@ -131,17 +131,23 @@ const TabBorrowManagement = () => {
 
   const handleSearch = () => {
     const keyword = searchKeyword.trim().toLowerCase();
-    if (keyword === "") {
+    if (!keyword) {
       setBorrowers(allBorrowers);
-    } else {
-      setBorrowers(
-        allBorrowers.filter(
-          (user) =>
-            user.name.toLowerCase().includes(keyword) ||
-            user.book.toLowerCase().includes(keyword)
-        )
-      );
+      return;
     }
+    console.log(keyword);
+
+    const filteredBorrowers = allBorrowers.filter(
+      (item) =>
+        (borrowerNames[item.readerId] || "").toLowerCase().includes(keyword) ||
+        item.readerRequestDetails.some((detail) =>
+          detail.bookCopy.book.title.toLowerCase().includes(keyword)
+        )
+    );
+
+    console.log(filteredBorrowers);
+
+    setBorrowers(filteredBorrowers);
   };
 
   // const handlePrint = () => {
