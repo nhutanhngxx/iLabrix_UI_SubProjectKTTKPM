@@ -173,7 +173,6 @@ const borrowService = {
         throw new Error("Get borrow requests failed");
       }
       const data = await response.json();
-      console.log("data: ", data);
       return data;
     } catch (error) {
       console.log("Có lỗi xảy ra khi lấy danh sách yêu cầu mượn sách: ", error);

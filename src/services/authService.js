@@ -179,6 +179,36 @@ const authService = {
       console.log("Không thể cập nhật: ", error);
     }
   },
+
+  changePassword: async (currentPassword, newPassword) => {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/user-service/users/change-password`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            oldPassword: currentPassword,
+            newPassword,
+          }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Change password failed: ${errorData}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Không thể đổi mật khẩu: ", error);
+    }
+  },
 };
 
 export default authService;
