@@ -102,10 +102,10 @@ const TabBookLoan = () => {
       setBorrowers(allBorrowers);
     } else {
       setBorrowers(
-        allBorrowers.filter(
-          (item) =>
-            item.name.toLowerCase().includes(keyword) ||
-            item.book.toLowerCase().includes(keyword)
+        allBorrowers.filter((item) =>
+          item.readerRequestDetails.some((detail) =>
+            detail.bookCopy.book.title.toLowerCase().includes(keyword)
+          )
         )
       );
     }
@@ -144,6 +144,7 @@ const TabBookLoan = () => {
             <option value="BORROWED">Borrowing</option>
             <option value="RETURNED">Returned</option>
             <option value="OVERDUE">Overdue</option>
+            <option value="CANCELED">Canceled</option>
           </select>
         </div>
 
@@ -171,7 +172,20 @@ const TabBookLoan = () => {
                   id=""
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
                 ></input>
+                {searchKeyword && (
+                  <button
+                    onClick={() => setSearchKeyword("")}
+                    className="ml-2 mr-2 text-gray-500 hover:text-gray-700 "
+                  >
+                    X
+                  </button>
+                )}
                 <input
                   type="button"
                   value="Search"

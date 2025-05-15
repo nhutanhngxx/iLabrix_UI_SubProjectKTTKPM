@@ -135,8 +135,6 @@ const TabBorrowManagement = () => {
       setBorrowers(allBorrowers);
       return;
     }
-    console.log(keyword);
-
     const filteredBorrowers = allBorrowers.filter(
       (item) =>
         (borrowerNames[item.readerId] || "").toLowerCase().includes(keyword) ||
@@ -144,9 +142,6 @@ const TabBorrowManagement = () => {
           detail.bookCopy.book.title.toLowerCase().includes(keyword)
         )
     );
-
-    console.log(filteredBorrowers);
-
     setBorrowers(filteredBorrowers);
   };
 
@@ -242,6 +237,7 @@ const TabBorrowManagement = () => {
             <option value="BORROWED">Borrowed</option>
             <option value="RETURNED">Returned</option>
             <option value="OVERDUE">Overdue</option>
+            <option value="CANCELED">Canceled</option>
           </select>
         </div>
 
@@ -269,7 +265,20 @@ const TabBorrowManagement = () => {
                   id=""
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
                 ></input>
+                {searchKeyword && (
+                  <button
+                    onClick={() => setSearchKeyword("")}
+                    className="ml-2 mr-2 text-gray-500 hover:text-gray-700 "
+                  >
+                    X
+                  </button>
+                )}
                 <input
                   type="button"
                   value="Search"
@@ -334,7 +343,8 @@ const TabBorrowManagement = () => {
                         ${item.status === "PENDING" ? "text-orange-500" : ""} 
                         ${item.status === "BORROWED" ? "text-blue-500" : ""}
                         ${item.status === "RETURNED" ? "text-green-500" : ""}
-                        ${item.status === "OVERDUE" ? "text-red-500" : ""}`}
+                        ${item.status === "OVERDUE" ? "text-red-500" : ""}
+                        `}
                     >
                       {item.status}
                       {/* {item.status === "APPROVED" ? "text-orange-500" : ""} */}
