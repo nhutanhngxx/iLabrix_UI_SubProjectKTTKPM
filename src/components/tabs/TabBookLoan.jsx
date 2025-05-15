@@ -168,7 +168,7 @@ const TabBookLoan = () => {
                 <input
                   type="text"
                   className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
-                  placeholder=""
+                  placeholder="Search ..."
                   id=""
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
