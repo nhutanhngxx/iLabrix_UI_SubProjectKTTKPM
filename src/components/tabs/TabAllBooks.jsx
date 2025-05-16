@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 import bookService from "../../services/bookService";
 import borrowService from "../../services/borrowService";
+import categoryService from "../../services/categoryService";
 
 const TabAllBooks = () => {
   const [filterBooks, setFilterBooks] = useState([]);
@@ -13,6 +14,13 @@ const TabAllBooks = () => {
   const [returnDate, setReturnDate] = useState("");
   const [borrowDays, setBorrowDays] = useState(0);
   const modalRef = useRef();
+
+  // Category filtering
+  const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [categorySearchTerm, setCategorySearchTerm] = useState("");
+  const [filteredCategories, setFilteredCategories] = useState([]);
 
   // Thêm state và logic phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -121,9 +129,52 @@ const TabAllBooks = () => {
       console.error("Lỗi API:", error);
     }
   };
+
+  // Lấy danh sách thể loại
+  const fetchCategories = async () => {
+    try {
+      const response = await categoryService.getCategories();
+      if (!response) {
+        throw new Error("Lỗi khi lấy danh sách thể loại");
+      }
+      setCategories(response);
+      setFilteredCategories(response);
+    } catch (error) {
+      console.error("Lỗi API Categories:", error);
+    }
+  };
+
+  // Hàm xử lý tìm kiếm thể loại
+  const handleCategorySearch = useCallback(
+    (searchTerm) => {
+      setCategorySearchTerm(searchTerm);
+      if (!searchTerm.trim()) {
+        setFilteredCategories(categories);
+      } else {
+        const term = searchTerm.toLowerCase().trim();
+        const filtered = categories.filter((category) =>
+          category.name.toLowerCase().includes(term)
+        );
+        setFilteredCategories(filtered);
+      }
+    },
+    [categories]
+  );
+
   useEffect(() => {
     fetchBooks();
+    fetchCategories();
   }, []);
+
+  // Cập nhật danh sách thể loại đã lọc khi danh sách thể loại thay đổi
+  useEffect(() => {
+    setFilteredCategories(categories);
+  }, [categories]);
+
+  // Lấy danh sách tác giả của cuốn sách
+  const getAuthors = (book) => {
+    return book.authors.map((author) => author.name).join(", ");
+  };
 
   //   Hàm xử lý mở modal mượn sách - 1 cuốn
   const handleBorrowClick = (bookId) => {
@@ -159,7 +210,7 @@ const TabAllBooks = () => {
 
       const response = await borrowService.createBorrowRequest(borrowRequest);
       if (response) {
-        alert("Mượn sách thành công");
+        alert("Tạo phiếu mượn sách thành công");
       } else {
         alert("Mượn sách thất bại");
       }
@@ -168,20 +219,72 @@ const TabAllBooks = () => {
     }
   };
 
-  const handleSearch = () => {
+  // Hàm xử lý chọn thể loại
+  const handleCategoryToggle = (categoryId) => {
+    setSelectedCategories((prev) => {
+      if (prev.includes(categoryId)) {
+        return prev.filter((id) => id !== categoryId);
+      } else {
+        return [...prev, categoryId];
+      }
+    });
+  };
+
+  // Hàm xử lý khi click bên ngoài dropdown
+  const handleClickOutsideDropdown = useCallback(
+    (event) => {
+      if (
+        showCategoryDropdown &&
+        !event.target.closest(".category-dropdown-container")
+      ) {
+        setShowCategoryDropdown(false);
+      }
+    },
+    [showCategoryDropdown]
+  );
+
+  // Thêm event listener để đóng dropdown khi click bên ngoài
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutsideDropdown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideDropdown);
+    };
+  }, [handleClickOutsideDropdown]);
+
+  // Hàm xử lý tìm kiếm
+  const handleSearch = useCallback(() => {
     const keyword = searchKeyword.trim().toLowerCase();
-    if (keyword === "") {
-      setFilterBooks(allBooks);
-    } else {
-      setFilterBooks(
-        allBooks.filter(
-          (item) =>
-            item.title.toLowerCase().includes(keyword) ||
-            item.title.toLowerCase().includes(keyword)
-        )
+    let filtered = [...allBooks];
+
+    // Lọc theo từ khóa
+    if (keyword !== "") {
+      filtered = filtered.filter(
+        (item) =>
+          item.title?.toLowerCase().includes(keyword) ||
+          item.authors?.some((author) =>
+            author.name.toLowerCase().includes(keyword)
+          ) ||
+          item.category?.name.toLowerCase().includes(keyword) ||
+          item.yearPublished?.toString().includes(keyword) ||
+          item.publisher?.toLowerCase().includes(keyword)
       );
     }
-  };
+
+    // Lọc theo thể loại
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter((book) =>
+        selectedCategories.includes(book.category.id)
+      );
+    }
+
+    setFilterBooks(filtered);
+    setCurrentPage(1); // Reset về trang đầu tiên khi tìm kiếm
+  }, [allBooks, searchKeyword, selectedCategories]);
+
+  // Cập nhật kết quả tìm kiếm khi thay đổi danh sách thể loại đã chọn
+  useEffect(() => {
+    handleSearch();
+  }, [selectedCategories, handleSearch]);
 
   return (
     <div>
@@ -190,7 +293,165 @@ const TabAllBooks = () => {
           All Books
         </h2>
 
-        {/* Search */}
+        {/* Category search */}
+        <div className="relative category-dropdown-container">
+          <label className="block text-xs mt-1 font-medium text-gray-600">
+            Filter by categories
+          </label>
+          <div className="flex flex-col">
+            <div className="flex items-center">
+              <button
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                className="flex items-center justify-between w-[200px] px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
+              >
+                <span>
+                  {selectedCategories.length === 0
+                    ? "Select categories"
+                    : `${selectedCategories.length} selected`}
+                </span>
+                <svg
+                  className="w-5 h-5 ml-2 -mr-1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              {selectedCategories.length > 0 && (
+                <button
+                  onClick={() => {
+                    setSelectedCategories([]);
+                  }}
+                  className="ml-2 text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+
+            {/* Selected categories tags */}
+            {selectedCategories.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2 max-w-[400px]">
+                {selectedCategories.map((categoryId) => {
+                  const category = categories.find((c) => c.id === categoryId);
+                  return category ? (
+                    <div
+                      key={category.id}
+                      className="flex items-center bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full"
+                    >
+                      <span>{category.name}</span>
+                      <button
+                        onClick={() => handleCategoryToggle(category.id)}
+                        className="ml-1 text-blue-600 hover:text-blue-800"
+                      >
+                        <svg
+                          className="w-3 h-3"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          ></path>
+                        </svg>
+                      </button>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Dropdown menu */}
+          {showCategoryDropdown && (
+            <div className="absolute z-10 w-[250px] top-[70px] bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+              {/* Search input */}
+              <div className="sticky top-0 bg-white p-2 border-b border-gray-200">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Search categories..."
+                    value={categorySearchTerm}
+                    onChange={(e) => handleCategorySearch(e.target.value)}
+                  />
+                  {categorySearchTerm && (
+                    <button
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                      onClick={() => handleCategorySearch("")}
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        ></path>
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Category list */}
+              <div className="py-1">
+                {filteredCategories.length > 0 ? (
+                  filteredCategories.map((category) => (
+                    <div
+                      key={category.id}
+                      className="flex items-center px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleCategoryToggle(category.id)}
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                        checked={selectedCategories.includes(category.id)}
+                        onChange={() => {}}
+                      />
+                      <span className="ml-2">{category.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                    No categories found
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Search key word*/}
         <div>
           <label className="block text-xs mt-1 font-medium text-gray-600">
             Search by keyword
@@ -210,11 +471,24 @@ const TabAllBooks = () => {
                 <input
                   type="text"
                   className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
-                  placeholder=""
+                  placeholder="Search ..."
                   id=""
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
                 ></input>
+                {searchKeyword && (
+                  <button
+                    onClick={() => setSearchKeyword("")}
+                    className="ml-2 mr-2 text-gray-500 hover:text-gray-700 "
+                  >
+                    X
+                  </button>
+                )}
                 <input
                   type="button"
                   value="Search"
@@ -256,8 +530,10 @@ const TabAllBooks = () => {
                   </td>
                   <td className="py-2 px-4">{startIndex + index + 1}</td>
                   <td className="py-2 px-4">{book.title}</td>
-                  <td className="py-2 px-4">{book.authors}</td>
-                  <td className="py-2 px-4">{book.category[0]}</td>
+                  <td className="py-2 px-4 max-w-[250px]">
+                    {getAuthors(book)}
+                  </td>
+                  <td className="py-2 px-4">{book.category.name}</td>
                   <td className="py-2 px-4">{book.yearPublished}</td>
                   <td className="py-2 px-4">{book.publisher}</td>
 
@@ -409,7 +685,9 @@ const TabAllBooks = () => {
                       <tr key={book.id} className="hover:bg-gray-50">
                         <td className="py-2 px-4">{index + 1}</td>
                         <td className="py-2 px-4">{book.title}</td>
-                        <td className="py-2 px-4">{book.authors}</td>
+                        <td className="py-2 px-4 max-w-[250px]">
+                          {getAuthors(book)}
+                        </td>
                         <td className="py-2 px-4">{book.yearPublished}</td>
                         <td className="py-2 px-4">{book.publisher}</td>
                         <td className="py-2 px-4">

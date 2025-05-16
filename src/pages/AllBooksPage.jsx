@@ -64,7 +64,7 @@ const UserPage = () => {
 
       const response = await borrowService.createBorrowRequest(borrowRequest);
       if (response) {
-        alert("Mượn sách thành công");
+        alert("Tạo phiếu mượn sách thành công");
         setDisplayBooks((prevBooks) =>
           prevBooks.map((book) =>
             book.bookId === selectedBook.bookId

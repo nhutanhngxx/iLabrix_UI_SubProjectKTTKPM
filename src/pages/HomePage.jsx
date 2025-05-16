@@ -221,8 +221,14 @@ const HomePage = () => {
     }
 
     try {
-      // Gọi API đổi mật khẩu
-      handleUpdateProfile();
+      const res = await authService.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+
+      if (!res) {
+        throw new Error("Đổi mật khẩu thất bại");
+      }
 
       // Xử lý thành công
       alert("Đổi mật khẩu thành công");

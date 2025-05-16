@@ -114,8 +114,14 @@ const IntroPage = () => {
     }
 
     try {
-      // Gọi API đổi mật khẩu
-      handleUpdateProfile();
+      const res = await authService.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+
+      if (!res) {
+        throw new Error("Đổi mật khẩu thất bại");
+      }
 
       // Xử lý thành công
       alert("Đổi mật khẩu thành công");
@@ -642,12 +648,6 @@ const IntroPage = () => {
                   className="text-blue-500 hover:bg-gray-100 hover:backdrop-blur-md px-3 py-2 rounded-md transition-all duration-200"
                 >
                   Change Password
-                </button>
-              </li>
-              <hr />
-              <li>
-                <button className="text-red-500 font-medium hover:bg-gray-100 hover:backdrop-blur-md px-3 py-2 rounded-md transition-all duration-200">
-                  Delete Account
                 </button>
               </li>
               <li>

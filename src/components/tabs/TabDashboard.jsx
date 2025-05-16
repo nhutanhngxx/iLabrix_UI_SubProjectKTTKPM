@@ -1,149 +1,147 @@
 import { BarChart, LineChart } from "@mui/x-charts";
-import {
-  mockBooks,
-  mockBorrowRecords,
-  mockInventorys,
-} from "../../mock/mockData";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import borrowService from "../../services/borrowService";
 
 const TabDashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview");
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
-  };
-
-  // Mock Data
-  const booksBorrowedToday = 10;
-  const booksBorrowedYesterday = 5;
-  const usersBorrowedToday = 25;
-  const usersBorrowedYesterday = 10;
-
-  // Calculate total books
-  const totalBooks = mockBooks.reduce(
-    (total, quantity) => total + quantity.totalCopies,
-    0
-  );
-
-  // Calculate total books returned
-  const totalBooksReturned = mockBorrowRecords.reduce(
-    (total, record) =>
-      record.isReturned ? total + record.bookId.length : total,
-    0
-  );
-
-  // Calculate total books in inventory
-  const totalBooksInInventory = mockInventorys.reduce(
-    (total, inventory) => total + inventory.stockQuantity,
-    0
-  );
-
-  // Calculate total books late return
-  const totalBooksLateReturn = mockBorrowRecords.reduce((total, record) => {
-    const currentDate = new Date();
-    const dueDate = new Date(record.dueDate);
-    return currentDate > dueDate && !record.isReturned // return record.returnDate === ""
-      ? total + record.bookId.length
-      : total;
-  }, 0);
-
-  // Pie Chart Data for Borrow Records
-  const bookPieChartData = [
-    {
-      id: 0,
-      value: totalBooksReturned,
-      label: "Returned",
-    },
-    {
-      id: 1,
-      value: totalBooks - totalBooksInInventory,
-      label: "Borrowing",
-    },
-    { id: 2, value: totalBooksLateReturn, label: "Over" },
-  ];
-
-  // Line Chart Data with 2 series
-  const uData = [15, 2, 5, 8, 3, 7, 4, 6, 5, 8, 2, 5];
-  const pData = [2, 5, 2, 9, 2, 5, 3, 7, 4, 6, 5, 8];
-  const xLabels_Month = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-  // const xLabels_Weak = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
   const OverViewTab = () => {
+    const [borrowRequests, setBorrowRequests] = useState();
+    const [borrowRequestsToday, setBorrowRequestsToday] = useState();
+    const [borrowRequestsYesterday, setBorrowRequestsYesterday] = useState();
+
+    const [booksBorrowedToday, setBooksBorrowedToday] = useState();
+    const [booksBorrowedYesterday, setBooksBorrowedYesterday] = useState();
+
+    // Lấy danh sách phiếu mượn
+    const fetchBorrowRequests = async () => {
+      try {
+        const response = await borrowService.getBorrowRequestsStatistics();
+        if (!response) {
+          throw new Error("Lỗi khi lấy dữ liệu");
+        }
+        setBorrowRequests(response);
+      } catch (error) {
+        console.error("Lỗi API:", error);
+      }
+    };
+    useEffect(() => {
+      fetchBorrowRequests();
+    }, []);
+    // Dữ liệu cho phân tích các phiếu mượn
+    const borrowRequestsData = [
+      {
+        id: 1,
+        value: borrowRequests?.pendingRequests || 0,
+        label: "Pending",
+      },
+      {
+        id: 2,
+        value: borrowRequests?.approvedRequests || 0,
+        label: "Borrowed",
+      },
+      {
+        id: 3,
+        value: borrowRequests?.canceledRequests || 0,
+        label: "Canceled",
+      },
+      {
+        id: 4,
+        value: borrowRequests?.returnedRequests || 0,
+        label: "Returned",
+      },
+      {
+        id: 5,
+        value: borrowRequests?.overdueRequests || 0,
+        label: "Overdue",
+      },
+    ];
+
+    // Lấy số lượng phiếu mượn ngày hôm nay
+    const fetchBorrowRequestsToday = async () => {
+      try {
+        const response = await borrowService.getBorrowRequestsByDate(
+          new Date().toISOString().split("T")[0]
+        );
+        if (!response) {
+          throw new Error("Lỗi khi lấy dữ liệu");
+        }
+        setBorrowRequestsToday(response);
+      } catch (error) {
+        console.error("Lỗi API:", error);
+      }
+    };
+    useEffect(() => {
+      fetchBorrowRequestsToday();
+    }, []);
+
+    // Lấy số lượng phiếu mượn ngày hôm qua
+    const fetchBorrowRequestsYesterday = async () => {
+      try {
+        const response = await borrowService.getBorrowRequestsByDate(
+          new Date(new Date().setDate(new Date().getDate() - 1))
+            .toISOString()
+            .split("T")[0]
+        );
+        if (!response) {
+          throw new Error("Lỗi khi lấy dữ liệu");
+        }
+        setBorrowRequestsYesterday(response);
+      } catch (error) {
+        console.error("Lỗi API:", error);
+      }
+    };
+    useEffect(() => {
+      fetchBorrowRequestsYesterday();
+    }, []);
+
+    // Lấy số lượng sách được mượn ngày hôm nay
+    const fetchBooksBorrowedToday = async () => {
+      try {
+        const response = await borrowService.getBorrowedBooksByDate(
+          new Date().toISOString().split("T")[0]
+        );
+        if (!response) {
+          throw new Error("Lỗi khi lấy dữ liệu");
+        }
+        setBooksBorrowedToday(response);
+      } catch (error) {
+        console.error("Lỗi API:", error);
+      }
+    };
+    useEffect(() => {
+      fetchBooksBorrowedToday();
+    }, []);
+
+    // Lấy số lượng sách được mượn ngày hôm qua
+    const fetchBooksBorrowedYesterday = async () => {
+      try {
+        const response = await borrowService.getBorrowedBooksByDate(
+          new Date(new Date().setDate(new Date().getDate() - 1))
+            .toISOString()
+            .split("T")[0]
+        );
+        if (!response) {
+          throw new Error("Lỗi khi lấy dữ liệu");
+        }
+        setBooksBorrowedYesterday(response);
+      } catch (error) {
+        console.error("Lỗi API:", error);
+      }
+    };
+    useEffect(() => {
+      fetchBooksBorrowedYesterday();
+    }, []);
+
     return (
-      <div className="grid grid-cols-2 grid-rows-4 gap-2">
+      <div className="grid grid-cols-2 grid-rows-3 gap-2">
         {/* BorrowRecords - Pie Chart */}
-        <div className="flex justify-center row-span-2">
+        <div className="flex justify-center row-span-1 border-2 border-gray-400 rounded-xl">
           <div>
             <PieChart
-              colors={["green", "yellow", "oklch(0.704 0.191 22.216)"]}
+              colors={["#F97316", "#3B82F6", "#6B7280", "#10B981", "#DC2626"]}
               series={[
                 {
-                  data: bookPieChartData,
-                  highlightScope: { fade: "global", highlight: "item" },
-                  faded: {
-                    innerRadius: 30,
-                    additionalRadius: -30,
-                    color: "gray",
-                  },
-                },
-              ]}
-              title="Borrow Records"
-              width={400}
-              height={200}
-            />
-            <div className="text-center">
-              Total books in inventory: {totalBooks}
-            </div>
-          </div>
-        </div>
-
-        {/* BorrowRecords - Borrowed Today, Returned Yesterday */}
-        <div className="flex gap-5 items-center justify-center border-2 border-gray-400 rounded-xl row-span-1">
-          <div className="bg-white/75 py-2 px-5 rounded-xl">
-            <div className="text-lg font-medium">Books Borrowed Today</div>
-            <div className="flex justify-around mt-2 items-center">
-              <div className="text-xl">{booksBorrowedToday}</div>
-              <div className="text-sm">
-                {(booksBorrowedToday / booksBorrowedYesterday) * 100}%
-              </div>
-            </div>
-          </div>
-          <div className="bg-white/75 py-2 px-5 rounded-xl">
-            <div className="text-lg font-medium">Users Borrowed Today</div>
-            <div className="flex justify-around mt-2 items-center">
-              <div className="text-xl">{usersBorrowedToday}</div>
-              <div className="text-sm">
-                {(usersBorrowedToday / usersBorrowedYesterday) * 100}%
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Number of Borrwer - Liner Chart */}
-        <div className="flex flex-col items-center justify-center row-span-3">
-          <LineChart
-            xAxis={[{ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }]}
-            series={[
-              {
-                data: [2, 5.5, 2, 8.5, 1.5, 5, 3, 7, 4, 6, 5, 8],
-              },
-            ]}
-            width={500}
-            height={350}
-          />
-          <div className="text-center">
-            Chart of number of people borrowing books over time
-          </div>
-        </div>
-
-        {/* Late Return - Pie Chart */}
-        <div className="flex justify-center row-span-2">
-          <div>
-            <PieChart
-              colors={["orange", "skyblue", "oklch(0.396 0.141 25.723)"]}
-              series={[
-                {
-                  data: bookPieChartData,
+                  data: borrowRequestsData,
                   highlightScope: { fade: "global", highlight: "item" },
                   faded: {
                     innerRadius: 30,
@@ -153,57 +151,162 @@ const TabDashboard = () => {
                   innerRadius: 30,
                 },
               ]}
-              title="Borrow Records"
-              width={400}
-              height={200}
+              title="Borrow Requests"
+              width={320}
+              height={160}
             />
             <div className="text-center">
-              Total books late return: {totalBooks}
+              Total borrow requests: {borrowRequests?.totalRequests || 0}
             </div>
           </div>
         </div>
-      </div>
-    );
-  };
 
-  const AnalysisTab = () => {
-    return (
-      <div className="flex justify-around gap-10 items-center h-full mt-10">
-        {/* Borrow && Return - Liner Chart */}
-        <div className="flex flex-col items-center">
-          <LineChart
-            width={500}
-            height={400}
-            series={[
-              { data: pData, label: "Borrow", showMark: false, type: "line" },
-              { data: uData, label: "Return", showMark: false, type: "line" },
-            ]}
-            xAxis={[{ scaleType: "point", data: xLabels_Month }]}
-          />
-          <div className="text-center text-xl">
-            Number of books borrowed and returned
+        {/* BorrowRecords - Borrowed Today, Returned Yesterday */}
+        <div className="flex gap-5 items-center justify-center border-2 border-gray-400 rounded-xl row-span-1">
+          <div className="bg-white/75 py-2 px-5 rounded-xl border-2 border-gray-400">
+            <div className="text-lg font-medium">Books Borrowed Today</div>
+            <div className="flex justify-around mt-2 items-center">
+              <div className="text-xl">{booksBorrowedToday}</div>
+              <div className="text-sm flex items-center">
+                <span
+                  className={`${
+                    booksBorrowedToday > booksBorrowedYesterday
+                      ? "text-green-500"
+                      : booksBorrowedToday < booksBorrowedYesterday
+                      ? "text-red-500"
+                      : "text-gray-500"
+                  } font-medium`}
+                >
+                  {(
+                    (booksBorrowedToday / booksBorrowedYesterday) *
+                    100
+                  ).toFixed(2)}
+                  %
+                  {booksBorrowedToday !== booksBorrowedYesterday && (
+                    <span className="ml-1 inline-flex items-center">
+                      {booksBorrowedToday > booksBorrowedYesterday ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 transform transition-transform duration-300 hover:scale-125"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 transform transition-transform duration-300 hover:scale-125"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white/75 py-2 px-5 rounded-xl border-2 border-gray-400">
+            <div className="text-lg font-medium">Borrow Requests Today</div>
+            <div className="flex justify-around mt-2 items-center">
+              <div className="text-xl">{borrowRequestsToday}</div>
+              <div className="text-sm flex items-center">
+                <span
+                  className={`${
+                    borrowRequestsToday > borrowRequestsYesterday
+                      ? "text-green-500"
+                      : borrowRequestsToday < borrowRequestsYesterday
+                      ? "text-red-500"
+                      : "text-gray-500"
+                  } font-medium`}
+                >
+                  {(
+                    (borrowRequestsToday / borrowRequestsYesterday) *
+                    100
+                  ).toFixed(2)}
+                  %
+                  {borrowRequestsToday !== borrowRequestsYesterday && (
+                    <span className="ml-1 inline-flex items-center">
+                      {borrowRequestsToday > borrowRequestsYesterday ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 transform transition-transform duration-300 hover:scale-125"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 transform transition-transform duration-300 hover:scale-125"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Favorite Category - Liner Chart */}
-        <div className="flex flex-col items-center">
+        {/* Number of Borrwer - Liner Chart */}
+        <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
+          <LineChart
+            xAxis={[
+              { data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], label: "Month" },
+            ]}
+            series={[
+              {
+                data: [2, 5.5, 2, 8.5, 1.5, 5, 3, 7, 4, 6, 5, 8],
+                label: "Number of Borrower",
+                showMark: false,
+                type: "line",
+              },
+            ]}
+            width={500}
+            height={350}
+          />
+        </div>
+
+        {/* Favorite Book - Liner Chart */}
+        <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
           <BarChart
             xAxis={[
               {
                 scaleType: "band",
-                data: ["Kinh dị", "Khoa học", "Tiểu thuyết"],
-                // label: "Biểu đồ thể loại sách được yêu thích nhất",
+                data: ["Book 1", "Book 2", "Book 3"],
+                label: "Favorite Book",
               },
             ]}
             yAxis={[{ scaleType: "linear" }]}
             series={[{ data: [10, 7, 5] }]}
-            // layout="horizontal"
             width={500}
-            height={400}
+            height={350}
           />
-          <div className="text-center text-xl">
-            Number of most popular genres
-          </div>
         </div>
       </div>
     );
@@ -211,35 +314,7 @@ const TabDashboard = () => {
 
   return (
     <div>
-      {/* Header Tab: Overview - Analysis */}
-      <div className="flex gap-5 text-center items-center">
-        <div
-          className={`text-xl px-10 cursor-pointer  ${
-            activeTab === "overview"
-              ? "border-b-2  border-blue-500 font-bold"
-              : ""
-          }`}
-          onClick={() => handleTabClick("overview")}
-        >
-          Overview
-        </div>
-        <div
-          className={`text-xl px-10 cursor-pointer ${
-            activeTab === "analysis"
-              ? "border-b-2  border-blue-500 font-bold"
-              : ""
-          }`}
-          onClick={() => handleTabClick("analysis")}
-        >
-          Analysis
-        </div>
-      </div>
-
-      {/* Tab Content */}
-      <div className="mt-5">
-        {activeTab === "overview" && <OverViewTab />}
-        {activeTab === "analysis" && <AnalysisTab />}
-      </div>
+      <OverViewTab />
     </div>
   );
 };

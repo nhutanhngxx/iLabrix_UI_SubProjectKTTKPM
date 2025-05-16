@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import borrowService from "../../services/borrowService";
 
 const TabBookLoan = () => {
@@ -82,28 +82,37 @@ const TabBookLoan = () => {
     fetchBorrowers();
   }, []);
 
-  // Hàm hiển thị danh sách sách được mượn
-  const getListBookInBorrowRequest = (borrower) => {
-    const borrowedBooks = borrower.readerRequestDetails.map(
-      (detail) => detail.bookCopy.book.title
-    );
-    return borrowedBooks.join(", ");
+  // Hàm xử lý hủy phiếu mượn
+  const handleCancelBorrowRequest = async (borrower) => {
+    const borrowRequest = {
+      borrowRequestId: borrower.id,
+    };
+    const response = await borrowService.cancelBorrowRequest(borrowRequest);
+    if (response) {
+      alert("Hủy phiếu mượn thành công");
+      fetchBorrowers();
+    } else {
+      alert("Hủy phiếu mượn thất bại");
+    }
   };
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     const keyword = searchKeyword.trim().toLowerCase();
     if (keyword === "") {
       setBorrowers(allBorrowers);
     } else {
       setBorrowers(
-        allBorrowers.filter(
-          (item) =>
-            item.name.toLowerCase().includes(keyword) ||
-            item.book.toLowerCase().includes(keyword)
+        allBorrowers.filter((item) =>
+          item.readerRequestDetails.some((detail) =>
+            detail.bookCopy.book.title.toLowerCase().includes(keyword)
+          )
         )
       );
     }
-  };
+  }, [searchKeyword, allBorrowers]);
+  useEffect(() => {
+    handleSearch();
+  }, [handleSearch]);
 
   // Khi chọn trạng thái, cập nhật danh sách borrowers
   const handleFilterChange = (e) => {
@@ -133,11 +142,21 @@ const TabBookLoan = () => {
             onChange={handleFilterChange}
           >
             <option value="">All</option>
-            <option value="PENDING">Pending</option>
-            <option value="APPROVED">Approved</option>
-            <option value="BORROWED">Borrowing</option>
-            <option value="RETURNED">Returned</option>
-            <option value="OVERDUE">Overdue</option>
+            <option value="PENDING" className="text-orange-500">
+              Pending
+            </option>
+            <option value="BORROWED" className="text-blue-500">
+              Borrowed
+            </option>
+            <option value="RETURNED" className="text-green-500">
+              Returned
+            </option>
+            <option value="OVERDUE" className="text-red-500">
+              Overdue
+            </option>
+            <option value="CANCELED" className="text-gray-500">
+              Canceled
+            </option>
           </select>
         </div>
 
@@ -161,11 +180,24 @@ const TabBookLoan = () => {
                 <input
                   type="text"
                   className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
-                  placeholder=""
+                  placeholder="Search ..."
                   id=""
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
                 ></input>
+                {searchKeyword && (
+                  <button
+                    onClick={() => setSearchKeyword("")}
+                    className="ml-2 mr-2 text-gray-500 hover:text-gray-700 "
+                  >
+                    X
+                  </button>
+                )}
                 <input
                   type="button"
                   value="Search"
@@ -195,23 +227,24 @@ const TabBookLoan = () => {
           <tbody>
             {selectedBorrowers.length > 0 ? (
               selectedBorrowers.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="py-2 px-4">{index + 1}</td>
+                <tr
+                  key={item.id}
+                  className="hover:bg-gray-50 border-b border-gray-400"
+                >
+                  <td className="py-2 px-4">{startIndex + index + 1}</td>
                   <td className="py-2 px-4 max-w-[250px]">
                     <div className="overflow-hidden text-ellipsis">
-                      <div
-                        className="truncate font-medium"
-                        title={getListBookInBorrowRequest(item)}
-                      >
-                        {getListBookInBorrowRequest(item)}
-                      </div>
-                      {item.readerRequestDetails &&
-                        item.readerRequestDetails.length > 1 && (
-                          <div className="text-xs text-gray-500">
-                            {item.readerRequestDetails.length} books in this
-                            request
-                          </div>
-                        )}
+                      {item.readerRequestDetails.map((detail) => (
+                        <div key={detail.id} className="font-medium">
+                          {detail.bookCopy.book.title}
+                        </div>
+                      ))}
+                      {item.readerRequestDetails.length > 1 && (
+                        <div className="text-xs text-gray-500">
+                          {item.readerRequestDetails.length} books in this
+                          request
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="py-2 px-4">
@@ -222,21 +255,24 @@ const TabBookLoan = () => {
                   <td className="py-2 px-4 text-left">
                     <span
                       className={`font-bold
-                        ${item.status === "PENDING" ? "text-orange-500" : ""}
-                          ${item.status === "BORROWED" ? "text-green-500" : ""}
-                          ${item.status === "RETURNED" ? "text-gray-500" : ""}
-                          ${item.status === "OVERDUE" ? "text-red-500" : ""}`}
+                        ${item.status === "PENDING" ? "text-orange-500" : ""} 
+                        ${item.status === "BORROWED" ? "text-blue-500" : ""}
+                        ${item.status === "RETURNED" ? "text-green-500" : ""}
+                        ${item.status === "OVERDUE" ? "text-red-500" : ""}
+                        ${item.status === "CANCELED" ? "text-gray-500" : ""}`}
                     >
                       {item.status}
                     </span>
                   </td>
 
-                  <td
-                    className="py-2 px-4 text-left text-blue-600 cursor-pointer"
-                    onClick={() => getListBookInBorrowRequest(item)}
-                  >
-                    More
-                  </td>
+                  {item.status === "PENDING" && (
+                    <td
+                      className="py-2 px-4 text-left text-red-500 cursor-pointer font-bold"
+                      onClick={() => handleCancelBorrowRequest(item)}
+                    >
+                      Cancel
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (

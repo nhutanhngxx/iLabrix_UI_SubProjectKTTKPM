@@ -119,6 +119,31 @@ const authService = {
       console.log("Có lỗi xảy ra khi lấy thông tin người dùng: ", error);
     }
   },
+
+  // Lấy thông tin người dùng thông qua ID
+  getUserInfoById: async (userId) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(
+        `http://localhost:8080/api/v1/user-service/users/${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Get user info failed");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi lấy thông tin người dùng: ", error);
+    }
+  },
+
   updateProfile: async (updatedData) => {
     const token = localStorage.getItem("accessToken");
 
@@ -152,6 +177,36 @@ const authService = {
       return data;
     } catch (error) {
       console.log("Không thể cập nhật: ", error);
+    }
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/user-service/users/change-password`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            oldPassword: currentPassword,
+            newPassword,
+          }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Change password failed: ${errorData}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Không thể đổi mật khẩu: ", error);
     }
   },
 };

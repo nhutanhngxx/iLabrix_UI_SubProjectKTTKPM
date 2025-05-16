@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 // import { useReactToPrint } from "react-to-print";
 import html2pdf from "html2pdf.js";
 import Invoice from "../invoice/Invoice";
@@ -13,10 +13,11 @@ const TabBorrowManagement = () => {
 
   // const [statusUpdates, setStatusUpdates] = useState({});
   const [selectedBorrower, setSelectedBorrower] = useState(null);
-  console.log("Selected: ", selectedBorrower);
 
   const [borrowers, setBorrowers] = useState(allBorrowers);
+  const [borrowerNames, setBorrowerNames] = useState({});
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   // Thêm state và logic phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -86,7 +87,6 @@ const TabBorrowManagement = () => {
       }
       setBorrowers(response);
       setAllBorrowers(response);
-      console.log(response);
     } catch (error) {
       console.error("Lỗi API:", error);
     }
@@ -104,26 +104,62 @@ const TabBorrowManagement = () => {
   };
 
   // Hàm hiển thị tên của người mượn
-  // const getFullNameBorrower = async (borrower) => {
-  //   const user = await authService.getUserInfo(borrower.readerId);
-  //   console.log(user);
-  //   return user.fullName;
-  // };
+  useEffect(() => {
+    const fetchBorrowerNames = async () => {
+      const namesMap = {};
 
-  const handleSearch = () => {
+      for (const borrower of borrowers) {
+        try {
+          // Kiểm tra xem đã có tên trong state chưa để tránh gọi API lại
+          if (!borrowerNames[borrower.readerId]) {
+            const user = await authService.getUserInfoById(borrower.readerId);
+            namesMap[borrower.readerId] = user.fullName;
+          }
+        } catch (error) {
+          console.error(`Error fetching user info:`, error);
+          namesMap[borrower.readerId] = "Unknown";
+        }
+      }
+
+      // Cập nhật state với tên mới và giữ lại tên cũ
+      setBorrowerNames((prev) => ({ ...prev, ...namesMap }));
+    };
+
+    if (borrowers.length > 0) {
+      fetchBorrowerNames();
+    }
+  }, [borrowers]);
+
+  const handleSearch = useCallback(() => {
     const keyword = searchKeyword.trim().toLowerCase();
-    if (keyword === "") {
-      setBorrowers(allBorrowers);
-    } else {
-      setBorrowers(
-        allBorrowers.filter(
-          (user) =>
-            user.name.toLowerCase().includes(keyword) ||
-            user.book.toLowerCase().includes(keyword)
-        )
+    let filteredBorrowers = allBorrowers;
+
+    // Lọc theo status nếu có
+    if (selectedStatus) {
+      filteredBorrowers = filteredBorrowers.filter(
+        (item) => item.status === selectedStatus
       );
     }
-  };
+
+    // Lọc theo từ khóa tìm kiếm nếu có
+    if (keyword) {
+      filteredBorrowers = filteredBorrowers.filter(
+        (item) =>
+          (borrowerNames[item.readerId] || "")
+            .toLowerCase()
+            .includes(keyword) ||
+          item.readerRequestDetails.some((detail) =>
+            detail.bookCopy.book.title.toLowerCase().includes(keyword)
+          )
+      );
+    }
+
+    setBorrowers(filteredBorrowers);
+    setCurrentPage(1);
+  }, [searchKeyword, allBorrowers, borrowerNames, selectedStatus]);
+  useEffect(() => {
+    handleSearch();
+  }, [handleSearch]);
 
   const handlePrint = () => {
     const element = componentRef.current;
@@ -141,14 +177,8 @@ const TabBorrowManagement = () => {
 
   // Khi chọn trạng thái, cập nhật danh sách borrowers
   const handleFilterChange = (e) => {
-    const selectedStatus = e.target.value;
-    if (selectedStatus === "") {
-      setBorrowers(allBorrowers);
-    } else {
-      setBorrowers(
-        allBorrowers.filter((user) => user.status === selectedStatus)
-      );
-    }
+    const status = e.target.value;
+    setSelectedStatus(status);
   };
 
   // Hàm cập nhật phiếu mượn
@@ -181,6 +211,21 @@ const TabBorrowManagement = () => {
     setSelectedBorrower(null);
   };
 
+  // Hàm hủy phiếu mượn
+  const handleCancelBorrowRequest = async (borrower) => {
+    const borrowRequest = {
+      borrowRequestId: borrower.id,
+    };
+    const response = await borrowService.cancelBorrowRequest(borrowRequest);
+    if (response) {
+      alert("Hủy phiếu mượn thành công");
+      fetchBorrowers();
+    } else {
+      alert("Hủy phiếu mượn thất bại");
+    }
+    setSelectedBorrower(null);
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center pb-4">
@@ -195,13 +240,24 @@ const TabBorrowManagement = () => {
           <select
             className="w-full border p-1 rounded-lg"
             onChange={handleFilterChange}
+            value={selectedStatus}
           >
             <option value="">All</option>
-            <option value="Borrowing">Pending</option>
-            {/* <option value="Borrowing">Approved</option> */}
-            <option value="Borrowing">Borrowed</option>
-            <option value="Returned">Returned</option>
-            <option value="Overdue">Overdue</option>
+            <option value="PENDING" className="text-orange-500">
+              Pending
+            </option>
+            <option value="BORROWED" className="text-blue-500">
+              Borrowed
+            </option>
+            <option value="RETURNED" className="text-green-500">
+              Returned
+            </option>
+            <option value="OVERDUE" className="text-red-500">
+              Overdue
+            </option>
+            <option value="CANCELED" className="text-gray-500">
+              Canceled
+            </option>
           </select>
         </div>
 
@@ -225,11 +281,28 @@ const TabBorrowManagement = () => {
                 <input
                   type="text"
                   className="w-full max-w-[160px] bg-white pl-3 text-base font-semibold outline-0"
-                  placeholder=""
+                  placeholder="Search ..."
                   id=""
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
                 ></input>
+                {searchKeyword && (
+                  <button
+                    onClick={() => {
+                      setSearchKeyword("");
+                      // Khi xóa từ khóa tìm kiếm, vẫn giữ lại bộ lọc theo status
+                      setTimeout(() => handleSearch(), 0);
+                    }}
+                    className="ml-2 mr-2 text-gray-500 hover:text-gray-700 "
+                  >
+                    X
+                  </button>
+                )}
                 <input
                   type="button"
                   value="Search"
@@ -260,24 +333,27 @@ const TabBorrowManagement = () => {
           <tbody>
             {selectedBorrowers.length > 0 ? (
               selectedBorrowers.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="py-2 px-4">{index + 1}</td>
-                  <td className="py-2 px-4">{item.name}</td>
+                <tr
+                  key={item.id}
+                  className="hover:bg-gray-50 border-b border-gray-400"
+                >
+                  <td className="py-2 px-4">{startIndex + index + 1}</td>
+                  <td className="py-2 px-4">
+                    {borrowerNames[item.readerId] || "Loading..."}
+                  </td>
                   <td className="py-2 px-4 max-w-[250px]">
-                    <div className="overflow-hidden text-ellipsis">
-                      <div
-                        className="truncate font-medium"
-                        title={getListBookInBorrowRequest(item)}
-                      >
-                        {getListBookInBorrowRequest(item)}
-                      </div>
-                      {item.readerRequestDetails &&
-                        item.readerRequestDetails.length > 1 && (
-                          <div className="text-xs text-gray-500">
-                            {item.readerRequestDetails.length} books in this
-                            request
-                          </div>
-                        )}
+                    <div key={item.id}>
+                      {item.readerRequestDetails.map((detail) => (
+                        <div key={detail.id} className="font-medium">
+                          {detail.bookCopy.book.title}
+                        </div>
+                      ))}
+                      {item.readerRequestDetails.length > 1 && (
+                        <div className="text-xs text-gray-500">
+                          {item.readerRequestDetails.length} books in this
+                          request
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="py-2 px-4">
@@ -288,13 +364,14 @@ const TabBorrowManagement = () => {
                   <td className="py-2 px-4 text-left">
                     <span
                       className={`font-bold
-                        ${item.status === "PENDING" ? "text-orange-500" : ""} 
+                        ${item.status === "PENDING" ? "text-orange-500" : ""}
                         ${item.status === "BORROWED" ? "text-blue-500" : ""}
                         ${item.status === "RETURNED" ? "text-green-500" : ""}
-                        ${item.status === "OVERDUE" ? "text-red-500" : ""}`}
+                        ${item.status === "OVERDUE" ? "text-red-500" : ""}
+                        ${item.status === "CANCELED" ? "text-gray-500" : ""}
+                        `}
                     >
                       {item.status}
-                      {/* {item.status === "APPROVED" ? "text-orange-500" : ""} */}
                     </span>
                   </td>
 
@@ -340,9 +417,17 @@ const TabBorrowManagement = () => {
       {selectedBorrower && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 rounded-lg">
           <div className="w-2/3 mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
-            <h2 className="text-3xl items-center text-sky-900 font-bold mb-6">
-              Edit Borrower Details
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl text-sky-900 font-bold ">
+                Edit Borrower Details
+              </h2>
+              <button
+                onClick={handlePrint}
+                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+              >
+                Print
+              </button>
+            </div>
 
             <div className="flex w-full gap-5">
               {/* Input Name */}
@@ -352,7 +437,7 @@ const TabBorrowManagement = () => {
                 </label>
                 <input
                   type="text"
-                  value={selectedBorrower.name}
+                  value={borrowerNames[selectedBorrower.readerId] || ""}
                   onChange={(e) =>
                     setSelectedBorrower((prev) => ({
                       ...prev,
@@ -360,6 +445,7 @@ const TabBorrowManagement = () => {
                     }))
                   }
                   className="border p-2 rounded mt-1 w-full"
+                  disabled
                 />
               </div>
 
@@ -368,9 +454,10 @@ const TabBorrowManagement = () => {
                 <label className="block text-sm font-medium text-gray-600">
                   Borrowed books
                 </label>
-                <input
-                  type="text"
-                  value={selectedBorrower.book}
+                <textarea
+                  value={getListBookInBorrowRequest(selectedBorrower)
+                    .split(", ")
+                    .join("\n")}
                   onChange={(e) =>
                     setSelectedBorrower((prev) => ({
                       ...prev,
@@ -378,6 +465,8 @@ const TabBorrowManagement = () => {
                     }))
                   }
                   className="w-full border p-2 rounded mt-1"
+                  rows={selectedBorrower.readerRequestDetails.length}
+                  disabled
                 />
               </div>
             </div>
@@ -433,7 +522,7 @@ const TabBorrowManagement = () => {
                     selectedBorrower.status === "PENDING"
                       ? "text-orange-500 bg-orange-50 border-orange-200"
                       : ""
-                  } 
+                  }
                   ${
                     selectedBorrower.status === "BORROWED"
                       ? "text-blue-500 bg-blue-50 border-blue-200"
@@ -452,23 +541,6 @@ const TabBorrowManagement = () => {
                 >
                   {selectedBorrower.status}
                 </div>
-                {/* <select
-                  value={selectedBorrower.status}
-                  onChange={(e) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      status: e.target.value,
-                    }))
-                  }
-                  disabled
-                  className="w-full border p-2 rounded"
-                >
-                  <option value="PENDING">Pending</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="BORROWED">Borrowed</option>
-                  <option value="RETURNED">Returned</option>
-                  <option value="Overdue">Overdue</option>
-                </select> */}
               </div>
             </div>
 
@@ -481,43 +553,39 @@ const TabBorrowManagement = () => {
                 Close
               </button>
               <button
-                // className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
                 className={`${
-                  selectedBorrower.status === "BORROWED"
+                  selectedBorrower.status === "PENDING"
+                    ? "bg-[#af40ff] hover:bg-[#5b42f3]"
+                    : selectedBorrower.status === "BORROWED"
                     ? "bg-[#af40ff] hover:bg-[#5b42f3]"
                     : "bg-gray-400 cursor-not-allowed"
                 } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
-                onClick={() => handleReturnBook(selectedBorrower)}
-                disabled={selectedBorrower.status === "BORROWED" ? false : true}
+                onClick={() => {
+                  if (selectedBorrower.status === "BORROWED") {
+                    handleReturnBook(selectedBorrower);
+                  } else if (selectedBorrower.status === "PENDING") {
+                    handleApproveBorrower(selectedBorrower);
+                  }
+                }}
+                disabled={
+                  selectedBorrower.status !== "PENDING" &&
+                  selectedBorrower.status !== "BORROWED"
+                }
               >
-                Return
+                {selectedBorrower.status === "BORROWED" ? "Return" : "Borrowed"}
               </button>
               <button
                 className={`${
-                  selectedBorrower.status === "OVERDUE" ||
-                  selectedBorrower.status === "BORROWED" ||
-                  selectedBorrower.status === "RETURNED"
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-[#af40ff] hover:bg-[#5b42f3]"
+                  selectedBorrower.status === "PENDING"
+                    ? "bg-[#ff4040] hover:bg-[#f35a42]"
+                    : "bg-gray-400 cursor-not-allowed"
                 } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
-                disabled={
-                  selectedBorrower.status === "OVERDUE" ||
-                  selectedBorrower.status === "BORROWED" ||
-                  selectedBorrower.status === "RETURNED"
-                    ? true
-                    : false
-                }
+                disabled={selectedBorrower.status !== "PENDING" ? true : false}
                 onClick={() => {
-                  handleApproveBorrower(selectedBorrower);
+                  handleCancelBorrowRequest(selectedBorrower);
                 }}
               >
-                Borrowed
-              </button>
-              <button
-                onClick={handlePrint}
-                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-              >
-                Print
+                Cancel
               </button>
             </div>
           </div>
