@@ -68,7 +68,10 @@ const TabBookLoan = () => {
   // Lấy danh sách phiếu mượn của người dùng
   const fetchBorrowers = async () => {
     try {
-      const response = await borrowService.getBorrowRequestsByUser();
+      const response = (await borrowService.getBorrowRequestsByUser()).sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
       if (!response) {
         throw new Error("Lỗi khi lấy dữ liệu");
       }

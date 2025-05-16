@@ -81,7 +81,10 @@ const TabBorrowManagement = () => {
   // Lấy danh sách phiếu mượn
   const fetchBorrowers = async () => {
     try {
-      const response = await borrowService.getAllBorrowRequests();
+      const response = (await borrowService.getAllBorrowRequests()).sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
       if (!response) {
         throw new Error("Lỗi khi lấy dữ liệu");
       }
