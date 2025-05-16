@@ -231,7 +231,7 @@ const TabBookLoan = () => {
                   key={item.id}
                   className="hover:bg-gray-50 border-b border-gray-400"
                 >
-                  <td className="py-2 px-4">{index + 1}</td>
+                  <td className="py-2 px-4">{startIndex + index + 1}</td>
                   <td className="py-2 px-4 max-w-[250px]">
                     <div className="overflow-hidden text-ellipsis">
                       {item.readerRequestDetails.map((detail) => (

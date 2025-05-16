@@ -210,7 +210,7 @@ const TabAllBooks = () => {
 
       const response = await borrowService.createBorrowRequest(borrowRequest);
       if (response) {
-        alert("Mượn sách thành công");
+        alert("Tạo phiếu mượn sách thành công");
       } else {
         alert("Mượn sách thất bại");
       }
