@@ -23,6 +23,8 @@ const TabInventory = () => {
   const api_inventory =
     "http://localhost:8080/api/v1/inventory-service/inventories";
   const api_books = "http://localhost:8080/api/v1/book-service/books";
+  const api_book_copies =
+    "http://localhost:8080/api/v1/inventory-service/copies";
 
   const itemsPerPage = 6;
 
@@ -110,10 +112,8 @@ const TabInventory = () => {
       pageNumbers.push(
         <button
           key={i}
-          className={`px-3 py-1 mx-1 rounded-md ${
-            currentPage === i
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 hover:bg-gray-300"
+          className={`px-3 py-1 mx-1 rounded ${
+            currentPage === i ? "font-bold underline" : "text-gray-700"
           }`}
           onClick={() => goToPage(i)}
         >
@@ -186,7 +186,6 @@ const TabInventory = () => {
     }
 
     if (selectedItem.id) {
-      // Update existing item
       setInventory(
         inventory.map((item) =>
           item.id === selectedItem.id ? selectedItem : item
@@ -198,7 +197,6 @@ const TabInventory = () => {
         )
       );
     } else {
-      // Add new item
       const newItem = {
         ...selectedItem,
         id: crypto.randomUUID(),
@@ -221,6 +219,80 @@ const TabInventory = () => {
     );
     setIsConfirmDeleteModalOpen(false);
     setSelectedItem(null);
+  };
+
+  const handleEditBookCopies = async () => {
+    if (!selectedBookCopies.copyCode || !selectedBookCopies.location) {
+      alert("Vui lòng nhập Copy Code và Location!");
+      return;
+    }
+
+    if (selectedBookCopies.id) {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          alert("No access token found. Please log in again.");
+          return;
+        }
+        const response = await fetch(
+          `${api_book_copies}/${selectedBookCopies.id}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(selectedBookCopies),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to update book copy");
+        }
+
+        setSelectedItem((prev) => ({
+          ...prev,
+          bookCopies: prev.bookCopies.map((copy) =>
+            copy.id === selectedBookCopies.id ? selectedBookCopies : copy
+          ),
+        }));
+        setInventory((prev) =>
+          prev.map((item) =>
+            item.id === selectedItem.id
+              ? {
+                  ...item,
+                  bookCopies: item.bookCopies.map((copy) =>
+                    copy.id === selectedBookCopies.id
+                      ? selectedBookCopies
+                      : copy
+                  ),
+                }
+              : item
+          )
+        );
+        setFilteredInventory((prev) =>
+          prev.map((item) =>
+            item.id === selectedItem.id
+              ? {
+                  ...item,
+                  bookCopies: item.bookCopies.map((copy) =>
+                    copy.id === selectedBookCopies.id
+                      ? selectedBookCopies
+                      : copy
+                  ),
+                }
+              : item
+          )
+        );
+      } catch (error) {
+        console.error("Error updating book copy:", error);
+        alert("Có lỗi xảy ra khi cập nhật book copy!");
+        return;
+      }
+    }
+
+    closeModal();
+    setIsEditBookCopiesModalOpen(false);
   };
 
   const getStatus = (item) => {
@@ -270,13 +342,13 @@ const TabInventory = () => {
             </div>
           </div>
         </div>
-        {/* Add new item */}
+        {/* Tăng số lượng book copy */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => openModal()}
             className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-lg"
           >
-            Add New Item
+            Add copies of book
           </button>
         </div>
       </div>
@@ -489,7 +561,7 @@ const TabInventory = () => {
       )}
 
       {/* Pagination */}
-      <div className="absolute text-base bottom-3 right-7">
+      <div className="absolute text-base bottom-3 left-7">
         <button
           className="px-3 py-1"
           onClick={() => goToPage(currentPage - 1)}
@@ -517,13 +589,11 @@ const TabInventory = () => {
             className="w-1/2 mx-auto relative overflow-hidden z-10 bg-white p-4 rounded-lg shadow-md before:w-20 before:h-20 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-24 after:h-24 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-16 after:-right-8"
           >
             <h2 className="text-2xl text-center font-bold mb-3 text-sky-900">
-              {selectedItem.id
-                ? "Edit Inventory Item"
-                : "Add New Inventory Item"}
+              {selectedItem.id ? "Edit Inventory Item" : "Add copies of Book"}
             </h2>
 
-            <form className="mb-10">
-              <div className="grid grid-cols-3 gap-4">
+            <div className="mb-10">
+              {/* <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <div>
                     <label className="block text-xs font-medium text-gray-600">
@@ -535,12 +605,6 @@ const TabInventory = () => {
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.title || ""}
                       readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     title: e.target.value,
-                      //   })
-                      // }
                     />
                   </div>
                   <div>
@@ -553,12 +617,6 @@ const TabInventory = () => {
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.totalQuantity || 0}
                       readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     totalQuantity: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
                     />
                   </div>
                 </div>
@@ -573,12 +631,6 @@ const TabInventory = () => {
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.available || 0}
                       readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     available: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
                     />
                   </div>
                   <div>
@@ -591,12 +643,6 @@ const TabInventory = () => {
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.borrowed || 0}
                       readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     borrowed: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
                     />
                   </div>
                 </div>
@@ -611,12 +657,6 @@ const TabInventory = () => {
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.lost || 0}
                       readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     lost: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
                     />
                   </div>
                   <div>
@@ -629,58 +669,213 @@ const TabInventory = () => {
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
                       value={selectedItem.damaged || 0}
                       readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     damaged: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
+              {selectedItem.id ? (
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Book Title"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.title || ""}
+                        readOnly
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Total Quantity
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Total"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.totalQuantity || 0}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Available
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Available"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.available || 0}
+                        readOnly
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Borrowed
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Borrowed"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.borrowed || 0}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Lost
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Lost"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.lost || 0}
+                        readOnly
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Damaged
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Damaged"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.damaged || 0}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600">
+                      Copy Code
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter Copy Code"
+                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                      value={selectedBookCopies.copyCode || ""}
+                      onChange={(e) =>
+                        setSelectedBookCopies({
+                          ...selectedBookCopies,
+                          copyCode: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600">
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter Location"
+                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                      value={selectedBookCopies.location || ""}
+                      onChange={(e) =>
+                        setSelectedBookCopies({
+                          ...selectedBookCopies,
+                          location: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600">
+                      Status
+                    </label>
+                    <select
+                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                      value={selectedBookCopies.status || "AVAILABLE"}
+                      onChange={(e) =>
+                        setSelectedBookCopies({
+                          ...selectedBookCopies,
+                          status: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="AVAILABLE">AVAILABLE</option>
+                      <option value="BORROWED">BORROWED</option>
+                      <option value="LOST">LOST</option>
+                      <option value="DAMAGED">DAMAGED</option>
+                    </select>
+                  </div>
+                </div>
+              )}
               {selectedItem.bookCopies.length > 0 && (
                 <div className="mt-4">
                   <h3 className="text-base font-semibold text-gray-700 mb-1">
                     Book Copies ({selectedItem.bookCopies.length})
                   </h3>
                   <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md">
-                    <table className="w-full bg-gray-50 text-sm">
-                      <thead className="bg-gray-200 text-gray-700">
+                    <table className="w-full bg-gray-50 text-sm table-fixed">
+                      <thead className="bg-gray-200 text-gray-700 sticky top-0 z-10">
                         <tr>
-                          <th className="py-1.5 px-3 text-left">Copy Code</th>
-                          <th className="py-1.5 px-3 text-left">Location</th>
-                          <th className="py-1.5 px-3 text-left">Status</th>
-                          <th className="py-1.5 px-3 text-left">Edit</th>
+                          <th className="py-1.5 px-3 text-left w-1/4">
+                            Copy Code
+                          </th>
+                          <th className="py-1.5 px-3 text-left w-1/4">
+                            Location
+                          </th>
+                          <th className="py-1.5 px-3 text-left w-1/4">
+                            Status
+                          </th>
+                          <th className="py-1.5 px-3 text-left w-1/4">Edit</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedItem.bookCopies.map((copy) => (
-                          <tr
-                            key={copy.id}
-                            className="border-b border-gray-200"
-                          >
-                            <td className="py-1.5 px-3">{copy.copyCode}</td>
-                            <td className="py-1.5 px-3">{copy.location}</td>
-                            <td className="py-1.5 px-3">
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  copy.status === "AVAILABLE"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {copy.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
+                        {selectedItem.bookCopies
+                          .sort((a, b) => a.copyCode.localeCompare(b.copyCode))
+                          .map((copy) => (
+                            <tr
+                              key={copy.id}
+                              className="border-b border-gray-200"
+                            >
+                              <td className="py-1.5 px-3">{copy.copyCode}</td>
+                              <td className="py-1.5 px-3">{copy.location}</td>
+                              <td className="py-1.5 px-3">
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    copy.status === "AVAILABLE"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {copy.status}
+                                </span>
+                              </td>
+                              <td className="py-1.5 px-3">
+                                <button
+                                  className="rounded-md p-2 hover:bg-blue-200 transition"
+                                  onClick={() =>
+                                    openModalEditBookCopies(selectedItem, copy)
+                                  }
+                                >
+                                  <img
+                                    src={editIcon}
+                                    style={{ width: 16, height: 16 }}
+                                    alt="Edit"
+                                  />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
                 </div>
               )}
-            </form>
+            </div>
 
             <div className="flex gap-3 absolute bottom-3 right-3">
               <button
@@ -692,7 +887,6 @@ const TabInventory = () => {
               <button
                 onClick={handleSaveItem}
                 className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-3 py-1.5 font-bold rounded-md hover:opacity-80 text-sm"
-                type="submit"
               >
                 {selectedItem.id ? "Update" : "Add"}
               </button>
@@ -732,7 +926,7 @@ const TabInventory = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black/30 bg-opacity-50 z-50">
           <div className="mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Edit Book Copies</h3>
-            <form>
+            <div>
               {/* Copy Code */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
@@ -794,9 +988,6 @@ const TabInventory = () => {
                 />
               </div>
 
-              {/* Hiển thị lỗi */}
-              {/* {error && <p className="text-red-500 text-sm mb-4">{error}</p>} */}
-
               {/* Nút hành động */}
               <div className="flex justify-end gap-2">
                 <button
@@ -807,13 +998,13 @@ const TabInventory = () => {
                   Close
                 </button>
                 <button
-                  type="submit"
+                  onClick={handleEditBookCopies}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                 >
                   Update
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

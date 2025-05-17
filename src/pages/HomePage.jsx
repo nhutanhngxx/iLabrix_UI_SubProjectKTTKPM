@@ -96,13 +96,13 @@ const HomePage = () => {
         path: "/books",
         icon: bookIcon,
       },
-      {
-        id: "tab4",
-        label: "Users",
-        component: <TabUsers />,
-        path: "/users",
-        icon: usersIcon,
-      },
+      // {
+      //   id: "tab4",
+      //   label: "Users",
+      //   component: <TabUsers />,
+      //   path: "/users",
+      //   icon: usersIcon,
+      // },
       {
         id: "tab5",
         label: "Borrow Management",
