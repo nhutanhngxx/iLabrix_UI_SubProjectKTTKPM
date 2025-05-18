@@ -23,59 +23,62 @@ const TabInventory = () => {
   const api_inventory =
     "http://localhost:8080/api/v1/inventory-service/inventories";
   const api_books = "http://localhost:8080/api/v1/book-service/books";
+  const api_book_copies =
+    "http://localhost:8080/api/v1/inventory-service/copies";
 
   const itemsPerPage = 6;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const accessToken = localStorage.getItem("accessToken");
-        if (!accessToken) {
-          throw new Error("No authentication token found");
-        }
-
-        // Fetch Inventory
-        const inventoryResponse = await fetch(api_inventory, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!inventoryResponse.ok) {
-          throw new Error("Lỗi khi lấy dữ liệu inventory");
-        }
-        const inventoryData = await inventoryResponse.json();
-
-        // Fetch Books
-        const booksResponse = await fetch(api_books, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!booksResponse.ok) {
-          throw new Error("Lỗi khi lấy dữ liệu books");
-        }
-        const booksData = await booksResponse.json();
-        setBooks(booksData);
-
-        // Map book titles to inventory
-        const enrichedInventory = inventoryData.map((item) => {
-          const book = booksData.find((book) => book.id === item.bookId);
-          return {
-            ...item,
-            title: book ? book.title : "Unknown",
-          };
-        });
-
-        setInventory(enrichedInventory);
-        setFilteredInventory(enrichedInventory);
-      } catch (error) {
-        console.error("Lỗi API:", error);
+  const fetchData = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        throw new Error("No authentication token found");
       }
-    };
+
+      // Fetch Inventory
+      const inventoryResponse = await fetch(api_inventory, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!inventoryResponse.ok) {
+        throw new Error("Lỗi khi lấy dữ liệu inventory");
+      }
+      const inventoryData = await inventoryResponse.json();
+
+      // Fetch Books
+      const booksResponse = await fetch(api_books, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!booksResponse.ok) {
+        throw new Error("Lỗi khi lấy dữ liệu books");
+      }
+      const booksData = await booksResponse.json();
+      setBooks(booksData);
+
+      // Map book titles to inventory
+      const enrichedInventory = inventoryData.map((item) => {
+        const book = booksData.find((book) => book.id === item.bookId);
+        return {
+          ...item,
+          title: book ? book.title : "Unknown",
+        };
+      });
+
+      setInventory(enrichedInventory);
+      setFilteredInventory(enrichedInventory);
+    } catch (error) {
+      console.error("Lỗi API:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [inventory]);
 
   const toggleRowExpansion = (id) => {
     setExpandedRows((prev) =>
@@ -110,10 +113,8 @@ const TabInventory = () => {
       pageNumbers.push(
         <button
           key={i}
-          className={`px-3 py-1 mx-1 rounded-md ${
-            currentPage === i
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 hover:bg-gray-300"
+          className={`px-3 py-1 mx-1 rounded ${
+            currentPage === i ? "font-bold underline" : "text-gray-700"
           }`}
           onClick={() => goToPage(i)}
         >
@@ -147,10 +148,11 @@ const TabInventory = () => {
     setCurrentPage(1);
   };
 
-  const openModal = (item = null) => {
+  const openModal = (item = null, bookId = "") => {
+    console.log("item", item);
     setSelectedItem(
       item || {
-        bookId: "",
+        bookId: bookId || "",
         title: "",
         totalQuantity: 0,
         available: 0,
@@ -158,6 +160,8 @@ const TabInventory = () => {
         lost: 0,
         damaged: 0,
         bookCopies: [],
+        location: "", // Thêm location để tránh lỗi undefined
+        quantity: "", // Thêm quantity để tránh lỗi undefined
       }
     );
     setIsModalOpen(true);
@@ -179,34 +183,53 @@ const TabInventory = () => {
     setSelectedItem(null);
   };
 
-  const handleSaveItem = () => {
-    if (!selectedItem.bookId || !selectedItem.title) {
-      alert("Vui lòng nhập Book ID và Title!");
+  // Hàm thêm Book Copies qua API
+  const addBookCopies = async () => {
+    const { bookId, location, quantity } = selectedItem;
+
+    // Kiểm tra dữ liệu hợp lệ
+    if (!bookId || !location || !quantity || quantity < 1) {
+      alert("Please fill in all fields with valid values.");
       return;
     }
 
-    if (selectedItem.id) {
-      // Update existing item
-      setInventory(
-        inventory.map((item) =>
-          item.id === selectedItem.id ? selectedItem : item
-        )
-      );
-      setFilteredInventory(
-        filteredInventory.map((item) =>
-          item.id === selectedItem.id ? selectedItem : item
-        )
-      );
-    } else {
-      // Add new item
-      const newItem = {
-        ...selectedItem,
-        id: crypto.randomUUID(),
-      };
-      setInventory([...inventory, newItem]);
-      setFilteredInventory([...filteredInventory, newItem]);
+    try {
+      const response = await fetch(api_book_copies, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          bookId,
+          location,
+          quantity: parseInt(quantity),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add book copies");
+      }
+
+      const data = await response.json();
+      console.log("Book copies added successfully:", data);
+      fetchData(); // Cập nhật lại dữ liệu sau khi thêm
+
+      // Đóng modal
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error adding book copies:", error);
+      alert("Failed to add book copies. Please try again.");
     }
-    closeModal();
+  };
+
+  // Hàm xử lý lưu item (gọi addBookCopies khi không có selectedItem.id)
+  const handleSaveItem = () => {
+    if (!selectedItem.id) {
+      addBookCopies();
+    } else {
+      setIsModalOpen(false);
+    }
   };
 
   const handleDeleteClick = (item) => {
@@ -221,6 +244,92 @@ const TabInventory = () => {
     );
     setIsConfirmDeleteModalOpen(false);
     setSelectedItem(null);
+  };
+
+  const handleEditBookCopies = async () => {
+    if (!selectedBookCopies.copyCode || !selectedBookCopies.location) {
+      alert("Vui lòng nhập Copy Code và Location!");
+      return;
+    }
+
+    if (selectedBookCopies.id) {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          alert("No access token found. Please log in again.");
+          return;
+        }
+        const response = await fetch(
+          `${api_book_copies}/${selectedBookCopies.id}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(selectedBookCopies),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to update book copy");
+        }
+
+        setSelectedItem((prev) => ({
+          ...prev,
+          bookCopies: prev.bookCopies.map((copy) =>
+            copy.id === selectedBookCopies.id ? selectedBookCopies : copy
+          ),
+        }));
+        setInventory((prev) =>
+          prev.map((item) =>
+            item.id === selectedItem.id
+              ? {
+                  ...item,
+                  bookCopies: item.bookCopies.map((copy) =>
+                    copy.id === selectedBookCopies.id
+                      ? selectedBookCopies
+                      : copy
+                  ),
+                }
+              : item
+          )
+        );
+        setFilteredInventory((prev) =>
+          prev.map((item) =>
+            item.id === selectedItem.id
+              ? {
+                  ...item,
+                  bookCopies: item.bookCopies.map((copy) =>
+                    copy.id === selectedBookCopies.id
+                      ? selectedBookCopies
+                      : copy
+                  ),
+                }
+              : item
+          )
+        );
+      } catch (error) {
+        console.error("Error updating book copy:", error);
+        alert("Có lỗi xảy ra khi cập nhật book copy!");
+        return;
+      }
+    }
+
+    closeModal();
+    setIsEditBookCopiesModalOpen(false);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        alert(`Book ID ${text} copied to clipboard!`);
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+        alert("Failed to copy Book ID.");
+      });
   };
 
   const getStatus = (item) => {
@@ -270,15 +379,15 @@ const TabInventory = () => {
             </div>
           </div>
         </div>
-        {/* Add new item */}
-        <div className="flex items-center gap-3">
+        {/* Tăng số lượng book copy */}
+        {/* <div className="flex items-center gap-3">
           <button
             onClick={() => openModal()}
             className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-lg"
           >
-            Add New Item
+            Add copies of book
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Inventory list */}
@@ -325,6 +434,7 @@ const TabInventory = () => {
           <table className="min-w-full bg-white rounded-lg overflow-hidden shadow-md">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
+                <th className="py-3 px-4 text-left">Book ID</th>
                 <th className="py-3 px-4 text-left">Title</th>
                 <th className="py-3 px-4 text-left">Total Quantity</th>
                 <th className="py-3 px-4 text-left">Available</th>
@@ -336,31 +446,66 @@ const TabInventory = () => {
               </tr>
             </thead>
             <tbody>
-              {selectedItems.map((item) => (
-                <React.Fragment key={item.id}>
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4">{item.title}</td>
-                    <td className="py-3 px-4">{item.totalQuantity}</td>
-                    <td className="py-3 px-4">{item.available}</td>
-                    <td className="py-3 px-4">{item.borrowed}</td>
-                    <td className="py-3 px-4">{item.lost}</td>
-                    <td className="py-3 px-4">{item.damaged}</td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          getStatus(item) === "In Stock"
-                            ? "bg-green-100 text-green-800"
-                            : getStatus(item) === "Low Stock"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {getStatus(item)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <button
+              {selectedItems
+                .sort((a, b) => a.title.localeCompare(b.title)) // Sắp xếp theo title
+                .map((item) => (
+                  <React.Fragment key={item.id}>
+                    <tr className="border-b hover:bg-gray-50">
+                      {/* Cột book ID tích hợp sao chép id để thêm Book copies */}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <span>{item.bookId}</span>
+                          <button
+                            className="rounded-md p-1 hover:bg-gray-200 transition"
+                            onClick={() => copyToClipboard(item.bookId)}
+                            title="Copy Book ID"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect
+                                x="9"
+                                y="9"
+                                width="13"
+                                height="13"
+                                rx="2"
+                                ry="2"
+                              ></rect>
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">{item.title}</td>
+                      <td className="py-3 px-4">{item.totalQuantity}</td>
+                      <td className="py-3 px-4">{item.available}</td>
+                      <td className="py-3 px-4">{item.borrowed}</td>
+                      <td className="py-3 px-4">{item.lost}</td>
+                      <td className="py-3 px-4">{item.damaged}</td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            getStatus(item) === "In Stock"
+                              ? "bg-green-100 text-green-800"
+                              : getStatus(item) === "Low Stock"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {getStatus(item)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex gap-2">
+                          {/* <button
                           className="rounded-md p-2 hover:bg-gray-200 transition"
                           onClick={() => toggleRowExpansion(item.id)}
                           title={
@@ -385,111 +530,113 @@ const TabInventory = () => {
                           >
                             <path d="M6 9l6 6 6-6" />
                           </svg>
-                        </button>
-                        <button
-                          className="rounded-md p-2 hover:bg-blue-200 transition"
-                          onClick={() => openModal(item)}
-                        >
-                          <img
-                            src={editIcon}
-                            style={{ width: 20, height: 20 }}
-                            alt="Edit"
-                          />
-                        </button>
-                        <button
-                          className="rounded-md p-2 hover:bg-red-200 transition"
-                          onClick={() => handleDeleteClick(item)}
-                        >
-                          <svg
-                            width="20px"
-                            height="20px"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
+                        </button> */}
+                          <button
+                            className="rounded-md p-2 hover:bg-blue-200 transition"
+                            onClick={() => openModal(item)}
                           >
-                            <path
-                              d="M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H5M6 7H8M18 7H19M18 7H16M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16M10 12V16M14 12V16"
-                              stroke="#ff0000"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                            <img
+                              src={editIcon}
+                              style={{ width: 20, height: 20 }}
+                              alt="Edit"
                             />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {expandedRows.includes(item.id) &&
-                    item.bookCopies.length > 0 && (
-                      <tr className="bg-gray-50">
-                        <td colSpan="10" className="p-0">
-                          <div className="p-4">
-                            <table className="w-full bg-white rounded-lg shadow-sm">
-                              <thead className="bg-gray-200 text-gray-700">
-                                <tr>
-                                  <th className="py-2 px-4 text-left">
-                                    Copy Code
-                                  </th>
-                                  <th className="py-2 px-4 text-left">
-                                    Location
-                                  </th>
-                                  <th className="py-2 px-4 text-left">
-                                    Status
-                                  </th>
-                                  <th className="py-2 px-4 text-left">Edit</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {item.bookCopies.map((copy) => (
-                                  <tr key={copy.id} className="border-b">
-                                    <td className="py-2 px-4">
-                                      {copy.copyCode}
-                                    </td>
-                                    <td className="py-2 px-4">
-                                      {copy.location}
-                                    </td>
-                                    <td className="py-2 px-4">
-                                      <span
-                                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                          copy.status === "AVAILABLE"
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-red-100 text-red-800"
-                                        }`}
-                                      >
-                                        {copy.status}
-                                      </span>
-                                    </td>
-                                    <td className="py-2 px-4">
-                                      <button
-                                        className="rounded-md p-2 hover:bg-blue-200 transition"
-                                        onClick={() =>
-                                          openModalEditBookCopies(item, copy)
-                                        }
-                                      >
-                                        <img
-                                          src={editIcon}
-                                          style={{ width: 20, height: 20 }}
-                                          alt="Edit"
-                                        />
-                                      </button>
-                                    </td>
+                          </button>
+                          <button
+                            className="rounded-md p-2 hover:bg-red-200 transition"
+                            onClick={() => handleDeleteClick(item)}
+                          >
+                            <svg
+                              width="20px"
+                              height="20px"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M6 7V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V7M6 7H5M6 7H8M18 7H19M18 7H16M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16M10 12V16M14 12V16"
+                                stroke="#ff0000"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedRows.includes(item.id) &&
+                      item.bookCopies.length > 0 && (
+                        <tr className="bg-gray-50">
+                          <td colSpan="10" className="p-0">
+                            <div className="p-4">
+                              <table className="w-full bg-white rounded-lg shadow-sm">
+                                <thead className="bg-gray-200 text-gray-700">
+                                  <tr>
+                                    <th className="py-2 px-4 text-left">
+                                      Copy Code
+                                    </th>
+                                    <th className="py-2 px-4 text-left">
+                                      Location
+                                    </th>
+                                    <th className="py-2 px-4 text-left">
+                                      Status
+                                    </th>
+                                    <th className="py-2 px-4 text-left">
+                                      Edit
+                                    </th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                </React.Fragment>
-              ))}
+                                </thead>
+                                <tbody>
+                                  {item.bookCopies.map((copy) => (
+                                    <tr key={copy.id} className="border-b">
+                                      <td className="py-2 px-4">
+                                        {copy.copyCode}
+                                      </td>
+                                      <td className="py-2 px-4">
+                                        {copy.location}
+                                      </td>
+                                      <td className="py-2 px-4">
+                                        <span
+                                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                            copy.status === "AVAILABLE"
+                                              ? "bg-green-100 text-green-800"
+                                              : "bg-red-100 text-red-800"
+                                          }`}
+                                        >
+                                          {copy.status}
+                                        </span>
+                                      </td>
+                                      <td className="py-2 px-4">
+                                        <button
+                                          className="rounded-md p-2 hover:bg-blue-200 transition"
+                                          onClick={() =>
+                                            openModalEditBookCopies(item, copy)
+                                          }
+                                        >
+                                          <img
+                                            src={editIcon}
+                                            style={{ width: 20, height: 20 }}
+                                            alt="Edit"
+                                          />
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                  </React.Fragment>
+                ))}
             </tbody>
           </table>
         </div>
       )}
 
       {/* Pagination */}
-      <div className="absolute text-base bottom-3 right-7">
+      <div className="absolute text-base bottom-3 left-7">
         <button
           className="px-3 py-1"
           onClick={() => goToPage(currentPage - 1)}
@@ -517,186 +664,238 @@ const TabInventory = () => {
             className="w-1/2 mx-auto relative overflow-hidden z-10 bg-white p-4 rounded-lg shadow-md before:w-20 before:h-20 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-24 after:h-24 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-16 after:-right-8"
           >
             <h2 className="text-2xl text-center font-bold mb-3 text-sky-900">
-              {selectedItem.id
-                ? "Edit Inventory Item"
-                : "Add New Inventory Item"}
+              {selectedItem.id ? "Edit Inventory Item" : "Add copies of Book"}
             </h2>
 
-            <form className="mb-10">
-              <div className="grid grid-cols-3 gap-4">
+            <div className="mb-10">
+              {selectedItem.id ? (
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Book Title"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.title || ""}
+                        readOnly
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Total Quantity
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Total"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.totalQuantity || 0}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Available
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Available"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.available || 0}
+                        readOnly
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Borrowed
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Borrowed"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.borrowed || 0}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Lost
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Lost"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.lost || 0}
+                        readOnly
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Damaged
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Damaged"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.damaged || 0}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
                 <div className="space-y-2">
                   <div>
                     <label className="block text-xs font-medium text-gray-600">
-                      Title
+                      Book ID
                     </label>
                     <input
                       type="text"
-                      placeholder="Book Title"
+                      placeholder="Enter Book ID"
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
-                      value={selectedItem.title || ""}
-                      readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     title: e.target.value,
-                      //   })
-                      // }
+                      value={selectedItem.bookId}
+                      onChange={(e) =>
+                        setSelectedItem({
+                          ...selectedItem,
+                          bookId: e.target.value,
+                        })
+                      }
+                      readOnly={!!selectedItem.bookId} // Khóa trường nếu bookId được truyền vào
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600">
-                      Total Quantity
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="Total"
-                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
-                      value={selectedItem.totalQuantity || 0}
-                      readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     totalQuantity: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600">
-                      Available
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="Available"
-                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
-                      value={selectedItem.available || 0}
-                      readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     available: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600">
-                      Borrowed
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="Borrowed"
-                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
-                      value={selectedItem.borrowed || 0}
-                      readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     borrowed: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Location
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter Location"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.location || ""}
+                        onChange={(e) =>
+                          setSelectedItem({
+                            ...selectedItem,
+                            location: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">
+                        Quantity
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Enter Location"
+                        className="mt-1 p-1.5 w-full border rounded-md text-sm"
+                        value={selectedItem.quantity || ""}
+                        onChange={(e) =>
+                          setSelectedItem({
+                            ...selectedItem,
+                            quantity: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600">
-                      Lost
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="Lost"
-                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
-                      value={selectedItem.lost || 0}
-                      readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     lost: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600">
-                      Damaged
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="Damaged"
-                      className="mt-1 p-1.5 w-full border rounded-md text-sm"
-                      value={selectedItem.damaged || 0}
-                      readOnly
-                      // onChange={(e) =>
-                      //   setSelectedItem({
-                      //     ...selectedItem,
-                      //     damaged: parseInt(e.target.value) || 0,
-                      //   })
-                      // }
-                    />
-                  </div>
-                </div>
-              </div>
+              )}
               {selectedItem.bookCopies.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-base font-semibold text-gray-700 mb-1">
-                    Book Copies ({selectedItem.bookCopies.length})
-                  </h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-base font-semibold text-gray-700 mb-1">
+                      Book Copies ({selectedItem.bookCopies.length})
+                    </h3>
+                    <button
+                      onClick={() => openModal(null, selectedItem.bookId)} // Truyền bookId của selectedItem
+                      className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-lg"
+                    >
+                      Add copies of book
+                    </button>
+                  </div>
                   <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md">
-                    <table className="w-full bg-gray-50 text-sm">
-                      <thead className="bg-gray-200 text-gray-700">
+                    <table className="w-full bg-gray-50 text-sm table-fixed">
+                      <thead className="bg-gray-200 text-gray-700 sticky top-0 z-10">
                         <tr>
-                          <th className="py-1.5 px-3 text-left">Copy Code</th>
-                          <th className="py-1.5 px-3 text-left">Location</th>
-                          <th className="py-1.5 px-3 text-left">Status</th>
-                          <th className="py-1.5 px-3 text-left">Edit</th>
+                          <th className="py-1.5 px-3 text-left w-1/4">
+                            Copy Code
+                          </th>
+                          <th className="py-1.5 px-3 text-left w-1/4">
+                            Location
+                          </th>
+                          <th className="py-1.5 px-3 text-left w-1/4">
+                            Status
+                          </th>
+                          <th className="py-1.5 px-3 text-left w-1/4">Edit</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedItem.bookCopies.map((copy) => (
-                          <tr
-                            key={copy.id}
-                            className="border-b border-gray-200"
-                          >
-                            <td className="py-1.5 px-3">{copy.copyCode}</td>
-                            <td className="py-1.5 px-3">{copy.location}</td>
-                            <td className="py-1.5 px-3">
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  copy.status === "AVAILABLE"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {copy.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
+                        {selectedItem.bookCopies
+                          .sort((a, b) => a.copyCode.localeCompare(b.copyCode))
+                          .map((copy) => (
+                            <tr
+                              key={copy.id}
+                              className="border-b border-gray-200"
+                            >
+                              <td className="py-1.5 px-3">{copy.copyCode}</td>
+                              <td className="py-1.5 px-3">{copy.location}</td>
+                              <td className="py-1.5 px-3">
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    copy.status === "AVAILABLE"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {copy.status}
+                                </span>
+                              </td>
+                              <td className="py-1.5 px-3">
+                                <button
+                                  className="rounded-md p-2 hover:bg-blue-200 transition"
+                                  onClick={() =>
+                                    openModalEditBookCopies(selectedItem, copy)
+                                  }
+                                >
+                                  <img
+                                    src={editIcon}
+                                    style={{ width: 16, height: 16 }}
+                                    alt="Edit"
+                                  />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
                 </div>
               )}
-            </form>
-
-            <div className="flex gap-3 absolute bottom-3 right-3">
-              <button
-                onClick={closeModal}
-                className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-3 py-1.5 font-bold rounded-md hover:opacity-80 text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveItem}
-                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-3 py-1.5 font-bold rounded-md hover:opacity-80 text-sm"
-                type="submit"
-              >
-                {selectedItem.id ? "Update" : "Add"}
-              </button>
             </div>
+
+            {!selectedItem.id && (
+              <div className="flex gap-3 absolute bottom-3 right-3">
+                <button
+                  onClick={closeModal}
+                  className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-3 py-1.5 font-bold rounded-md hover:opacity-80 text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveItem}
+                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-3 py-1.5 font-bold rounded-md hover:opacity-80 text-sm"
+                >
+                  Add
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -732,7 +931,7 @@ const TabInventory = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black/30 bg-opacity-50 z-50">
           <div className="mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Edit Book Copies</h3>
-            <form>
+            <div>
               {/* Copy Code */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
@@ -794,9 +993,6 @@ const TabInventory = () => {
                 />
               </div>
 
-              {/* Hiển thị lỗi */}
-              {/* {error && <p className="text-red-500 text-sm mb-4">{error}</p>} */}
-
               {/* Nút hành động */}
               <div className="flex justify-end gap-2">
                 <button
@@ -807,13 +1003,13 @@ const TabInventory = () => {
                   Close
                 </button>
                 <button
-                  type="submit"
+                  onClick={handleEditBookCopies}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                 >
                   Update
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

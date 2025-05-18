@@ -1,14 +1,421 @@
 import { useRef, useState, useEffect } from "react";
 import editIcon from "/icons/edit.png";
+import * as XLSX from "xlsx";
 
 const TabBooks = () => {
   const api_books_iLabrix = "http://localhost:8080/api/v1/book-service/books";
   const api_categories_iLabrix =
     "http://localhost:8080/api/v1/book-service/categories";
+  const api_author_iLabrix =
+    "http://localhost:8080/api/v1/book-service/authors";
   const [allBooks, setAllBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [excelFile, setExcelFile] = useState(null);
+  const [authors, setAuthors] = useState([]);
+
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        const response = await fetch(api_author_iLabrix, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        console.log("Authors: ", data);
+        setAuthors(data);
+      } catch (error) {
+        console.error("Lỗi API Authors:", error);
+      }
+    };
+    fetchAuthors();
+  }, []);
+
+  const downloadSampleExcel = () => {
+    console.log("Downloading sample Excel file...");
+
+    // Books Sheet
+    const booksHeaders = [
+      "Book Code",
+      "Title",
+      "Publisher",
+      "Year Published",
+      "Topic",
+      "Note",
+      "Category Name",
+      "Author Name",
+      "Description",
+    ];
+    const defaultCategoryName =
+      categorys.length > 0 ? categorys[0].name : "Fiction";
+    const defaultAuthorName = authors.length > 0 ? authors[0].name : "John Doe";
+    const booksSampleData = [
+      [
+        "B001",
+        "Sample Book Title",
+        "Sample Publisher",
+        2023,
+        "Fiction",
+        "Sample Note",
+        defaultCategoryName,
+        defaultAuthorName,
+        "This is a sample book description.",
+      ],
+    ];
+    const booksWs = XLSX.utils.aoa_to_sheet([booksHeaders, ...booksSampleData]);
+
+    // Categories Sheet
+    const categoriesHeaders = ["Category Name"];
+    const categoriesSampleData =
+      categorys.length > 0
+        ? categorys.map((c) => [c.name])
+        : [["Fiction"], ["Non-Fiction"]];
+    const categoriesWs = XLSX.utils.aoa_to_sheet([
+      categoriesHeaders,
+      ...categoriesSampleData,
+    ]);
+
+    // Authors Sheet
+    const authorsHeaders = ["Author Name"];
+    const authorsSampleData =
+      authors.length > 0
+        ? authors.map((a) => [a.name || ""])
+        : [["John Doe"], ["Jane Smith"]];
+    const authorsWs = XLSX.utils.aoa_to_sheet([
+      authorsHeaders,
+      ...authorsSampleData,
+    ]);
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, booksWs, "Books");
+    XLSX.utils.book_append_sheet(wb, categoriesWs, "Categories");
+    XLSX.utils.book_append_sheet(wb, authorsWs, "Authors");
+
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "sample_books_template.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleAddBooksFromExcel = async () => {
+    if (!excelFile) {
+      alert("Vui lòng chọn file Excel để tải lên!");
+      return;
+    }
+
+    if (!excelFile.name.endsWith(".xlsx") && !excelFile.name.endsWith(".xls")) {
+      alert("Vui lòng tải lên file Excel (.xlsx hoặc .xls)!");
+      setExcelFile(null);
+      return;
+    }
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          alert("Không tìm thấy access token. Vui lòng đăng nhập lại.");
+          return;
+        }
+
+        // Read Categories Sheet
+        const categoriesSheetName = workbook.SheetNames.includes("Categories")
+          ? "Categories"
+          : null;
+        if (!categoriesSheetName) {
+          alert('File Excel thiếu sheet "Categories"!');
+          return;
+        }
+        const categoriesWorksheet = workbook.Sheets[categoriesSheetName];
+        const categoriesData = XLSX.utils.sheet_to_json(categoriesWorksheet, {
+          header: 1,
+        });
+        if (categoriesData.length < 2) {
+          alert('Sheet "Categories" trống hoặc không có dữ liệu hợp lệ!');
+          return;
+        }
+        const categoriesHeaders = categoriesData[0];
+        if (!categoriesHeaders.includes("Category Name")) {
+          alert('Sheet "Categories" thiếu cột "Category Name"!');
+          return;
+        }
+        const categoryNames = categoriesData
+          .slice(1)
+          .map((row) =>
+            row[categoriesHeaders.indexOf("Category Name")]?.toString()
+          )
+          .filter((name) => name);
+
+        // Read Authors Sheet
+        const authorsSheetName = workbook.SheetNames.includes("Authors")
+          ? "Authors"
+          : null;
+        if (!authorsSheetName) {
+          alert('File Excel thiếu sheet "Authors"!');
+          return;
+        }
+        const authorsWorksheet = workbook.Sheets[authorsSheetName];
+        const authorsData = XLSX.utils.sheet_to_json(authorsWorksheet, {
+          header: 1,
+        });
+        if (authorsData.length < 2) {
+          alert('Sheet "Authors" trống hoặc không có dữ liệu hợp lệ!');
+          return;
+        }
+        const authorsHeaders = authorsData[0];
+        if (!authorsHeaders.includes("Author Name")) {
+          alert('Sheet "Authors" thiếu cột "Author Name"!');
+          return;
+        }
+        const authorNames = authorsData
+          .slice(1)
+          .map((row) => row[authorsHeaders.indexOf("Author Name")]?.toString())
+          .filter((name) => name);
+
+        // Fetch Existing Categories
+        const categoryResponse = await fetch(api_categories_iLabrix, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!categoryResponse.ok) {
+          throw new Error("Không thể lấy danh sách category từ server.");
+        }
+        const existingCategories = await categoryResponse.json();
+        const categoryMap = new Map(
+          existingCategories.map((c) => [c.name, c.id])
+        );
+
+        for (const name of categoryNames) {
+          if (!categoryMap.has(name)) {
+            const response = await fetch(api_categories_iLabrix, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ name }),
+            });
+            if (!response.ok) {
+              throw new Error(`Không thể tạo category: ${name}`);
+            }
+            const newCategory = await response.json();
+            categoryMap.set(name, newCategory.id);
+          }
+        }
+
+        const authorResponse = await fetch(api_author_iLabrix, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!authorResponse.ok) {
+          throw new Error("Không thể lấy danh sách author từ server.");
+        }
+        const existingAuthors = await authorResponse.json();
+        const authorMap = new Map(existingAuthors.map((a) => [a.name, a.id]));
+
+        // Create Missing Authors
+        for (const name of authorNames) {
+          if (!authorMap.has(name)) {
+            // const bio =
+            //   authorsData
+            //     .slice(1)
+            //     .find(
+            //       (row) => row[authorsHeaders.indexOf("Author Name")] === name
+            //     )?.[authorsHeaders.indexOf("Bio")] || "";
+            const response = await fetch(api_author_iLabrix, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ name }),
+            });
+            if (!response.ok) {
+              throw new Error(`Không thể tạo author: ${name}`);
+            }
+            const newAuthor = await response.json();
+            authorMap.set(name, newAuthor.id);
+          }
+        }
+
+        // Read Books Sheet
+        const booksSheetName = workbook.SheetNames.includes("Books")
+          ? "Books"
+          : workbook.SheetNames[0];
+        const booksWorksheet = workbook.Sheets[booksSheetName];
+        const booksData = XLSX.utils.sheet_to_json(booksWorksheet, {
+          header: 1,
+        });
+
+        if (booksData.length < 2) {
+          alert('Sheet "Books" trống hoặc không có dữ liệu hợp lệ!');
+          return;
+        }
+
+        const booksHeaders = booksData[0];
+        const requiredHeaders = [
+          "Book Code",
+          "Title",
+          "Publisher",
+          "Year Published",
+          "Topic",
+          "Note",
+          "Category Name",
+          "Author Name",
+          "Description",
+        ];
+        const missingHeaders = requiredHeaders.filter(
+          (h) => !booksHeaders.includes(h)
+        );
+        if (missingHeaders.length > 0) {
+          alert(
+            `Sheet "Books" thiếu các cột bắt buộc: ${missingHeaders.join(", ")}`
+          );
+          return;
+        }
+
+        const books = booksData.slice(1).map((row) => ({
+          bookCode: row[booksHeaders.indexOf("Book Code")]?.toString() || "",
+          title: row[booksHeaders.indexOf("Title")]?.toString() || "",
+          publisher: row[booksHeaders.indexOf("Publisher")]?.toString() || "",
+          yearPublished:
+            parseInt(row[booksHeaders.indexOf("Year Published")]) || 0,
+          topic: row[booksHeaders.indexOf("Topic")]?.toString() || "",
+          note: row[booksHeaders.indexOf("Note")]?.toString() || "",
+          categoryName:
+            row[booksHeaders.indexOf("Category Name")]?.toString() || "",
+          authorName:
+            row[booksHeaders.indexOf("Author Name")]?.toString() || "",
+          description:
+            row[booksHeaders.indexOf("Description")]?.toString() || "",
+        }));
+
+        const invalidBooks = books.filter(
+          (book) =>
+            !book.bookCode ||
+            !book.title ||
+            !book.categoryName ||
+            !book.authorName
+        );
+        if (invalidBooks.length > 0) {
+          alert(
+            "Một số sách thiếu Book Code, Title, Category Name hoặc Author Name!"
+          );
+          return;
+        }
+
+        // Validate Category and Author Names
+        const invalidCategoryBooks = books.filter(
+          (book) => !categoryNames.includes(book.categoryName)
+        );
+        if (invalidCategoryBooks.length > 0) {
+          alert(
+            `Một số sách có Category Name không hợp lệ: ${invalidCategoryBooks
+              .map((b) => b.title)
+              .join(", ")}`
+          );
+          return;
+        }
+        const invalidAuthorBooks = books.filter(
+          (book) => !authorNames.includes(book.authorName)
+        );
+        if (invalidAuthorBooks.length > 0) {
+          alert(
+            `Một số sách có Author Name không hợp lệ: ${invalidAuthorBooks
+              .map((b) => b.title)
+              .join(", ")}`
+          );
+          return;
+        }
+
+        const addedBooks = [];
+        for (const book of books) {
+          try {
+            const payload = {
+              bookCode: book.bookCode,
+              title: book.title,
+              publisher: book.publisher,
+              yearPublished: book.yearPublished,
+              topic: book.topic,
+              note: book.note,
+              categoryId: categoryMap.get(book.categoryName),
+              authorId: authorMap.get(book.authorName),
+              description: book.description,
+            };
+
+            const response = await fetch(api_books_iLabrix, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+
+            console.log("API Response Status:", response.status);
+            console.log("API Response Headers:", response.headers);
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error("API Error Response:", errorText);
+              let userMessage = `Lỗi khi thêm sách: ${book.title}. `;
+              if (response.status === 401 || response.status === 403) {
+                userMessage +=
+                  "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.";
+              } else if (response.status === 503) {
+                userMessage +=
+                  "Dịch vụ hiện không khả dụng. Vui lòng thử lại sau.";
+              } else {
+                userMessage += `Mã lỗi: ${response.status}. ${errorText}`;
+              }
+              throw new Error(userMessage);
+            }
+
+            const contentType = response.headers.get("Content-Type");
+            if (!contentType || !contentType.includes("application/json")) {
+              const errorText = await response.text();
+              console.error("Non-JSON Response:", errorText);
+              throw new Error(
+                `Định dạng phản hồi không hợp lệ cho sách: ${book.title} (Content-Type: ${contentType})`
+              );
+            }
+
+            const newBook = await response.json();
+            addedBooks.push(newBook);
+          } catch (error) {
+            console.error("Error adding book:", error);
+            alert(error.message);
+            return;
+          }
+        }
+
+        setAllBooks((prev) => [...prev, ...addedBooks]);
+        setFilteredBooks((prev) => [...prev, ...addedBooks]);
+
+        alert("Thêm sách từ file Excel thành công!");
+        setExcelFile(null);
+        document.querySelector('input[type="file"]').value = "";
+      };
+      reader.readAsArrayBuffer(excelFile);
+    } catch (error) {
+      console.error("Error processing Excel file:", error);
+      alert("Có lỗi xảy ra khi xử lý file Excel: " + error.message);
+      setExcelFile(null);
+      document.querySelector('input[type="file"]').value = "";
+    }
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -599,7 +1006,7 @@ const TabBooks = () => {
         </div>
       )}
 
-      <div className="absolute text-base bottom-3 right-7">
+      <div className="absolute text-base bottom-3 left-7">
         <button
           className="px-3 py-1"
           onClick={() => goToPage(currentPage - 1)}
@@ -628,10 +1035,38 @@ const TabBooks = () => {
           >
             <div>
               <h2 className="text-3xl text-center font-bold mb-4 text-sky-900">
-                Add new Book
+                Add New Book
               </h2>
             </div>
             <form onSubmit={(e) => e.preventDefault()}>
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  Add multiple books by file
+                </h3>
+                <div className="flex gap-4 items-center">
+                  <button
+                    type="button"
+                    onClick={downloadSampleExcel}
+                    className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                  >
+                    Download Sample Excel
+                  </button>
+                  <input
+                    type="file"
+                    accept=".xlsx, .xls"
+                    onChange={(e) => setExcelFile(e.target.files[0])}
+                    className="text-sm text-gray-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddBooksFromExcel}
+                    className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80 disabled:opacity-50"
+                    disabled={!excelFile}
+                  >
+                    Upload Excel
+                  </button>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-20 mb-14">
                 <div className="space-y-2">
                   <input
@@ -690,7 +1125,6 @@ const TabBooks = () => {
                       setNewBook({ ...newBook, note: e.target.value })
                     }
                   />
-
                   <div className="flex flex-wrap gap-2 min-h-[40px]">
                     {selectedCategories.map((category) => (
                       <span
@@ -732,7 +1166,6 @@ const TabBooks = () => {
                       </button>
                     </div>
                   </div>
-
                   <textarea
                     className="mt-1 p-2 w-full border rounded-md text-sm bg-transparent"
                     rows="2"
