@@ -148,10 +148,11 @@ const TabInventory = () => {
     setCurrentPage(1);
   };
 
-  const openModal = (item = null) => {
+  const openModal = (item = null, bookId = "") => {
+    console.log("item", item);
     setSelectedItem(
       item || {
-        bookId: "",
+        bookId: bookId || "",
         title: "",
         totalQuantity: 0,
         available: 0,
@@ -159,6 +160,8 @@ const TabInventory = () => {
         lost: 0,
         damaged: 0,
         bookCopies: [],
+        location: "", // Thêm location để tránh lỗi undefined
+        quantity: "", // Thêm quantity để tránh lỗi undefined
       }
     );
     setIsModalOpen(true);
@@ -377,14 +380,14 @@ const TabInventory = () => {
           </div>
         </div>
         {/* Tăng số lượng book copy */}
-        <div className="flex items-center gap-3">
+        {/* <div className="flex items-center gap-3">
           <button
             onClick={() => openModal()}
             className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-lg"
           >
             Add copies of book
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Inventory list */}
@@ -756,13 +759,14 @@ const TabInventory = () => {
                       type="text"
                       placeholder="Enter Book ID"
                       className="mt-1 p-1.5 w-full border rounded-md text-sm"
-                      value={selectedItem.bookId || ""}
+                      value={selectedItem.bookId}
                       onChange={(e) =>
                         setSelectedItem({
                           ...selectedItem,
                           bookId: e.target.value,
                         })
                       }
+                      readOnly={!!selectedItem.bookId} // Khóa trường nếu bookId được truyền vào
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -805,9 +809,17 @@ const TabInventory = () => {
               )}
               {selectedItem.bookCopies.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-base font-semibold text-gray-700 mb-1">
-                    Book Copies ({selectedItem.bookCopies.length})
-                  </h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-base font-semibold text-gray-700 mb-1">
+                      Book Copies ({selectedItem.bookCopies.length})
+                    </h3>
+                    <button
+                      onClick={() => openModal(null, selectedItem.bookId)} // Truyền bookId của selectedItem
+                      className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-lg"
+                    >
+                      Add copies of book
+                    </button>
+                  </div>
                   <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md">
                     <table className="w-full bg-gray-50 text-sm table-fixed">
                       <thead className="bg-gray-200 text-gray-700 sticky top-0 z-10">
