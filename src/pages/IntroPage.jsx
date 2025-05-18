@@ -38,7 +38,7 @@ const IntroPage = () => {
       if (!response) {
         throw new Error("Lỗi khi lấy dữ liệu");
       }
-      setBooks(response);
+      setBooks(response.slice(0, 5));
       setCurrentBookIndex(0);
     } catch (error) {
       console.error("Lỗi API:", error);
@@ -319,20 +319,19 @@ const IntroPage = () => {
           </div>
           <div className="flex flex-row justify-center items-center gap-10">
             <div className="w-1/2 text-2xl text-white p-8 bg-black/25 backdrop-blur-md rounded-[20px]">
-              <b>iLabrix</b> - Hệ thống quản lý mượn trả sách thông minh. Chào
-              mừng bạn đến với iLabrix, nền tảng quản lý mượn trả sách hiện đại,
-              giúp sinh viên và giảng viên dễ dàng tiếp cận tài liệu học tập.
-              Với giao diện thân thiện và công nghệ tiên tiến, chúng tôi mang
-              đến một trải nghiệm mượn trả sách nhanh chóng, tiện lợi và minh
-              bạch.
+              <b>iLabrix</b> - Smart Library Management System. Welcome to
+              iLabrix, a modern library management platform that helps students
+              and teachers easily access educational resources. With a
+              user-friendly interface and advanced technology, we bring a fast,
+              convenient, and transparent borrowing experience.
             </div>
             <div className="w-1/2 text-2xl text-white p-8 bg-black/25 backdrop-blur-md rounded-[20px]">
-              <b>Tính năng nổi bật:</b>
+              <b>Outstanding Features:</b>
               <ul className="list-none">
-                <li>Quản lý kho sách trực tuyến.</li>
-                <li>Tìm kiếm sách nhanh chóng theo danh mục, tác giả.</li>
-                <li>Hỗ trợ gia hạn sách trực tuyến.</li>
-                <li>Nhận thông báo khi sách sắp đến hạn trả.</li>
+                <li>Online book inventory management.</li>
+                <li>Quick book search by category, author.</li>
+                <li>Support for online book renewal.</li>
+                <li>Receive notifications when books are due soon.</li>
               </ul>
             </div>
           </div>
@@ -347,24 +346,22 @@ const IntroPage = () => {
             News - Events
           </div>
           <div className="w-3/4 text-white p-8 bg-black/25 backdrop-blur-md rounded-[20px]">
-            <div className="text-2xl">
-              📢 Cập nhật tin tức & sự kiện quan trọng
-            </div>
+            <div className="text-2xl">📢 News and events updates</div>
             <ul className="list-disc ml-5 text-2xl">
               <li>
-                [20/02/2025] Hội thảo &quot;Chuyển đổi số trong thư viện trường
-                học&quot;
-                <br /> Tham gia sự kiện để tìm hiểu về cách ứng dụng công nghệ
-                vào quản lý thư viện.
+                [20/02/2025] Workshop &quot;Digital Transformation in School
+                Libraries&quot;
+                <br /> Join this event to learn about applying technology in
+                library management.
               </li>
               <li>
-                [15/03/2025] Ra mắt tính năng đặt chỗ trước cho sách hot <br />
-                Giúp bạn giữ chỗ trước cho những cuốn sách đang được nhiều người
-                mượn.
+                [15/03/2025] Launch of pre-booking feature for popular books
+                <br /> Help you reserve books that are in high demand.
               </li>
               <li>
-                [01/04/2025] Chương trình &quot;Mượn sách nhận quà&quot; <br />{" "}
-                Mượn sách, tích điểm và đổi quà hấp dẫn ngay hôm nay!
+                [01/04/2025] &quot;Borrow Books, Get Rewards&quot; Program
+                <br /> Borrow books, earn points, and redeem attractive gifts
+                today!
               </li>
             </ul>
           </div>
@@ -378,28 +375,32 @@ const IntroPage = () => {
           <div className="text-8xl mb-20 text-white font-bold">Feature</div>
           <div className=" text-white p-8 bg-black/25 backdrop-blur-md rounded-[20px]">
             <div>
-              <div className="text-2xl">🔹Mượn và trả sách dễ dàng</div>
+              <div className="text-2xl">
+                🔹Easy Book Borrowing and Returning
+              </div>
               <ul className="list-disc ml-10 text-2xl">
-                <li>Quét mã QR để mượn/trả sách nhanh chóng.</li>
-                <li>Theo dõi lịch sử mượn sách của bạn.</li>
+                <li>Scan QR codes to borrow/return books quickly.</li>
+                <li>Track your book borrowing history.</li>
               </ul>
             </div>
             <div>
-              <div className="text-2xl">🔹Đặt trước sách yêu thích</div>
+              <div className="text-2xl">🔹Reserve Your Favorite Books</div>
               <ul className="list-disc ml-10 text-2xl">
-                <li>Kiểm tra số lượng sách còn lại và đặt chỗ trước.</li>
+                <li>Check availability and reserve books in advance.</li>
               </ul>
             </div>
             <div>
-              <div className="text-2xl">🔹Gợi ý sách theo sở thích</div>
+              <div className="text-2xl">
+                🔹Personalized Book Recommendations
+              </div>
               <ul className="list-disc ml-10 text-2xl">
-                <li>Hệ thông AI đề xuất sách dựa trên lịch sử đọc của bạn.</li>
+                <li>AI system suggests books based on your reading history.</li>
               </ul>
             </div>
             <div>
-              <div className="text-2xl">🔹Thông báo nhắc nhở tự động</div>
+              <div className="text-2xl">🔹Automatic Reminder Notifications</div>
               <ul className="list-disc ml-10 text-2xl">
-                <li>Cảnh báo khi sách sắp đến hạn trả để tránh phí trễ hạn.</li>
+                <li>Get alerts when books are due soon to avoid late fees.</li>
               </ul>
             </div>
           </div>
@@ -414,7 +415,7 @@ const IntroPage = () => {
           <div className=" text-white text-2xl p-8 bg-black/25 backdrop-blur-md rounded-[20px]">
             <div className="flex flex-col">
               <span>
-                ❓ <b>Bạn cần giúp đỡ?</b>
+                ❓ <b>Need help?</b>
               </span>
               <span>
                 📞 <b>Hotline:</b> 1900 1234
@@ -423,15 +424,15 @@ const IntroPage = () => {
                 📩 <b>Email:</b> support@ilabrix.com
               </span>
               <span>
-                💬 <b>Live Chat:</b> Nhấn vào góc phải màn hình để trò chuyện
-                với nhân viên hỗ trợ.
+                💬 <b>Live Chat:</b> Click on the right corner of the screen to
+                chat with our support staff.
               </span>
             </div>
             <div className="flex flex-col mt-5">
-              <div className="font-bold">Câu hỏi thường gặp:</div>
-              <span>🔹 Làm thế nào để đăng ký tài khoản?</span>
-              <span>🔹 Cách gia hạn sách mượn?</span>
-              <span>🔹 Phải làm gì khi làm mất sách?</span>
+              <div className="font-bold">Frequently Asked Questions:</div>
+              <span>🔹 How to register an account?</span>
+              <span>🔹 How to renew borrowed books?</span>
+              <span>🔹 What to do when you lose a book?</span>
             </div>
           </div>
         </div>

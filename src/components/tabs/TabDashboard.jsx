@@ -1,4 +1,4 @@
-import { BarChart, LineChart } from "@mui/x-charts";
+// import { BarChart, LineChart } from "@mui/x-charts";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { useEffect, useState } from "react";
 import borrowService from "../../services/borrowService";
@@ -274,7 +274,7 @@ const TabDashboard = () => {
         </div>
 
         {/* Number of Borrwer - Liner Chart */}
-        <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
+        {/* <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
           <LineChart
             xAxis={[
               { data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], label: "Month" },
@@ -290,10 +290,10 @@ const TabDashboard = () => {
             width={500}
             height={350}
           />
-        </div>
+        </div> */}
 
         {/* Favorite Book - Liner Chart */}
-        <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
+        {/* <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
           <BarChart
             xAxis={[
               {
@@ -307,7 +307,7 @@ const TabDashboard = () => {
             width={500}
             height={350}
           />
-        </div>
+        </div> */}
       </div>
     );
   };
