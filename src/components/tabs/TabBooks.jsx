@@ -6,33 +6,34 @@ const TabBooks = () => {
   const api_books_iLabrix = "http://localhost:8080/api/v1/book-service/books";
   const api_categories_iLabrix =
     "http://localhost:8080/api/v1/book-service/categories";
-  const api_author_iLabrix = "http://localhost:8080/api/authors";
+  const api_author_iLabrix =
+    "http://localhost:8080/api/v1/book-service/authors";
   const [allBooks, setAllBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [excelFile, setExcelFile] = useState(null);
-
   const [authors, setAuthors] = useState([]);
-  // useEffect(() => {
-  //   const fetchAuthors = async () => {
-  //     try {
-  //       const accessToken = localStorage.getItem("accessToken");
-  //       const response = await fetch(api_author_iLabrix, {
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       });
-  //       const data = await response.json();
-  //       console.log(data);
-  //       setAuthors(data);
-  //     } catch (error) {
-  //       console.error("Lỗi API Authors:", error);
-  //     }
-  //   };
-  //   fetchAuthors();
-  // }, []);
+
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        const response = await fetch(api_author_iLabrix, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        console.log("Authors: ", data);
+        setAuthors(data);
+      } catch (error) {
+        console.error("Lỗi API Authors:", error);
+      }
+    };
+    fetchAuthors();
+  }, []);
 
   const downloadSampleExcel = () => {
     console.log("Downloading sample Excel file...");
@@ -159,31 +160,31 @@ const TabBooks = () => {
           )
           .filter((name) => name);
 
-        // // Read Authors Sheet
-        // const authorsSheetName = workbook.SheetNames.includes("Authors")
-        //   ? "Authors"
-        //   : null;
-        // if (!authorsSheetName) {
-        //   alert('File Excel thiếu sheet "Authors"!');
-        //   return;
-        // }
-        // const authorsWorksheet = workbook.Sheets[authorsSheetName];
-        // const authorsData = XLSX.utils.sheet_to_json(authorsWorksheet, {
-        //   header: 1,
-        // });
-        // if (authorsData.length < 2) {
-        //   alert('Sheet "Authors" trống hoặc không có dữ liệu hợp lệ!');
-        //   return;
-        // }
-        // const authorsHeaders = authorsData[0];
-        // if (!authorsHeaders.includes("Author Name")) {
-        //   alert('Sheet "Authors" thiếu cột "Author Name"!');
-        //   return;
-        // }
-        // const authorNames = authorsData
-        //   .slice(1)
-        //   .map((row) => row[authorsHeaders.indexOf("Author Name")]?.toString())
-        //   .filter((name) => name);
+        // Read Authors Sheet
+        const authorsSheetName = workbook.SheetNames.includes("Authors")
+          ? "Authors"
+          : null;
+        if (!authorsSheetName) {
+          alert('File Excel thiếu sheet "Authors"!');
+          return;
+        }
+        const authorsWorksheet = workbook.Sheets[authorsSheetName];
+        const authorsData = XLSX.utils.sheet_to_json(authorsWorksheet, {
+          header: 1,
+        });
+        if (authorsData.length < 2) {
+          alert('Sheet "Authors" trống hoặc không có dữ liệu hợp lệ!');
+          return;
+        }
+        const authorsHeaders = authorsData[0];
+        if (!authorsHeaders.includes("Author Name")) {
+          alert('Sheet "Authors" thiếu cột "Author Name"!');
+          return;
+        }
+        const authorNames = authorsData
+          .slice(1)
+          .map((row) => row[authorsHeaders.indexOf("Author Name")]?.toString())
+          .filter((name) => name);
 
         // Fetch Existing Categories
         const categoryResponse = await fetch(api_categories_iLabrix, {
@@ -215,39 +216,39 @@ const TabBooks = () => {
           }
         }
 
-        // const authorResponse = await fetch(api_author_iLabrix, {
-        //   headers: { Authorization: `Bearer ${accessToken}` },
-        // });
-        // if (!authorResponse.ok) {
-        //   throw new Error("Không thể lấy danh sách author từ server.");
-        // }
-        // const existingAuthors = await authorResponse.json();
-        // const authorMap = new Map(existingAuthors.map((a) => [a.name, a.id]));
+        const authorResponse = await fetch(api_author_iLabrix, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!authorResponse.ok) {
+          throw new Error("Không thể lấy danh sách author từ server.");
+        }
+        const existingAuthors = await authorResponse.json();
+        const authorMap = new Map(existingAuthors.map((a) => [a.name, a.id]));
 
-        // // Create Missing Authors
-        // for (const name of authorNames) {
-        //   if (!authorMap.has(name)) {
-        //     // const bio =
-        //     //   authorsData
-        //     //     .slice(1)
-        //     //     .find(
-        //     //       (row) => row[authorsHeaders.indexOf("Author Name")] === name
-        //     //     )?.[authorsHeaders.indexOf("Bio")] || "";
-        //     const response = await fetch(api_author_iLabrix, {
-        //       method: "POST",
-        //       headers: {
-        //         Authorization: `Bearer ${accessToken}`,
-        //         "Content-Type": "application/json",
-        //       },
-        //       body: JSON.stringify({ name }),
-        //     });
-        //     if (!response.ok) {
-        //       throw new Error(`Không thể tạo author: ${name}`);
-        //     }
-        //     const newAuthor = await response.json();
-        //     authorMap.set(name, newAuthor.id);
-        //   }
-        // }
+        // Create Missing Authors
+        for (const name of authorNames) {
+          if (!authorMap.has(name)) {
+            // const bio =
+            //   authorsData
+            //     .slice(1)
+            //     .find(
+            //       (row) => row[authorsHeaders.indexOf("Author Name")] === name
+            //     )?.[authorsHeaders.indexOf("Bio")] || "";
+            const response = await fetch(api_author_iLabrix, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ name }),
+            });
+            if (!response.ok) {
+              throw new Error(`Không thể tạo author: ${name}`);
+            }
+            const newAuthor = await response.json();
+            authorMap.set(name, newAuthor.id);
+          }
+        }
 
         // Read Books Sheet
         const booksSheetName = workbook.SheetNames.includes("Books")
@@ -327,17 +328,17 @@ const TabBooks = () => {
           );
           return;
         }
-        // const invalidAuthorBooks = books.filter(
-        //   (book) => !authorNames.includes(book.authorName)
-        // );
-        // if (invalidAuthorBooks.length > 0) {
-        //   alert(
-        //     `Một số sách có Author Name không hợp lệ: ${invalidAuthorBooks
-        //       .map((b) => b.title)
-        //       .join(", ")}`
-        //   );
-        //   return;
-        // }
+        const invalidAuthorBooks = books.filter(
+          (book) => !authorNames.includes(book.authorName)
+        );
+        if (invalidAuthorBooks.length > 0) {
+          alert(
+            `Một số sách có Author Name không hợp lệ: ${invalidAuthorBooks
+              .map((b) => b.title)
+              .join(", ")}`
+          );
+          return;
+        }
 
         const addedBooks = [];
         for (const book of books) {
@@ -350,7 +351,7 @@ const TabBooks = () => {
               topic: book.topic,
               note: book.note,
               categoryId: categoryMap.get(book.categoryName),
-              // authorId: authorMap.get(book.authorName),
+              authorId: authorMap.get(book.authorName),
               description: book.description,
             };
 
