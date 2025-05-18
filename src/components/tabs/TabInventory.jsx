@@ -663,10 +663,17 @@ const TabInventory = () => {
             onClick={(e) => e.stopPropagation()}
             className="w-1/2 mx-auto relative overflow-hidden z-10 bg-white p-4 rounded-lg shadow-md before:w-20 before:h-20 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-24 after:h-24 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-16 after:-right-8"
           >
-            <h2 className="text-2xl text-center font-bold mb-3 text-sky-900">
-              {selectedItem.id ? "Edit Inventory Item" : "Add copies of Book"}
-            </h2>
-
+          <div>
+              <h2 className="text-2xl text-center font-bold mb-3 text-sky-900">
+                {selectedItem.id ? "Edit Inventory Item" : "Add copies of Book"}
+              </h2>
+              <button
+                onClick={() => openModal(null, selectedItem.bookId)} // Truyền bookId của selectedItem
+                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-lg"
+              >
+                Add copies of book
+              </button>
+          </div>
             <div className="mb-10">
               {selectedItem.id ? (
                 <div className="grid grid-cols-3 gap-4">
@@ -813,12 +820,7 @@ const TabInventory = () => {
                     <h3 className="text-base font-semibold text-gray-700 mb-1">
                       Book Copies ({selectedItem.bookCopies.length})
                     </h3>
-                    <button
-                      onClick={() => openModal(null, selectedItem.bookId)} // Truyền bookId của selectedItem
-                      className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-1 font-bold hover:opacity-80 rounded-lg"
-                    >
-                      Add copies of book
-                    </button>
+                  
                   </div>
                   <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md">
                     <table className="w-full bg-gray-50 text-sm table-fixed">
