@@ -1,10 +1,11 @@
+import config from "../configs/config";
 const borrowService = {
   // Tạo phiếu mượn
   createBorrowRequest: async (borrowRequest) => {
     const token = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/borrowing-service/borrow-requests",
+        `${config.BASE_URL}/api/v1/borrowing-service/borrow-requests`,
         {
           method: "POST",
           headers: {
@@ -31,7 +32,7 @@ const borrowService = {
     const token = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/borrowing-service/borrow-requests/users/borrow-history",
+        `${config.BASE_URL}/api/v1/borrowing-service/borrow-requests/users/borrow-history`,
         {
           method: "GET",
           headers: {
@@ -56,7 +57,7 @@ const borrowService = {
     const token = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/borrowing-service/borrow-requests",
+        `${config.BASE_URL}/api/v1/borrowing-service/borrow-requests`,
         {
           method: "GET",
           headers: {
@@ -82,7 +83,7 @@ const borrowService = {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/borrow`,
+        `${config.BASE_URL}/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/borrow`,
         {
           method: "PUT",
           headers: {
@@ -110,7 +111,7 @@ const borrowService = {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/return`,
+        `${config.BASE_URL}/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/return`,
         {
           method: "PUT",
           headers: {
@@ -136,7 +137,7 @@ const borrowService = {
       console.log("borrowRequest: ", borrowRequest);
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/canceled`,
+        `${config.BASE_URL}/api/v1/borrowing-service/borrow-requests/${borrowRequest.borrowRequestId}/canceled`,
         {
           method: "PUT",
           headers: {
@@ -161,7 +162,7 @@ const borrowService = {
     const token = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/statistics`,
+        `${config.BASE_URL}/api/v1/borrowing-service/borrow-requests/statistics`,
         {
           method: "GET",
           headers: {
@@ -186,7 +187,7 @@ const borrowService = {
     const token = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/statistics/${date}`,
+        `${config.BASE_URL}/api/v1/borrowing-service/borrow-requests/statistics/${date}`,
         {
           method: "GET",
           headers: {
@@ -211,7 +212,7 @@ const borrowService = {
     const token = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v1/borrowing-service/borrow-requests/statistics/book-borrowed/${date}`,
+        `${config.BASE_URL}/api/v1/borrowing-service/borrow-requests/statistics/book-borrowed/${date}`,
         {
           method: "GET",
           headers: {

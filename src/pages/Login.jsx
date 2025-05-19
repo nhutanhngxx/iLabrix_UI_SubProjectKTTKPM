@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "../redux/slice/userSlice";
 import authService from "../services/authService";
-
+import config from "../configs/config";
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();

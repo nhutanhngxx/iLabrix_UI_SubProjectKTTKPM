@@ -1,13 +1,13 @@
 import { useRef, useState, useEffect } from "react";
 import editIcon from "/icons/edit.png";
 import * as XLSX from "xlsx";
-
+import config from "../../configs/config";
 const TabBooks = () => {
-  const api_books_iLabrix = "http://localhost:8080/api/v1/book-service/books";
+  const api_books_iLabrix = `${config.BASE_URL}/api/v1/book-service/books`;
   const api_categories_iLabrix =
-    "http://localhost:8080/api/v1/book-service/categories";
+    `${config.BASE_URL}/api/v1/book-service/categories`;
   const api_author_iLabrix =
-    "http://localhost:8080/api/v1/book-service/authors";
+    `${config.BASE_URL}/api/v1/book-service/authors`;
   const [allBooks, setAllBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");

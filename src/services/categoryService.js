@@ -1,9 +1,10 @@
+import config from "../configs/config";
 const categoryService = {
   getCategories: async () => {
     const token = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/book-service/categories",
+        `${config.BASE_URL}/api/v1/book-service/categories`,
         {
           method: "GET",
           headers: {

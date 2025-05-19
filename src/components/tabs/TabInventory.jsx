@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import editIcon from "/icons/edit.png";
-
+import config from "../../configs/config";
 const TabInventory = () => {
   const [inventory, setInventory] = useState([]);
   const [filteredInventory, setFilteredInventory] = useState([]);
@@ -21,10 +21,10 @@ const TabInventory = () => {
     useState(false);
 
   const api_inventory =
-    "http://localhost:8080/api/v1/inventory-service/inventories";
-  const api_books = "http://localhost:8080/api/v1/book-service/books";
+    `${config.BASE_URL}/api/v1/inventory-service/inventories`;
+  const api_books = `${config.BASE_URL}/api/v1/book-service/books`;
   const api_book_copies =
-    "http://localhost:8080/api/v1/inventory-service/copies";
+    `${config.BASE_URL}/api/v1/inventory-service/copies`;
 
   const itemsPerPage = 6;
 

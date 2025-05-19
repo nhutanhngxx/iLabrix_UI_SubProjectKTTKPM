@@ -1,3 +1,4 @@
+import config from "../configs/config";
 const authService = {
   isTokenValid: () => {
     const token = localStorage.getItem("accessToken");
@@ -22,7 +23,7 @@ const authService = {
   login: async ({ username, password }) => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/user-service/users/login",
+        `${config.BASE_URL}/api/v1/user-service/users/login`,
         {
           method: "POST",
           headers: {
@@ -46,7 +47,7 @@ const authService = {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        "http://localhost:8080/api/v1/user-service/users/logout",
+        `${config.BASE_URL}/api/v1/user-service/users/logout`,
         {
           method: "POST",
           headers: {
@@ -69,7 +70,7 @@ const authService = {
   register: async (registerData) => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/v1/user-service/users/register",
+        `${config.BASE_URL}/api/v1/user-service/users/register`,
         {
           method: "POST",
           headers: {
@@ -101,7 +102,7 @@ const authService = {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        `http://localhost:8080/api/v1/user-service/users/profile/${userId}`,
+        `${config.BASE_URL}/api/v1/user-service/users/profile/${userId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -125,7 +126,7 @@ const authService = {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        `http://localhost:8080/api/v1/user-service/users/${userId}`,
+        `${config.BASE_URL}/api/v1/user-service/users/${userId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -158,7 +159,7 @@ const authService = {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v1/user-service/users/${updatedData.userId}`,
+        `${config.BASE_URL}/api/v1/user-service/users/${updatedData.userId}`,
         {
           method: "PUT",
           headers: {
@@ -185,7 +186,7 @@ const authService = {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v1/user-service/users/change-password`,
+        `${config.BASE_URL}/api/v1/user-service/users/change-password`,
         {
           method: "PUT",
           headers: {

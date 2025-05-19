@@ -23,7 +23,7 @@ import managementIcon from "/icons/management.png";
 
 import { logout } from "../redux/slice/userSlice";
 import authService from "../services/authService";
-
+import config from "../configs/config";
 // Component hiển thị thời gian hiện tại
 const CurrentDateTime = () => {
   const [currentDateTime, setCurrentDateTime] = useState({
@@ -145,7 +145,7 @@ const HomePage = () => {
       const token = localStorage.getItem("accessToken");
       try {
         const respone = await fetch(
-          `http://localhost:8080/api/v1/user-service/users/profile/${user.userId}`,
+          `${config.BASE_URL}/api/v1/user-service/users/profile/${user.userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
