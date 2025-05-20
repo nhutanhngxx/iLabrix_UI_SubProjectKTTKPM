@@ -1,7 +1,9 @@
-// import { BarChart, LineChart } from "@mui/x-charts";
+import { BarChart, LineChart } from "@mui/x-charts";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { useEffect, useState } from "react";
 import borrowService from "../../services/borrowService";
+import categoryService from "../../services/categoryService";
+import bookService from "../../services/bookService";
 
 const TabDashboard = () => {
   const OverViewTab = () => {
@@ -11,6 +13,12 @@ const TabDashboard = () => {
 
     const [booksBorrowedToday, setBooksBorrowedToday] = useState();
     const [booksBorrowedYesterday, setBooksBorrowedYesterday] = useState();
+
+    const [topBooksBorrowed, setTopBooksBorrowed] = useState([]);
+    const [numOfColumnTopBooks, setNumOfColumnTopBooks] = useState(3);
+
+    const [booksByCategory, setBooksByCategory] = useState([]);
+    const [numOfColumnCategory, setNumOfColumnCategory] = useState(3);
 
     // Lấy danh sách phiếu mượn
     const fetchBorrowRequests = async () => {
@@ -130,6 +138,38 @@ const TabDashboard = () => {
     };
     useEffect(() => {
       fetchBooksBorrowedYesterday();
+    }, []);
+
+    // Lấy danh sách sách được mượn nhiều nhất
+    const fetchTopBooksBorrowed = async () => {
+      try {
+        const response = await bookService.getTopBooksBorrowed();
+        if (!response) {
+          throw new Error("Lỗi khi lấy dữ liệu");
+        }
+        setTopBooksBorrowed(response);
+      } catch (error) {
+        console.error("Lỗi API:", error);
+      }
+    };
+    useEffect(() => {
+      fetchTopBooksBorrowed();
+    }, []);
+
+    // Đếm số lượng sách theo thể loại
+    const fetchBooksByCategory = async () => {
+      try {
+        const response = await categoryService.countBooksByCategory();
+        if (!response) {
+          throw new Error("Lỗi khi lấy dữ liệu");
+        }
+        setBooksByCategory(response);
+      } catch (error) {
+        console.error("Lỗi API:", error);
+      }
+    };
+    useEffect(() => {
+      fetchBooksByCategory();
     }, []);
 
     return (
@@ -274,40 +314,80 @@ const TabDashboard = () => {
         </div>
 
         {/* Number of Borrwer - Liner Chart */}
-        {/* <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
-          <LineChart
-            xAxis={[
-              { data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], label: "Month" },
-            ]}
-            series={[
-              {
-                data: [2, 5.5, 2, 8.5, 1.5, 5, 3, 7, 4, 6, 5, 8],
-                label: "Number of Borrower",
-                showMark: false,
-                type: "line",
-              },
-            ]}
-            width={500}
-            height={350}
-          />
-        </div> */}
-
-        {/* Favorite Book - Liner Chart */}
-        {/* <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
+        <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
+          <div className="flex items-center justify-between ">
+            <select
+              className="border-2 border-gray-400 rounded-md p-1 m-2"
+              defaultValue={3}
+              onChange={(e) => setNumOfColumnTopBooks(e.target.value)}
+            >
+              {[3, 4, 5, 6, 7].map((num) => (
+                <option key={num} value={num}>
+                  {num} books
+                </option>
+              ))}
+            </select>
+          </div>
           <BarChart
             xAxis={[
               {
                 scaleType: "band",
-                data: ["Book 1", "Book 2", "Book 3"],
-                label: "Favorite Book",
+                data: topBooksBorrowed
+                  .slice(0, numOfColumnTopBooks)
+                  .map((item) => item.book.title),
+                label: "Book Name",
               },
             ]}
             yAxis={[{ scaleType: "linear" }]}
-            series={[{ data: [10, 7, 5] }]}
+            series={[
+              {
+                data: topBooksBorrowed
+                  .slice(0, numOfColumnTopBooks)
+                  .map((item) => item.count),
+              },
+            ]}
             width={500}
-            height={350}
+            height={300}
           />
-        </div> */}
+        </div>
+
+        {/* Number of Book by Category - Liner Chart */}
+        <div className="flex flex-col items-center justify-center row-span-2 border-2 border-gray-400 rounded-xl">
+          <div className="flex items-center justify-between ">
+            <select
+              className="border-2 border-gray-400 rounded-md p-1 m-2"
+              defaultValue={3}
+              onChange={(e) => setNumOfColumnCategory(e.target.value)}
+            >
+              {[3, 4, 5, 6, 7].map((num) => (
+                <option key={num} value={num}>
+                  {num} types
+                </option>
+              ))}
+            </select>
+          </div>
+          <BarChart
+            xAxis={[
+              {
+                scaleType: "band",
+                data: booksByCategory
+                  .slice(0, numOfColumnCategory)
+                  .map((item) => item.categoryName),
+                label: "Category Name",
+              },
+            ]}
+            yAxis={[{ scaleType: "linear" }]}
+            series={[
+              {
+                data: booksByCategory
+                  .slice(0, numOfColumnCategory)
+                  .map((item) => Math.round(item.bookCount)),
+              },
+            ]}
+            width={500}
+            height={300}
+          />
+        </div>
       </div>
     );
   };
