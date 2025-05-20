@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import bookService from "../../services/bookService";
 import borrowService from "../../services/borrowService";
 import categoryService from "../../services/categoryService";
+import Loading from "../common/Loading";
 
 const TabAllBooks = () => {
   const [filterBooks, setFilterBooks] = useState([]);
@@ -14,6 +15,7 @@ const TabAllBooks = () => {
   const [returnDate, setReturnDate] = useState("");
   const [borrowDays, setBorrowDays] = useState(0);
   const modalRef = useRef();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Category filtering
   const [categories, setCategories] = useState([]);
@@ -200,6 +202,7 @@ const TabAllBooks = () => {
 
   //   Hàm xử lý mượn sách
   const handleBorrow = async () => {
+    setIsLoading(true);
     try {
       const borrowRequest = {
         borrowingPeriod: borrowDays,
@@ -211,11 +214,14 @@ const TabAllBooks = () => {
       const response = await borrowService.createBorrowRequest(borrowRequest);
       if (response) {
         alert("Tạo phiếu mượn sách thành công");
+        setShowSelectedModal(false);
       } else {
         alert("Mượn sách thất bại");
       }
     } catch (error) {
       console.log("Có lỗi xảy ra khi mượn sách: ", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -605,142 +611,153 @@ const TabAllBooks = () => {
             ref={modalRef}
             className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-[80vh] overflow-auto"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Borrow Information</h2>
-              <button
-                onClick={() => setShowSelectedModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {selectedBookIds.length > 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <Loading />
+              </div>
+            ) : (
               <div>
-                <div className="bg-gray-50 p-4 mb-4 rounded-lg">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Borrow Date
-                      </label>
-                      <input
-                        type="date"
-                        value={borrowDate}
-                        onChange={(e) => setBorrowDate(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        min={new Date().toISOString().split("T")[0]}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Borrow Information</h2>
+                  <button
+                    onClick={() => setShowSelectedModal(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Return Date
-                      </label>
-                      <input
-                        type="date"
-                        value={returnDate}
-                        onChange={(e) => setReturnDate(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        min={borrowDate}
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Total Days
-                        </label>
-                        <div className="p-2 bg-blue-50 border border-blue-200 rounded-md text-blue-800 font-medium">
-                          {borrowDays} day{borrowDays !== 1 ? "s" : ""}
+                    </svg>
+                  </button>
+                </div>
+
+                {selectedBookIds.length > 0 ? (
+                  <div>
+                    <div className="bg-gray-50 p-4 mb-4 rounded-lg">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Borrow Date
+                          </label>
+                          <input
+                            type="date"
+                            value={borrowDate}
+                            onChange={(e) => setBorrowDate(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            min={new Date().toISOString().split("T")[0]}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Return Date
+                          </label>
+                          <input
+                            type="date"
+                            value={returnDate}
+                            onChange={(e) => setReturnDate(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            min={borrowDate}
+                          />
+                        </div>
+                        <div className="flex items-center">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Total Days
+                            </label>
+                            <div className="p-2 bg-blue-50 border border-blue-200 rounded-md text-blue-800 font-medium">
+                              {borrowDays} day{borrowDays !== 1 ? "s" : ""}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    <table className="w-full border-collapse">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="py-2 px-4 text-left">No.</th>
+                          <th className="py-2 px-4 text-left">Title Book</th>
+                          <th className="py-2 px-4 text-left">Author</th>
+                          <th className="py-2 px-4 text-left">
+                            Published Year
+                          </th>
+                          <th className="py-2 px-4 text-left">Publisher</th>
+                          <th className="py-2 px-4 text-left"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {getSelectedBooks().map((book, index) => (
+                          <tr key={book.id} className="hover:bg-gray-50">
+                            <td className="py-2 px-4">{index + 1}</td>
+                            <td className="py-2 px-4">{book.title}</td>
+                            <td className="py-2 px-4 max-w-[250px]">
+                              {getAuthors(book)}
+                            </td>
+                            <td className="py-2 px-4">{book.yearPublished}</td>
+                            <td className="py-2 px-4">{book.publisher}</td>
+                            <td className="py-2 px-4">
+                              <button
+                                onClick={() => handleSelectBook(book.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    <div className="flex justify-between items-center mt-4 gap-2">
+                      <div className="text-gray-700 font-medium">
+                        Selected Books ({selectedBookIds.length})
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSelectedBookIds([])}
+                          className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+                        >
+                          Clear All
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (!borrowDate || !returnDate) {
+                              alert(
+                                "Please select both borrow and return dates"
+                              );
+                              return;
+                            }
+
+                            if (borrowDays <= 0) {
+                              alert("Return date must be after borrow date");
+                              return;
+                            }
+
+                            handleBorrow();
+                          }}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          Borrow Selected
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <table className="w-full border-collapse">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="py-2 px-4 text-left">No.</th>
-                      <th className="py-2 px-4 text-left">Title Book</th>
-                      <th className="py-2 px-4 text-left">Author</th>
-                      <th className="py-2 px-4 text-left">Published Year</th>
-                      <th className="py-2 px-4 text-left">Publisher</th>
-                      <th className="py-2 px-4 text-left"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSelectedBooks().map((book, index) => (
-                      <tr key={book.id} className="hover:bg-gray-50">
-                        <td className="py-2 px-4">{index + 1}</td>
-                        <td className="py-2 px-4">{book.title}</td>
-                        <td className="py-2 px-4 max-w-[250px]">
-                          {getAuthors(book)}
-                        </td>
-                        <td className="py-2 px-4">{book.yearPublished}</td>
-                        <td className="py-2 px-4">{book.publisher}</td>
-                        <td className="py-2 px-4">
-                          <button
-                            onClick={() => handleSelectBook(book.id)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                <div className="flex justify-between items-center mt-4 gap-2">
-                  <div className="text-gray-700 font-medium">
-                    Selected Books ({selectedBookIds.length})
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSelectedBookIds([])}
-                      className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
-                    >
-                      Clear All
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (!borrowDate || !returnDate) {
-                          alert("Please select both borrow and return dates");
-                          return;
-                        }
-
-                        if (borrowDays <= 0) {
-                          alert("Return date must be after borrow date");
-                          return;
-                        }
-
-                        handleBorrow();
-                        setShowSelectedModal(false);
-                      }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                      Borrow Selected
-                    </button>
-                  </div>
-                </div>
+                ) : (
+                  <p className="text-center text-gray-500 py-4">
+                    No books selected.
+                  </p>
+                )}
               </div>
-            ) : (
-              <p className="text-center text-gray-500 py-4">
-                No books selected.
-              </p>
             )}
           </div>
         </div>

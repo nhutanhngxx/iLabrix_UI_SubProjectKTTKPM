@@ -6,10 +6,12 @@ import borrowService from "../../services/borrowService";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import authService from "../../services/authService";
+import Loading from "../common/Loading";
 
 const TabBorrowManagement = () => {
   const componentRef = useRef();
   const [allBorrowers, setAllBorrowers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // const [statusUpdates, setStatusUpdates] = useState({});
   const [selectedBorrower, setSelectedBorrower] = useState(null);
@@ -186,45 +188,68 @@ const TabBorrowManagement = () => {
 
   // Hàm cập nhật phiếu mượn
   const handleApproveBorrower = async (borrower) => {
-    const borrowRequest = {
-      borrowRequestId: borrower.id,
-    };
-    const response = await borrowService.approveBorrowRequest(borrowRequest);
-    if (response) {
-      alert("Cập nhật phiếu mượn thành công");
-      fetchBorrowers();
-    } else {
-      alert("Cập nhật phiếu mượn thất bại");
+    setIsLoading(true);
+    try {
+      const borrowRequest = {
+        borrowRequestId: borrower.id,
+        dateBorrowed: selectedBorrower.dateBorrowed,
+        returnDate: selectedBorrower.returnDate,
+      };
+      const response = await borrowService.approveBorrowRequest(borrowRequest);
+      if (response) {
+        alert("Cập nhật phiếu mượn thành công");
+        fetchBorrowers();
+      } else {
+        alert("Cập nhật phiếu mượn thất bại");
+      }
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi cập nhật phiếu mượn: ", error);
+    } finally {
+      setIsLoading(false);
     }
     setSelectedBorrower(null);
   };
 
   // Hàm trả sách
   const handleReturnBook = async (borrower) => {
-    const borrowRequest = {
-      borrowRequestId: borrower.id,
-    };
-    const response = await borrowService.returnBook(borrowRequest);
-    if (response) {
-      alert("Trả sách thành công");
-      fetchBorrowers();
-    } else {
-      alert("Trả sách thất bại");
+    setIsLoading(true);
+    try {
+      const borrowRequest = {
+        borrowRequestId: borrower.id,
+      };
+      const response = await borrowService.returnBook(borrowRequest);
+      if (response) {
+        alert("Trả sách thành công");
+        fetchBorrowers();
+      } else {
+        alert("Trả sách thất bại");
+      }
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi trả sách: ", error);
+    } finally {
+      setIsLoading(false);
     }
     setSelectedBorrower(null);
   };
 
   // Hàm hủy phiếu mượn
   const handleCancelBorrowRequest = async (borrower) => {
-    const borrowRequest = {
-      borrowRequestId: borrower.id,
-    };
-    const response = await borrowService.cancelBorrowRequest(borrowRequest);
-    if (response) {
-      alert("Hủy phiếu mượn thành công");
-      fetchBorrowers();
-    } else {
-      alert("Hủy phiếu mượn thất bại");
+    setIsLoading(true);
+    try {
+      const borrowRequest = {
+        borrowRequestId: borrower.id,
+      };
+      const response = await borrowService.cancelBorrowRequest(borrowRequest);
+      if (response) {
+        alert("Hủy phiếu mượn thành công");
+        fetchBorrowers();
+      } else {
+        alert("Hủy phiếu mượn thất bại");
+      }
+    } catch (error) {
+      console.log("Có lỗi xảy ra khi hủy phiếu mượn: ", error);
+    } finally {
+      setIsLoading(false);
     }
     setSelectedBorrower(null);
   };
@@ -419,179 +444,187 @@ const TabBorrowManagement = () => {
       {/* Modal hiển thị chi tiết */}
       {selectedBorrower && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 rounded-lg">
-          <div className="w-2/3 mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl text-sky-900 font-bold ">
-                Edit Borrower Details
-              </h2>
-              <button
-                onClick={handlePrint}
-                className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-              >
-                Print
-              </button>
+          {isLoading ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <Loading />
             </div>
-
-            <div className="flex w-full gap-5">
-              {/* Input Name */}
-              <div className="mb-4 w-1/2">
-                <label className="block text-sm font-medium text-gray-600">
-                  Borrower name
-                </label>
-                <input
-                  type="text"
-                  value={borrowerNames[selectedBorrower.readerId] || ""}
-                  onChange={(e) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      name: e.target.value,
-                    }))
-                  }
-                  className="border p-2 rounded mt-1 w-full"
-                  disabled
-                />
-              </div>
-
-              {/* Input Book */}
-              <div className="mb-4 w-1/2">
-                <label className="block text-sm font-medium text-gray-600">
-                  Borrowed books
-                </label>
-                <textarea
-                  value={getListBookInBorrowRequest(selectedBorrower)
-                    .split(", ")
-                    .join("\n")}
-                  onChange={(e) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      book: e.target.value,
-                    }))
-                  }
-                  className="w-full border p-2 rounded mt-1"
-                  rows={selectedBorrower.readerRequestDetails.length}
-                  disabled
-                />
-              </div>
-            </div>
-
-            <div className="flex w-full gap-5">
-              {/* Borrow Date */}
-              <div className="mb-4 w-1/3">
-                <label className="block text-sm font-medium text-gray-600">
-                  Borrowed date
-                </label>
-                <DatePicker
-                  selected={
-                    selectedBorrower.dateBorrowed || selectedBorrower.createdAt
-                  }
-                  minDate={new Date()}
-                  onChange={(date) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      dateBorrowed: date,
-                    }))
-                  }
-                  dateFormat={"dd/MM/yyyy"}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-
-              {/* Due Date */}
-              <div className="mb-4 w-1/3">
-                <label className="block text-sm font-medium text-gray-600">
-                  Refund date
-                </label>
-                <DatePicker
-                  selected={selectedBorrower.returnDate}
-                  minDate={new Date()}
-                  onChange={(date) =>
-                    setSelectedBorrower((prev) => ({
-                      ...prev,
-                      returnDate: date,
-                    }))
-                  }
-                  dateFormat={"dd/MM/yyyy"}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-              {/* Select Status */}
-              <div className="mb-4 w-1/3">
-                <label className="block text-sm font-medium text-gray-600">
-                  Status
-                </label>
-                <div
-                  className={`w-full border p-2 rounded font-bold
-                  ${
-                    selectedBorrower.status === "PENDING"
-                      ? "text-orange-500 bg-orange-50 border-orange-200"
-                      : ""
-                  }
-                  ${
-                    selectedBorrower.status === "BORROWED"
-                      ? "text-blue-500 bg-blue-50 border-blue-200"
-                      : ""
-                  }
-                  ${
-                    selectedBorrower.status === "RETURNED"
-                      ? "text-green-500 bg-green-50 border-green-200"
-                      : ""
-                  }
-                  ${
-                    selectedBorrower.status === "OVERDUE"
-                      ? "text-red-500 bg-red-50 border-red-200"
-                      : ""
-                  }`}
+          ) : (
+            <div className="w-2/3 mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl text-sky-900 font-bold ">
+                  Edit Borrower Details
+                </h2>
+                <button
+                  onClick={handlePrint}
+                  className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
                 >
-                  {selectedBorrower.status}
+                  Print
+                </button>
+              </div>
+
+              <div className="flex w-full gap-5">
+                {/* Input Name */}
+                <div className="mb-4 w-1/2">
+                  <label className="block text-sm font-medium text-gray-600">
+                    Borrower name
+                  </label>
+                  <input
+                    type="text"
+                    value={borrowerNames[selectedBorrower.readerId] || ""}
+                    onChange={(e) =>
+                      setSelectedBorrower((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                    className="border p-2 rounded mt-1 w-full"
+                  />
+                </div>
+
+                {/* Input Book */}
+                <div className="mb-4 w-1/2">
+                  <label className="block text-sm font-medium text-gray-600">
+                    Borrowed books
+                  </label>
+                  <textarea
+                    value={getListBookInBorrowRequest(selectedBorrower)
+                      .split(", ")
+                      .join("\n")}
+                    onChange={(e) =>
+                      setSelectedBorrower((prev) => ({
+                        ...prev,
+                        book: e.target.value,
+                      }))
+                    }
+                    className="w-full border p-2 rounded mt-1"
+                    rows={selectedBorrower.readerRequestDetails.length}
+                  />
                 </div>
               </div>
-            </div>
 
-            {/* Buttons */}
-            <div className="flex justify-end space-x-4">
-              <button
-                className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-                onClick={() => setSelectedBorrower(null)}
-              >
-                Close
-              </button>
-              <button
-                className={`${
-                  selectedBorrower.status === "PENDING"
-                    ? "bg-[#af40ff] hover:bg-[#5b42f3]"
-                    : selectedBorrower.status === "BORROWED"
-                    ? "bg-[#af40ff] hover:bg-[#5b42f3]"
-                    : "bg-gray-400 cursor-not-allowed"
-                } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
-                onClick={() => {
-                  if (selectedBorrower.status === "BORROWED") {
-                    handleReturnBook(selectedBorrower);
-                  } else if (selectedBorrower.status === "PENDING") {
-                    handleApproveBorrower(selectedBorrower);
+              <div className="flex w-full gap-5">
+                {/* Borrow Date */}
+                <div className="mb-4 w-1/3">
+                  <label className="block text-sm font-medium text-gray-600">
+                    Borrowed date
+                  </label>
+                  <DatePicker
+                    selected={
+                      selectedBorrower.dateBorrowed ||
+                      selectedBorrower.createdAt
+                    }
+                    minDate={new Date()}
+                    onChange={(date) =>
+                      setSelectedBorrower((prev) => ({
+                        ...prev,
+                        dateBorrowed: date,
+                      }))
+                    }
+                    dateFormat={"dd/MM/yyyy"}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+
+                {/* Due Date */}
+                <div className="mb-4 w-1/3">
+                  <label className="block text-sm font-medium text-gray-600">
+                    Refund date
+                  </label>
+                  <DatePicker
+                    selected={selectedBorrower.returnDate}
+                    minDate={new Date()}
+                    onChange={(date) =>
+                      setSelectedBorrower((prev) => ({
+                        ...prev,
+                        returnDate: date,
+                      }))
+                    }
+                    dateFormat={"dd/MM/yyyy"}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+                {/* Select Status */}
+                <div className="mb-4 w-1/3">
+                  <label className="block text-sm font-medium text-gray-600">
+                    Status
+                  </label>
+                  <div
+                    className={`w-full border p-2 rounded font-bold
+                    ${
+                      selectedBorrower.status === "PENDING"
+                        ? "text-orange-500 bg-orange-50 border-orange-200"
+                        : ""
+                    }
+                    ${
+                      selectedBorrower.status === "BORROWED"
+                        ? "text-blue-500 bg-blue-50 border-blue-200"
+                        : ""
+                    }
+                    ${
+                      selectedBorrower.status === "RETURNED"
+                        ? "text-green-500 bg-green-50 border-green-200"
+                        : ""
+                    }
+                    ${
+                      selectedBorrower.status === "OVERDUE"
+                        ? "text-red-500 bg-red-50 border-red-200"
+                        : ""
+                    }`}
+                  >
+                    {selectedBorrower.status}
+                  </div>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-end space-x-4">
+                <button
+                  className="[background:linear-gradient(144deg,#ff4d4d,#ff1a1a_50%,#cc0000)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
+                  onClick={() => setSelectedBorrower(null)}
+                >
+                  Close
+                </button>
+                <button
+                  className={`${
+                    selectedBorrower.status === "PENDING"
+                      ? "bg-[#af40ff] hover:bg-[#5b42f3]"
+                      : selectedBorrower.status === "BORROWED"
+                      ? "bg-[#af40ff] hover:bg-[#5b42f3]"
+                      : "bg-gray-400 cursor-not-allowed"
+                  } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
+                  onClick={() => {
+                    if (selectedBorrower.status === "BORROWED") {
+                      handleReturnBook(selectedBorrower);
+                    } else if (selectedBorrower.status === "PENDING") {
+                      handleApproveBorrower(selectedBorrower);
+                    }
+                  }}
+                  disabled={
+                    isLoading ||
+                    (selectedBorrower.status !== "PENDING" &&
+                      selectedBorrower.status !== "BORROWED")
                   }
-                }}
-                disabled={
-                  selectedBorrower.status !== "PENDING" &&
-                  selectedBorrower.status !== "BORROWED"
-                }
-              >
-                {selectedBorrower.status === "BORROWED" ? "Return" : "Borrowed"}
-              </button>
-              <button
-                className={`${
-                  selectedBorrower.status === "PENDING"
-                    ? "bg-[#ff4040] hover:bg-[#f35a42]"
-                    : "bg-gray-400 cursor-not-allowed"
-                } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
-                disabled={selectedBorrower.status !== "PENDING" ? true : false}
-                onClick={() => {
-                  handleCancelBorrowRequest(selectedBorrower);
-                }}
-              >
-                Cancel
-              </button>
+                >
+                  {selectedBorrower.status === "BORROWED"
+                    ? "Return"
+                    : "Borrowed"}
+                </button>
+                <button
+                  className={`${
+                    selectedBorrower.status === "PENDING"
+                      ? "bg-[#ff4040] hover:bg-[#f35a42]"
+                      : "bg-gray-400 cursor-not-allowed"
+                  } text-white px-4 py-2 font-bold rounded-md hover:opacity-80`}
+                  disabled={isLoading || selectedBorrower.status !== "PENDING"}
+                  onClick={() => {
+                    handleCancelBorrowRequest(selectedBorrower);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
       {/* Phiếu mượn để in */}
