@@ -10,14 +10,14 @@ import TabBooks from "../components/tabs/TabBooks";
 import TabBorrow from "../components/tabs/TabBorrow";
 import TabDashboard from "../components/tabs/TabDashboard";
 import TabBorrrowManagement from "../components/tabs/TabBorrowManagement";
-import TabUsers from "../components/tabs/TabUsers";
+// import TabUsers from "../components/tabs/TabUsers";
 import TabInventory from "../components/tabs/TabInventory";
 import TabBookLoan from "../components/tabs/TabBookLoan";
 import TabAllBooks from "../components/tabs/TabAllBooks";
 import ChatBox from "../chatbox/ChatBox";
 import checkInOutIcon from "/icons/check-in-out.png";
 import bookIcon from "/icons/book.png";
-import usersIcon from "/icons/users.png";
+// import usersIcon from "/icons/users.png";
 import dashboardIcon from "/icons/dashboard.png";
 import managementIcon from "/icons/management.png";
 
@@ -183,13 +183,13 @@ const HomePage = () => {
 
     try {
       const res = await authService.updateProfile(updatedData);
+      // if (res) {
+      alert("Đã cập nhật thông tin người dùng thành công.");
       setUser((prev) => ({ ...prev, ...res }));
       setIsProfileModalOpen(false);
-      if (res) {
-        alert("Đã cập nhật thông tin người dùng thành công.");
-      } else {
-        alert("Không thể cập nhật thông tin người dùng.");
-      }
+      // } else {
+      // alert("Không thể cập nhật thông tin người dùng.");
+      // }
     } catch (error) {
       alert("Không thể cập nhật thông tin người dùng.");
       console.log("Không thể cập nhật thông tin người dùng: ", error);
