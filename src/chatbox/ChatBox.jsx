@@ -29,7 +29,7 @@ const handleSendMessage = async (e) => {
   setInput('');
 
   try {
-    const response = await fetch('http://localhost:3000/api/chat', {
+    const response = await fetch('https://library-chatbox-latest.onrender.com/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
