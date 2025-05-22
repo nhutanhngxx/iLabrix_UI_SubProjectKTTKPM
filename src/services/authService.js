@@ -1,4 +1,5 @@
 import config from "../configs/config";
+import http from "../utils/axiosClient";
 const authService = {
   isTokenValid: () => {
     const token = localStorage.getItem("accessToken");
@@ -22,24 +23,45 @@ const authService = {
 
   login: async ({ username, password }) => {
     try {
-      const response = await fetch(
-        `${config.BASE_URL}/api/v1/user-service/users/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username, passwordHash: password }),
+      // const response = await fetch(
+      //   `${config.BASE_URL}/api/v1/user-service/users/login`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({ username, passwordHash: password }),
+      //   }
+      // );
+
+      const response = await http.post("/api/v1/user-service/users/login", {
+        username,
+        passwordHash: password,
+      });
+
+      // Kiểm tra response data
+      if (response.data) {
+        // Lưu token nếu có
+        if (response.data.accessToken) {
+          localStorage.setItem("accessToken", response.data.accessToken);
         }
-      );
-      if (!response.ok) {
-        throw new Error("Đăng nhập thất bại");
+        return response.data;
       }
 
-      const data = await response.json();
-      return data;
+      throw new Error("Đăng nhập thất bại");
     } catch (error) {
       console.log("Có lỗi xảy ra khi đăng nhập: ", error);
+      // Trả về lỗi cụ thể hơn
+      if (error.response) {
+        // Lỗi từ server
+        throw new Error(error.response.data?.message || "Đăng nhập thất bại");
+      } else if (error.request) {
+        // Không nhận được response
+        throw new Error("Không thể kết nối đến server");
+      } else {
+        // Lỗi khác
+        throw new Error("Đăng nhập thất bại");
+      }
     }
   },
 

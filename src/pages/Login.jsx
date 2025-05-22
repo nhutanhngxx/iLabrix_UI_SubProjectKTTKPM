@@ -42,7 +42,7 @@ const Register = () => {
       const response = await authService.login({ username, password });
 
       if (!response) {
-        throw new Error("Login failed");
+        throw new Error("User or password wrong!");
       }
 
       let userId = null;
@@ -68,7 +68,7 @@ const Register = () => {
       navigate("/home-page");
     } catch (err) {
       setError(err.message);
-      console.log(error);
+      console.log("error", err);
     } finally {
       setIsLoading(false);
     }
